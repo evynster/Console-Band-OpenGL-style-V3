@@ -1,5 +1,5 @@
-#include "GameEmGine.h"
 #include "EmGineAudioPlayer.h"
+#include "GameEmGine.h"
 
 #pragma region Static Variables
 void(*GameEmGine::m_compileShaders)();
@@ -33,7 +33,7 @@ bool GameEmGine::exitGame = false;
 float GameEmGine::m_fps;
 short GameEmGine::m_fpsLimit;
 Scene* GameEmGine::m_mainScene;
-
+std::vector<Text*> GameEmGine::m_text;
 //GLuint GameEmGine::colorCustom;
 //int GameEmGine::LUTsize = 0;
 
@@ -89,7 +89,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	printf("Creating The Window...\n");
 
-	m_window = new WindowCreator(name, {(float)width,(float)height}, {(float)x,(float)y}, monitor, fullScreen, visable);
+	m_window = new WindowCreator(name, {(float)width,(float)height}, Coord2D<>{(float)x,(float)y}, monitor, fullScreen, visable);
 
 	if(m_window)
 		puts("Window Creation Successful\n");
@@ -338,8 +338,8 @@ void GameEmGine::setScene(Scene * scene)
 	scene->parent = m_mainScene;//set the parent to the previous scene
 	m_mainScene = scene;
 	scene->init();
-	m_inputManager->keyPressedCallback(scene->keyPressed);
-	m_inputManager->keyReleasedCallback(scene->keyReleased);
+	m_inputManager->setKeyPressedCallback(scene->keyPressed);
+	m_inputManager->setKeyReleasedCallback(scene->keyReleased);
 	m_inputManager->mouseButtonPressCallback(scene->mousePressed);
 	m_inputManager->mouseButtonReleaseCallback(scene->mouseReleased);
 
@@ -372,24 +372,24 @@ void GameEmGine::setCameraType(CAMERA_TYPE type)
 	m_mainCamera->setType(type);
 }
 
-void GameEmGine::moveCameraPositionBy(Coord3D pos)
+void GameEmGine::translateCameraBy(Coord3D<> pos)
 {
 	m_mainCamera->movePositionBy(pos);
 }
 
-void GameEmGine::setCameraPosition(Coord3D pos)
+void GameEmGine::setCameraPosition(Coord3D<> pos)
 {
-	m_mainCamera->setPosition(pos);
+	m_mainCamera->translate(pos);
 }
 
-void GameEmGine::moveCameraAngleBy(float angle, Coord3D direction)
+void GameEmGine::RotateCameraBy(float angle, Coord3D<> direction)
 {
-	m_mainCamera->moveAngleBy(angle, direction);
+	m_mainCamera->rotateBy(angle, direction);
 }
 
-void GameEmGine::setCameraAngle(float angle, Coord3D direction)
+void GameEmGine::setCameraAngle(float angle, Coord3D<> direction)
 {
-	m_mainCamera->setAngle(angle, direction);
+	m_mainCamera->rotate(angle, direction);
 }
 
 void GameEmGine::addModel(Model * model)

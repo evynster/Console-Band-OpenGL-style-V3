@@ -196,9 +196,9 @@ bool Mesh::loadMesh(std::string path)
 	if(!strstr(path.c_str(), ".obj"))return false;
 	unload();
 
-	std::vector<Coord3D> verts;
+	std::vector<Coord3D<>> verts;
 	std::vector<UV> uvs;
-	std::vector<Coord3D> norms;
+	std::vector<Coord3D<>> norms;
 
 	std::vector < std::pair<std::string, std::vector<Vertex3D>>> faces;
 	//FILE* bin;
@@ -257,7 +257,7 @@ bool Mesh::loadMesh(std::string path)
 			else if(strstr(inputBuff, "vn"))
 			{
 				//Normal data
-				Coord3D tmp;
+				Coord3D<> tmp;
 				sscanf_s(inputBuff, "vn %f %f %f", &tmp.x, &tmp.y, &tmp.z);
 				norms.push_back(tmp);
 			}
@@ -341,7 +341,7 @@ bool Mesh::loadMesh(std::string path)
 			{
 				//Vertex Data
 
-				Coord3D tmp;
+				Coord3D<> tmp;
 				sscanf_s(inputBuff, "v %f %f %f", &tmp.x, &tmp.y, &tmp.z);
 				verts.push_back(tmp);
 				if(initFace)
@@ -532,9 +532,9 @@ std::vector< std::pair<std::string, std::vector<Vertex3D>>> Mesh::loadAni(std::s
 
 	char inputBuff[CHAR_BUFF_SIZE];
 
-	std::vector<Coord3D> verts;
+	std::vector<Coord3D<>> verts;
 	std::vector<UV> uvs;
-	std::vector<Coord3D> norms;
+	std::vector<Coord3D<>> norms;
 
 	std::vector < std::pair<std::string, std::vector<Vertex3D>>> faces;
 
@@ -570,7 +570,7 @@ std::vector< std::pair<std::string, std::vector<Vertex3D>>> Mesh::loadAni(std::s
 		else if(strstr(inputBuff, "vn"))
 		{
 			//Normal data
-			Coord3D tmp;
+			Coord3D<> tmp;
 			sscanf_s(inputBuff, "vn %f %f %f", &tmp.x, &tmp.y, &tmp.z);
 			norms.push_back(tmp);
 		}
@@ -654,7 +654,7 @@ std::vector< std::pair<std::string, std::vector<Vertex3D>>> Mesh::loadAni(std::s
 		{
 			//Vertex Data
 
-			Coord3D tmp;
+			Coord3D<> tmp;
 			sscanf_s(inputBuff, "v %f %f %f", &tmp.x, &tmp.y, &tmp.z);
 			verts.push_back(tmp);
 			if(initFace)

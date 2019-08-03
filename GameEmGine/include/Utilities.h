@@ -4,12 +4,12 @@
 #include <glm/common.hpp>
 #include <string>
 
-
-
-
+#define reclass(a_class,a_val) *(a_class*)&(a_val)
+#define uint unsigned int
+template<class T=float>
 struct Coord2D
 {
-	float x = 0, y = 0;
+	T x = 0, y = 0;
 
 	glm::vec2 toVec2()
 	{
@@ -17,19 +17,19 @@ struct Coord2D
 	}
 	Coord2D() = default;
 
-	Coord2D(float a_x, float a_y)
+	Coord2D(T a_x, T a_y)
 	{
 		x = a_x, y = a_y;
 	}
-	float distance()
+	T distance()
 	{
 		return sqrtf(x * x + y * y);
 	}
 
-	static float distance(Coord2D v1, Coord2D v2)
+	static T distance(Coord2D v1, Coord2D v2)
 	{
 		Coord2D v3 = v2 - v1;
-		return sqrtf(v3.x*v3.x + v3.y*v3.y);
+		return sqrtf(v3.x * v3.x + v3.y * v3.y);
 	}
 
 	Coord2D normal()
@@ -37,15 +37,15 @@ struct Coord2D
 		return *this / distance();
 	}
 
-	float& operator[](int m_index)
+	T& operator[](int m_index)
 	{
-		float *error = nullptr;
+		T* error = nullptr;
 		switch(m_index)
 		{
 		case 0:
-			return static_cast<float&>(x);
+			return static_cast<T&>(x);
 		case 1:
-			return static_cast<float&>(y);
+			return static_cast<T&>(y);
 		}
 		return *error;
 	}
@@ -62,7 +62,7 @@ struct Coord2D
 	{
 		return {x / coord.x,y / coord.y};
 	}
-	Coord2D operator/(float coord)
+	Coord2D operator/(T coord)
 	{
 		return {x / coord,y / coord};
 	}
@@ -80,39 +80,40 @@ struct Coord2D
 	{
 		x /= coord.x, y /= coord.y;
 	}
-	void operator/=(float coord)
+	void operator/=(T coord)
 	{
 		x /= coord, y /= coord;
 	}
 };
 
+template<class T = float>
 struct Coord3D
 {
-	float x = 0.0f, y = 0.0f, z = 0.0f;
+	T x = 0.0f, y = 0.0f, z = 0.0f;
 
 	Coord3D() = default;
-	
-	Coord3D(Coord2D coord)
+
+	Coord3D(Coord2D<T> coord)
 	{
 		x = coord.x;
 		y = coord.y;
 	}
 
-	Coord3D(float scale)
+	Coord3D(T scale)
 	{
 		this->x = scale;
 		this->y = scale;
 		this->z = scale;
 	}
 
-	Coord3D(float m_x, float m_y, float m_z)
+	Coord3D(T m_x, T m_y, T m_z)
 	{
 		this->x = m_x;
 		this->y = m_y;
 		this->z = m_z;
 	}
 
-	Coord3D(float m_x, float m_y)
+	Coord3D(T m_x, T m_y)
 	{
 		this->x = m_x;
 		this->y = m_y;
@@ -123,16 +124,41 @@ struct Coord3D
 		return glm::vec3(x, y, z);
 	}
 
-	static float distance(Coord3D v1, Coord3D v2)
+	static T distance(Coord3D v1, Coord3D v2)
 	{
-		v2 = v2 - v1;
-		return v2.distance();
+		v1 -= v2;
+		return v1.distance();
 	}
 
-	float distance()
+	T distance()
 	{
 		return sqrtf(x * x + y * y + z * z);
 	}
+
+	T distanceSquare()
+	{
+		return (x * x + y * y + z * z);
+	}
+
+	static T dotProduct(Coord3D a, Coord3D b)
+	{
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
+
+	static Coord3D crossProduct(Coord3D a, Coord3D b)
+	{
+		return
+		{
+			a.y * b.z - a.z * b.y,
+			a.z * b.x - a.x * b.z,
+			a.x * b.y - a.y * b.x
+		};
+	}
+	friend static Coord3D abs(Coord3D val)
+	{
+		return {sqrtf(val.x * val.x),sqrtf(val.y * val.y),sqrtf(val.z * val.z)};
+	}
+
 
 	Coord3D normal()
 	{
@@ -140,20 +166,20 @@ struct Coord3D
 	}
 
 
-	void set(Coord2D coord)
+	void set(Coord2D<T> coord)
 	{
 		x = coord.x;
 		y = coord.y;
 	}
 
-	void set(float m_x, float m_y, float m_z)
+	void set(T m_x, T m_y, T m_z)
 	{
 		this->x = m_x;
 		this->y = m_y;
 		this->z = m_z;
 	}
 
-	void set(float m_x, float m_y)
+	void set(T m_x, T m_y)
 	{
 		this->x = m_x;
 		this->y = m_y;
@@ -161,23 +187,23 @@ struct Coord3D
 
 	void normalize()
 	{
-		float norm = sqrtf(x * x + y * y + z * z);
+		T norm = sqrtf(x * x + y * y + z * z);
 		x /= norm;
 		y /= norm;
 		z /= norm;
 	}
 
-	float& operator[] (int m_index)
+	T& operator[] (int m_index)
 	{
-		float* error = nullptr;
+		T* error = nullptr;
 		switch(m_index)
 		{
 		case 0:
-			return const_cast<float&>(x);
+			return const_cast<T&>(x);
 		case 1:
-			return const_cast<float&>(y);
+			return const_cast<T&>(y);
 		case 2:
-			return const_cast<float&>(z);
+			return const_cast<T&>(z);
 		}
 		return *error;
 	}
@@ -192,7 +218,7 @@ struct Coord3D
 		return {x - coord.x, y - coord.y, z - coord.z};
 	}
 
-	friend Coord3D operator*(float scaler, Coord3D coord)
+	friend Coord3D operator*(T scaler, Coord3D coord)
 	{
 		return {scaler * coord.x, scaler * coord.y, scaler * coord.z};
 	}
@@ -202,7 +228,7 @@ struct Coord3D
 		return {x * coord.x, y * coord.y, z * coord.z};
 	}
 
-	Coord3D operator*(float coord)
+	Coord3D operator*(T coord)
 	{
 		return {x * coord, y * coord, z * coord};
 	}
@@ -212,14 +238,14 @@ struct Coord3D
 		return {x / coord.x,y / coord.y,z / coord.z};
 	}
 
-	Coord3D operator/(float coord)
+	Coord3D operator/(T coord)
 	{
 		return {x / coord,y / coord,z / coord};
 	}
 
 	Coord3D& operator-() {
 		static Coord3D tmp;
-		tmp = *this*-1;
+		tmp = *this * -1;
 		return tmp;
 	}
 
@@ -244,11 +270,42 @@ struct Coord3D
 		z *= coord.z;
 	}
 
-	void operator*=(float coord)
+	void operator*=(T coord)
 	{
 		x *= coord;
 		y *= coord;
 		z *= coord;
+	}
+
+	bool operator==(Coord3D coord)const
+	{
+		return
+			x == coord.x &&
+			y == coord.y &&
+			z == coord.z;
+	}
+
+	bool operator!=(Coord3D coord)const
+	{
+		return !(*this == coord);
+	}
+
+	bool operator>(Coord3D coord)
+	{
+		return this->distanceSquare() > coord.distanceSquare();
+	}
+
+	bool operator<=(Coord3D coord)
+	{
+		return !(*this > coord);
+	}
+	bool operator<(Coord3D coord)
+	{
+		return this->distanceSquare() < coord.distanceSquare();
+	}
+	bool operator>=(Coord3D coord)
+	{
+		return !(*this < coord);
 	}
 };
 
@@ -257,7 +314,7 @@ struct Size2D
 	float width = 0, height = 0;
 	float& operator[](int m_index)
 	{
-		float *error = nullptr;
+		float* error = nullptr;
 		switch(m_index)
 		{
 		case 0:
@@ -332,7 +389,7 @@ struct Size3D
 
 struct vboInfo3D
 {
-	Coord3D pos;
+	Coord3D<> pos;
 	Size3D size;
 };
 
@@ -412,7 +469,7 @@ struct ColourRGBA
 
 	GLubyte& operator[](int m_index)
 	{
-		GLubyte *error = nullptr;
+		GLubyte* error = nullptr;
 		switch(m_index)
 		{
 		case 0:
@@ -455,20 +512,20 @@ struct UV
 		case 2:
 			return static_cast<float&>(uv_w);
 		}
-		float *error = nullptr;
+		float* error = nullptr;
 		return *error;
 	}
 };
 
 struct VboInfo2D
 {
-	VboInfo2D(Coord2D c = {0,0}, Size2D s = {0,0})
+	VboInfo2D(Coord2D<> c = {0,0}, Size2D s = {0,0})
 	{
 		position = c;
 		size = s;
 	}
 
-	Coord2D position;
+	Coord2D<> position;
 	Size2D size;
 protected:
 	float _angle;
@@ -476,7 +533,7 @@ protected:
 
 struct Vertex2D
 {
-	Coord2D coord;
+	Coord2D<> coord;
 	ColourRGBA	colour;
 	UV uv;
 
@@ -510,7 +567,7 @@ struct Vertex2D
 
 struct Vertex3D
 {
-	Coord3D coord, norm;
+	Coord3D<> coord, norm;
 	ColourRGBA	colour;
 	UV uv;
 
@@ -552,9 +609,9 @@ struct Vertex3D
 
 struct WindowInfo
 {
-	std::string *title = new std::string;
-	Size3D  *size = new Size3D;
-	Coord2D *position = new Coord2D;
+	std::string* title = new std::string;
+	Size3D* size = new Size3D;
+	Coord2D<>* position = new Coord2D<>;
 	int monitor;
 	void print()
 	{

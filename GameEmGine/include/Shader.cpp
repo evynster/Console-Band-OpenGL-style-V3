@@ -231,7 +231,13 @@ void Shader::sendUniform(const char * uniform, glm::mat4 val)
 	glUniformMatrix4fv(uni,1,false, &val[0][0]);
 }
 
-void Shader::sendUniform(const char* uniform, Coord3D val)
+void Shader::sendUniform(const char* uniform, glm::vec4 val)
+{
+	GLint uni = getUniformLocation(uniform);
+	glUniform4fv(uni, 1, &val[0]);
+}
+
+void Shader::sendUniform(const char* uniform, Coord3D<> val)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform3f(uni, val.x, val.y, val.z);

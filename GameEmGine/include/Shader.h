@@ -20,7 +20,7 @@ public:
 	void createDefault();
 
 	//compiles shaders into code
-	bool compileShaders(const std::string& vertFilePath, const std::string& fragFilePath); 
+	bool compileShaders(const std::string& vertFilePath, const std::string& fragFilePath);
 	bool compileShaders(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath);
 
 	//links vertx and fragment shaders into a single shader
@@ -32,12 +32,13 @@ public:
 	void addAtribute(const std::string attributeName, short m_index = 1);
 
 	GLint getAttribLocation(const std::string attributeName);
-	GLint getUniformLocation(const char *uniform);
+	GLint getUniformLocation(const char* uniform);
 
-	void sendUniform(const char*uniform, glm::mat4 val);
-	void sendUniform(const char*uniform, Coord3D val);
-	void sendUniform(const char*uniform,   float val);
-	void sendUniform(const char*uniform,     int val);
+	void sendUniform(const char* uniform, glm::mat4 val);
+	void sendUniform(const char* uniform, glm::vec4 val);
+	void sendUniform(const char* uniform, Coord3D<> val);
+	void sendUniform(const char* uniform, float val);
+	void sendUniform(const char* uniform, int val);
 
 	//enables shader program for use
 	void enable();
@@ -55,7 +56,7 @@ private:
 	bool compileShader(Shaders shadNum, const std::string filePath, GLuint id);
 	void findAtributes();
 
-	std::string m_vtsh="",m_vtPath="",m_fmPath="",m_goPath="";
+	std::string m_vtsh = "", m_vtPath = "", m_fmPath = "", m_goPath = "";
 	int m_attribNum = 0;
 	bool m_enabled = false;
 
@@ -65,7 +66,7 @@ private:
 		m_fragID = 0,
 		m_geomID = 0;
 
-//	static GLuint *m_programs, *m_attribs, m_num;
+	//	static GLuint *m_programs, *m_attribs, m_num;
 
 };
 

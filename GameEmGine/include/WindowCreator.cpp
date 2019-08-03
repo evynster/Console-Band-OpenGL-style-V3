@@ -7,7 +7,7 @@ WindowCreator::WindowCreator()
 	m_monitor = glfwGetPrimaryMonitor();
 }
 
-WindowCreator::WindowCreator(std::string name, Size3D size, Coord2D position, int monitor, bool fullScreeen, bool visable)
+WindowCreator::WindowCreator(std::string name, Size3D size, Coord2D<> position, int monitor, bool fullScreeen, bool visable)
 {
 	createWindow(name, size, position, monitor, fullScreeen, visable);
 }
@@ -16,7 +16,7 @@ WindowCreator::WindowCreator(std::string name, Size3D size, Coord2D position, in
 WindowCreator::~WindowCreator()
 {}
 
-int WindowCreator::createWindow(std::string name, Size3D size, Coord2D position, int monitor, bool fullScreeen, bool visable)
+int WindowCreator::createWindow(std::string name, Size3D size, Coord2D<> position, int monitor, bool fullScreeen, bool visable)
 {
 	int monCount;
 	GLFWmonitor** mons = glfwGetMonitors(&monCount);
@@ -66,7 +66,7 @@ void WindowCreator::setFullScreen(bool full)
 		glfwGetWindowSize(m_window, &w, &h);
 		m_info->size = new Size3D{float(w), float(h)};
 		glfwGetWindowPos(m_window, &w, &h);
-		m_info->position = new Coord2D{float(w), float(h)};
+		m_info->position = new Coord2D<>{float(w), float(h)};
 
 
 		glfwGetCursorPos(m_window, &x, &y);

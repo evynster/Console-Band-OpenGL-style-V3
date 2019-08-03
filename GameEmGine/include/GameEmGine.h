@@ -1,5 +1,5 @@
 #pragma once
-#include "InputManager.h"//needs to be up her
+#include "InputManager.h"//needs to be at top
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 #include <ctime>
@@ -17,7 +17,7 @@
 #include "ExtraMath.h"
 #include "FrameBuffer.h"
 #include "LightSource.h"
-
+#include "Text.h"
 
 
 class GameEmGine
@@ -67,21 +67,21 @@ public:
 	/*
 	moves the camera position in pixels
 	*/
-	static void moveCameraPositionBy(Coord3D pos);
+	static void translateCameraBy(Coord3D<> pos);
 	/*
 	sets the camera position in pixels
 	*/
-	static void setCameraPosition(Coord3D pos);
+	static void setCameraPosition(Coord3D<> pos);
 
 	/*
 	moves the camera angle
 	*/
-	static void moveCameraAngleBy(float angle, Coord3D direction);
+	static void RotateCameraBy(float angle, Coord3D<> direction);
 
 	/*
 		moves the camera angle
 	*/
-	static void setCameraAngle(float angle, Coord3D direction);
+	static void setCameraAngle(float angle, Coord3D<> direction);
 
 	static void addModel(Model* model);
 
@@ -148,6 +148,7 @@ private:
 	static InputManager *m_inputManager;
 	static std::vector<Model*> m_models;
 	static Scene* m_mainScene;
+	static std::vector<Text*> m_text;
 
 	static bool exitGame;
 	static float m_fps;

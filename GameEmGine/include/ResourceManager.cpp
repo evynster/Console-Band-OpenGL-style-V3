@@ -2,9 +2,23 @@
 
 std::map<std::string, Texture2D> Texture2DCache::m_textures;
 std::map<std::string, Texture3D> Texture3DCache::m_textures;
-
+std::map<char, Character> CharacterCache::m_characters;
 //Texture3DCache ResourceManager::m_texture3DCache;
 std::map<std::vector<std::string>, Shader*>  ShaderCache::m_shaders;
+
+Character& CharacterCache::getCharacter(const char path)
+{
+	auto it = m_characters.find(path);
+
+	if(it == m_characters.end())
+	{
+		Character tmp = Text::loadCharacter(reclass(char, path));
+		m_characters.insert({reclass(char,path),tmp});
+		return m_characters[path];
+	}
+	//printf("cashed image loaded\n");
+	return it->second;
+}
 
 Texture2D& Texture2DCache::getTexture(const char* path)
 {

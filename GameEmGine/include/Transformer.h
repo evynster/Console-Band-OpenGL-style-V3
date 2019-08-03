@@ -14,32 +14,32 @@ public:
 	~Transformer();
 
 	void reset();
-
+	void enableFPS(bool enable = true);
 	/*SET ROTATION*/
 
-	void setRotation(Coord3D direction);
-	void rotateBy(Coord3D direction);
+	void rotate(Coord3D<> direction);
+	void rotateBy(Coord3D<> direction);
 
 	/*SET POSITION*/
 
-	void setPosition(float x, float y, float z);
-	void setPosition(Coord3D pos);
+	void translate(float x, float y, float z);
+	void translate(Coord3D<> pos);
 	void translateBy(float x, float y, float z);
-	void translateBy(Coord3D pos);
+	void translateBy(Coord3D<> pos);
 
 
 	/*SET SCALE*/
 
 	void setScale(float scale);
 	void scaleBy(float scale);
-	void setScale(Coord3D);
+	void setScale(Coord3D<>);
 	void setScale(float x, float y, float z);
 	void scaleBy(float x, float y, float z);
 
 	/*GETERS*/
-	Coord3D getPosition();
-	Coord3D getRotation();
-	Coord3D getScale();
+	Coord3D<>  getPosition();
+	Coord3D<> getRotation();
+	Coord3D<> getScale();
 	glm::mat4& getRotationMatrix();
 	glm::mat4& getScaleMatrix();
 	glm::mat4& getTranslationMatrix();
@@ -57,9 +57,11 @@ public:
 	bool isTranslatinUpdated();
 
 	void addChild(Transformer* child);
+
 private:
-	Coord3D m_posData, m_rotData, m_scaleData;
-	glm::vec3 m_forward = {0,0,1}, m_up{0,1,0}, m_right{1,0,0};
+
+	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
+	Coord3D<> m_forward = {0,0,1}, m_up = {0,1,0}, m_right = {1,0,0};
 	glm::mat4
 		m_translate,
 		m_rotate,
@@ -69,7 +71,8 @@ private:
 	Transformer* m_parent;
 	bool  m_updatedRot = true,
 		m_updatedTrans = true,
-		m_updatedScale = true;
+		m_updatedScale = true,
+		m_fps;
 
 };
 

@@ -14,30 +14,47 @@ class Model;
 enum CAMERA_TYPE
 {
 	ORTHOGRAPHIC,
-	PERSPECTIVE
+	FRUSTUM
+};
+
+struct projectionPeramiters
+{
+	virtual ~projectionPeramiters() = 0;
+	float front, back;
+};
+
+struct OrthoPeramiters:public projectionPeramiters
+{
+	float  left, right, bottom, top;
+};
+
+struct FrustumPeramiters:public projectionPeramiters
+{
+	float angle,aspect, depth;
 };
 class Camera
 {
 public:
-	Camera(Size3D = {1,1,1}, CAMERA_TYPE = PERSPECTIVE);
+	Camera(Size3D = {1,1,1}, CAMERA_TYPE = FRUSTUM);
 	~Camera();
 
-	void init(Size3D = {}, CAMERA_TYPE = PERSPECTIVE);
-	void setType(CAMERA_TYPE type);
+	void init(Size3D = {}, CAMERA_TYPE = FRUSTUM);
+	void setType(CAMERA_TYPE type, projectionPeramiters* peram = nullptr);
 	CAMERA_TYPE getType();
+	void enableFPS(bool enable = true);
 	bool update();
 
-	void setPosition(Coord3D);
-	void movePositionBy(Coord3D position);
+	void translate(Coord3D<>);
+	void movePositionBy(Coord3D<> position);
 	void setScale(const float);
-	void setAngle(float angle, Coord3D direction);
+	void rotate(float angle, Coord3D<> direction);
 
-	void moveAngleBy(float angle, Coord3D direction);
+	void rotateBy(float angle, Coord3D<> direction);
 
-	void render(Shader * shader, std::vector<Model*>& models, bool transparent = false);
+	void render(Shader* shader, std::vector<Model*>& models, bool transparent = false);
 
 
-	Coord3D getPosition();
+	Coord3D<> getPosition();
 	float& getScale();
 	glm::mat4 getProjectionMatrix();
 	glm::mat4 getViewMatrix();
@@ -47,11 +64,11 @@ public:
 	Transformer& getTransformer();
 
 protected:
-	bool m_cameraUpdate;
+	bool m_cameraUpdate, m_isTranslate, m_isTranslateBy;
 	float m_scale;
-	Size3D *m_size = new Size3D;
-	Coord3D *m_position;
-	CAMERA_TYPE m_type = PERSPECTIVE;
+	Size3D* m_size = new Size3D;
+	Coord3D<>* m_position, * m_positionBy;
+	CAMERA_TYPE m_type = FRUSTUM;
 
 	Transformer m_transform;
 	glm::mat4 m_cameraMat;

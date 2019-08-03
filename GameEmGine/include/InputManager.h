@@ -65,15 +65,15 @@ public:
 
 	void mouseButtonReleaseCallback(void mouseButton(int button, int mods));
 
-	void mouseButtonAllCallback(void mouseButton(int state, int button, int mods));
+	void setMouseButtonAllCallback(void mouseButton(int state, int button, int mods));
 
-	static Coord2D getMouseCursorPosition();
+	static Coord2D<> getMouseCursorPosition();
 
-	void keyPressedCallback(std::function<void(int, int)> key);
+	void setKeyPressedCallback(std::function<void(int, int)> key);
 
-	void keyReleasedCallback(std::function<void(int, int)> key);
+	void setKeyReleasedCallback(std::function<void(int, int)> key);
 
-	void keyAllCallback(std::function<void(int, int, int)> key);
+	void setKeyAllCallback(std::function<void(int, int, int)> key);
 
 	void controllerConnectedCallback(std::function<void(int)> controllerConnection);
 
@@ -84,23 +84,23 @@ public:
 	/*
 	Callback for whenever any key is pressed or held
 	*/
-	void keyPressedCallback(void key(int key, int mod));
+	void setKeyPressedCallback(void key(int key, int mod));
 
 	/*
 	Callback for whenever any key is released
 	*/
-	void keyReleasedCallback(void key(int key, int mod));
+	void setKeyReleasedCallback(void key(int key, int mod));
 
 	/*
 	Callback for any key pressed or released
 	*/
-	void keyAllCallback(void key(int state, int key, int mod));
-
-	void controllerConnectedCallback(void controllerConnection(int controllerNum));
-
-	void controllerDisconnectedCallback(void controllerConnection(int controllerNum));
-
-	void controllerAllConnectionCallback(void controllerConnection(int controllerNum, int connected));
+	void setKeyAllCallback(void key(int state, int key, int mod));
+	
+	//void controllerConnectedCallback(void controllerConnection(int controllerNum));
+	//
+	//void controllerDisconnectedCallback(void controllerConnection(int controllerNum));
+	//
+	//void controllerAllConnectionCallback(void controllerConnection(int controllerNum, int connected));
 
 	int controllersConnected();
 
@@ -116,22 +116,23 @@ private:
 	
 	static void mouseButtonUpdate(GLFWwindow *, int button, int action, int mods);
 	static void keyUpdate(GLFWwindow *, int key, int scancode, int action, int mods);
-	static void xinputConnectionUpdate(int controller, int connected);
+	//static void xinputConnectionUpdate(int controller, int connected);
 
-	void mouseButtonAllCallback(std::function<void(int, int, int)> mouseButton);
+	void setMouseButtonAllCallback(std::function<void(int, int, int)> mouseButton);
 	
-	static std::function<void(int)>
-		m_controllerConneced,
-		m_controllerDisconnected;
+	//static std::function<void(int)>
+	//	m_controllerConneced,
+	//	m_controllerDisconnected;
 	static std::function<void(int, int)>
-		_keyUp, 
-		_keyInitDown, 
-		_mouseButtonPress,
-		_mouseButtonRelease,
-		m_controllerConnection;
+		m_keyUp,
+		m_keyInitDown,
+		m_keyHeldDown,
+		m_mouseButtonPress,
+		m_mouseButtonRelease;
+	//	m_controllerConnection;
 	static std::function<void(int, int, int)>
-		_keyAll,
-		_mouseButtonAll;
+		m_keyAll,
+		m_mouseButtonAll;
 };
 
 //template<class T>

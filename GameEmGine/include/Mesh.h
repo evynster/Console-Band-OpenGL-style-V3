@@ -32,7 +32,7 @@ public:
 	GLuint getNumFaces(int m_index)const;
 	GLuint getNumVerticies(int m_index)const;
 
-	Coord3D top , bottom , left, right , front, back;
+	Coord3D<> top , bottom , left, right , front, back;
 
 private:
 	void loadMaterials(const char * path);

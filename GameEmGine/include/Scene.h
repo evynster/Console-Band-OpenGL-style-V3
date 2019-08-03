@@ -21,13 +21,13 @@ public:
 	std::function<void(void)>render;
 
 	std::function<void(int, int)>
-		//instance key is pressed or held
+		//instance key is pressed 
 		keyPressed,
 
 		//instance key is released
 		keyReleased,
 
-		//instance button is pressed or held
+		//instance button is pressed 
 		mousePressed,
 
 		//instance button is released

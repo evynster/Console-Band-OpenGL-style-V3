@@ -1,161 +1,153 @@
 #include "Transformer.h"
 
 
-Transformer::Transformer():m_translate(1), m_rotate(1), m_scale(1), m_scaleData(1)
+Transformer::Transformer():m_translate(1), m_rotate(1), m_scale(1), m_scaleDat(1)
 {}
-
 
 Transformer::~Transformer()
 {}
 
+
 void Transformer::reset()
 {
 	m_translate = m_rotate = m_scale = glm::mat4(1);
-	m_posData = m_rotData = m_scaleData = {0,0,0};
+	m_posDat = m_rotDat = m_scaleDat = {0,0,0};
 }
 
-void Transformer::setRotation(Coord3D angles)
+void Transformer::enableFPS(bool enable)
 {
-	//glm::vec3 tmp(angles.x, angles.y, angles.z);
-	//tmp = glm::vec4(tmp, 1.0f);
+	m_fps = enable;
+	if(!enable)
+	{
+		m_forward = {0,0,1};
+		m_up = {0,1,0};
+		m_right = {1,0,0};
+	}
+}
 
-	//m_forward = {cosf(glm::radians(angles.x)),cosf(glm::radians(angles.y)),sinf(glm::radians(angles.x))};
-	//m_up = {cosf(glm::radians(angles.y)),sinf(glm::radians(angles.y)),cosf(glm::radians(angles.z))};
-	//m_right = {sinf(glm::radians(angles.x)),cosf(glm::radians(angles.z)),cosf(glm::radians(angles.z))};
-
-
-
+void Transformer::rotate(Coord3D<> angles)
+{
 	m_updatedRot = true;
 	m_rotate = glm::mat4(1);
+
 	if(m_parent)
-		m_rotate = m_parent->m_rotate;
-	if(m_forward.length())
+		[&]() {
+		Transformer* parent = m_parent;
+		while(parent)
+			m_rotate = m_parent->m_rotate * m_rotate,
+			parent = m_parent->m_parent;
+	}();
+
+	m_rotDat.z = fmodf(angles.z, 360.f);
+	m_rotDat.y = fmodf(angles.y, 360.f);
+	m_rotDat.x = fmodf(angles.x, 360.f);
+
+	if(angles.z)
+		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.z), Coord3D<>{0, 0, 1});
+
+	if(angles.y)
+		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.y), Coord3D<>{0, 1, 0});
+
+	if(angles.x)
+		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.x), Coord3D<>{1, 0, 0});
+
+	if(m_fps)
 	{
-		m_rotate *= Quat::quatRotationMat(glm::radians(angles.z),m_forward);
-		m_rotData.z = angles.z;
-	}
-	if(m_up.length())
-	{
-		m_rotate *= Quat::quatRotationMat(glm::radians(angles.y), m_up);
-		m_rotData.y = angles.y;
-	}
-	if(m_right.length())
-	{
-		m_rotate *= Quat::quatRotationMat(glm::radians(angles.x), m_right);
-		m_rotData.x = angles.x;
+		m_forward = reclass(Coord3D<>, m_rotate * glm::vec4(0, 0, 1, 1));
+		m_up = reclass(Coord3D<>, m_rotate * glm::vec4(0, 1, 0, 1));
+		m_right = reclass(Coord3D<>, m_rotate * glm::vec4(1, 0, 0, 1));
 	}
 
-
+	m_forward.normalize();
+	m_up.normalize();
+	m_right.normalize();
 }
 
-void Transformer::rotateBy(Coord3D angles)
+void Transformer::rotateBy(Coord3D<> angles)
 {
 	m_updatedRot = true;
-
-	//m_forward = {cosf(glm::radians(angles.x)),cosf(glm::radians(angles.y)),sinf(glm::radians(angles.x))};
-	//m_up = {sinf(glm::radians(angles.y)),sinf(glm::radians(angles.y)),cosf(glm::radians(angles.z))};
-	//m_right = {sinf(glm::radians(angles.x)),cosf(glm::radians(angles.z)),cosf(glm::radians(angles.z))};
-
-
-	glm::vec3 tmp(angles.x, angles.y, angles.z);
-	tmp = glm::vec4(tmp, 1.f);
-
-	m_rotData += {tmp.x, tmp.y, tmp.z};
-
-	setRotation(m_rotData);
-	//m_rotate = Quat::quatRotationMat(glm::radians(tmp.x), 1, 0, 0);
-	//m_rotate *= Quat::quatRotationMat(glm::radians(tmp.y), 0, 1, 0);
-	//m_rotate *= Quat::quatRotationMat(glm::radians(tmp.z), 0, 0, 1);
+	rotate(angles + m_rotDat);
 }
 
 void Transformer::translateBy(float x, float y, float z)
 {
-	setPosition(m_posData + Coord3D{x,y,z});
+	translateBy( Coord3D<>{x, y, z});
 }
 
-void Transformer::translateBy(Coord3D pos)
-{
-	setPosition(m_posData + pos);
-}
-
-void Transformer::setPosition(float x, float y, float z)
-{
-	setPosition(Coord3D{x,y,z});
-}
-
-void Transformer::setPosition(Coord3D pos)
+void Transformer::translateBy(Coord3D<> pos)
 {
 	m_updatedTrans = true;
-	int w, h;
-	glfwGetFramebufferSize(glfwGetCurrentContext(), &w, &h);
-	float aspect = (float)w / h;
-	m_posData = pos * aspect;
-
-	m_translate = glm::translate(glm::mat4(1), (m_forward * -m_posData.z) + (m_up * m_posData.y) + (m_right * m_posData.x));
-
-	m_posData = m_posData / aspect;
+	m_translate = glm::translate(m_translate, reclass(glm::vec3, ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x))));
+	m_posDat += ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x));
 }
 
-void Transformer::setScale(float scale)
+void Transformer::translate(float x, float y, float z)
 {
-	m_updatedScale = true;
-	setScale(scale, scale, scale);
+	translate(Coord3D<>{x, y, z});
+}
+
+void Transformer::translate(Coord3D<> pos)
+{
+	m_updatedTrans = true;
+	m_posDat = pos;
+	m_translate = glm::translate(glm::mat4(1), reclass(glm::vec3, ((m_forward * -m_posDat.z) + (m_up * m_posDat.y) + (m_right * m_posDat.x))));
 }
 
 void Transformer::scaleBy(float scale)
 {
-	m_updatedScale = true;
 	scaleBy(scale, scale, scale);
-}
-
-void Transformer::setScale(Coord3D _Scale)
-{
-	m_updatedScale = true;
-	setScale(_Scale.x, _Scale.y, _Scale.z);
-}
-
-void Transformer::setScale(float x, float y, float z)
-{
-	m_scaleData = Coord3D(x, y, z);
-	m_updatedScale = true;
-	m_scale = glm::scale(glm::mat4(1.f), glm::vec3(x, y, z));
 }
 
 void Transformer::scaleBy(float x, float y, float z)
 {
+	setScale(m_scaleDat + Coord3D<>(x, y, z));
+}
+
+void Transformer::setScale(float scale)
+{
+	setScale(scale, scale, scale);
+}
+
+void Transformer::setScale(Coord3D<> scale)
+{
+	setScale(scale.x, scale.y, scale.z);
+}
+
+void Transformer::setScale(float x, float y, float z)
+{
 	m_updatedScale = true;
-	m_scaleData += Coord3D(x, y, z);
-	m_scale = glm::scale(m_scale, glm::vec3(x, y, z));
+	m_scaleDat = Coord3D<>(x, y, z);
+	m_scale = glm::scale(glm::mat4(1), *(glm::vec3*) & m_scaleDat);
 }
 
-Coord3D Transformer::getPosition()
+Coord3D<> Transformer::getPosition()
 {
-	return m_posData;
+	return m_posDat;
 }
 
-Coord3D Transformer::getRotation()
+Coord3D<> Transformer::getRotation()
 {
-	return m_rotData;
+	return m_rotDat;
 }
 
-Coord3D Transformer::getScale()
+Coord3D<> Transformer::getScale()
 {
-	return m_scaleData;
+	return m_scaleDat;
 }
 
-glm::mat4 & Transformer::getRotationMatrix()
+glm::mat4& Transformer::getRotationMatrix()
 {
 	//	m_updatedRot = false;
 	return m_rotate;
 }
 
-glm::mat4 & Transformer::getScaleMatrix()
+glm::mat4& Transformer::getScaleMatrix()
 {
 	//	m_updatedScale = false;
 	return m_scale;
 }
 
-glm::mat4 & Transformer::getTranslationMatrix()
+glm::mat4& Transformer::getTranslationMatrix()
 {
 	//	m_updatedTrans = false;
 	return m_translate;

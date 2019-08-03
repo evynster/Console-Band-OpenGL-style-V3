@@ -14,10 +14,10 @@ public:
 	};
 
 	WindowCreator();
-	WindowCreator(std::string name, Size3D, Coord2D = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
+	WindowCreator(std::string name, Size3D, Coord2D<> = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
 	~WindowCreator();
 
-	int	createWindow(std::string name, Size3D, Coord2D = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
+	int	createWindow(std::string name, Size3D, Coord2D<> = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
 
 	void setVisable(bool);
 

@@ -73,28 +73,28 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Externals\lib\win32\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Externals\lib\win64\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Externals\lib\win32\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Externals\lib\win64\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
   </PropertyGroup>
@@ -116,7 +116,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;soil2-debug.lib;fmod_vc.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -137,7 +137,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;soil2-debug.lib;fmod_vc.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -162,7 +162,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;soil2-debug.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -187,7 +187,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;soil2-debug.lib;fmod_vc.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -212,6 +212,7 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="ShaderCombiner.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transformer.h" />
@@ -237,6 +238,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ShaderCombiner.cpp" />
     <ClCompile Include="Sprite.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="Transformer.cpp" />
     <ClCompile Include="WindowCreator.cpp" />
     <ClCompile Include="XinputManager.cpp" />

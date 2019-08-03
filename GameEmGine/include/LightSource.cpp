@@ -38,12 +38,12 @@ void LightSource::setLightType(LIGHT_TYPE type, unsigned index)
 
 }
 
-void LightSource::setPosition(Coord3D pos, unsigned m_index)
+void LightSource::translate(Coord3D<> pos, unsigned m_index)
 {
-	m_lights[m_index].transform->setPosition(pos.x, pos.y, pos.z);
+	m_lights[m_index].transform->translate(pos.x, pos.y, pos.z);
 }
 
-void LightSource::setDirection(Coord3D dir, int m_index)
+void LightSource::setDirection(Coord3D<> dir, int m_index)
 {
 	m_lights[m_index].direction = -dir;
 }
@@ -122,7 +122,7 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 		static Camera cam;
 		cam.init({(float)w,(float)h,500}, ORTHOGRAPHIC);
 
-		cam.setPosition(m_lights[index].transform->getPosition());
+		cam.translate(m_lights[index].transform->getPosition());
 
 		for(int a = 0; a < 6; a++)
 		{
@@ -142,22 +142,22 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 			switch(a)
 			{
 			case 0:
-				cam.setAngle(90, {1,0,0});
+				cam.rotate(90, {1,0,0});
 				break;
 			case 1:
-				cam.setAngle(90, {-1,0,0});
+				cam.rotate(90, {-1,0,0});
 				break;
 			case 2:
-				cam.setAngle(90, {0,1,0});
+				cam.rotate(90, {0,1,0});
 				break;
 			case 3:
-				cam.setAngle(90, {0,-1,0});
+				cam.rotate(90, {0,-1,0});
 				break;
 			case 4:
-				cam.setAngle(0, {0,1, 0});
+				cam.rotate(0, {0,1, 0});
 				break;
 			case 5:
-				cam.setAngle(180, {0,-1,0});
+				cam.rotate(180, {0,-1,0});
 
 				break;
 			default:
@@ -193,11 +193,11 @@ void LightSource::update()
 	char buff[90];
 	m_shader->enable();
 	m_shader->sendUniform("LightAmount", (int)m_lights.size());
-	m_shader->sendUniform("LightAmbient", Coord3D{m_ambient[0] / 255.0f, m_ambient[1] / 255.0f, m_ambient[2] / 255.0f});
+	m_shader->sendUniform("LightAmbient", Coord3D<>{m_ambient[0] / 255.0f, m_ambient[1] / 255.0f, m_ambient[2] / 255.0f});
 
 	for(unsigned a = 0; a < m_lights.size(); a++)
 	{
-		Coord3D lp = m_lights[a].transform->getPosition();
+		Coord3D<> lp = m_lights[a].transform->getPosition();
 		glm::vec4 pos(lp.x, lp.y, lp.z, 1.0f);
 		glm::vec4 dir{m_lights[a].direction.x,m_lights[a].direction.y ,m_lights[a].direction.z ,1.0f};
 

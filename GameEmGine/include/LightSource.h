@@ -19,7 +19,7 @@ struct LightInfo
 	Transformer *transform = new Transformer;
 	Model* parent;
 	ColourRGBA diffuse, specular;
-	Coord3D position, direction = {0,-1,0};
+	Coord3D<> position, direction = {0,-1,0};
 	float angleConstraint = 45,
 		specularExponent = 100,
 		attenuationConst = .1f,
@@ -34,11 +34,11 @@ public:
 
 	static void setLightType(LIGHT_TYPE type, unsigned m_index);
 
-	static void setPosition(Coord3D pos, unsigned m_index);
+	static void translate(Coord3D<> pos, unsigned m_index);
 
 	static void setSceneAmbient(ColourRGBA ambi);
 
-	static void setDirection(Coord3D dir, int m_index);
+	static void setDirection(Coord3D<> dir, int m_index);
 
 	static void setDiffuse(ColourRGBA diff, unsigned m_index);
 
