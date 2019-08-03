@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <fstream>
+#include <unordered_map>
 #include "Utilities.h"
 class Shader
 {
@@ -10,9 +11,7 @@ public:
 	Shader();
 	Shader(Shader& shad);
 	~Shader();
-
-	void refresh();
-
+	
 	//compiles and links shaders
 	void create(const std::string& vertFilePath, const std::string& fragFilePath);
 	void create(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath);
@@ -37,6 +36,8 @@ public:
 	void sendUniform(const char* uniform, glm::mat4 val);
 	void sendUniform(const char* uniform, glm::vec4 val);
 	void sendUniform(const char* uniform, Coord3D<> val);
+	void sendUniform(const char* uniform, float x, float y, float z);
+	void sendUniform(const char* uniform, float x, float y, float z,float w);
 	void sendUniform(const char* uniform, float val);
 	void sendUniform(const char* uniform, int val);
 
@@ -45,6 +46,7 @@ public:
 	//disables shader program 
 	static void disable();
 
+	static void refresh();
 private:
 	enum Shaders
 	{
@@ -66,6 +68,7 @@ private:
 		m_fragID = 0,
 		m_geomID = 0;
 
+	static std::unordered_map<GLuint,Shader*> m_shaders;
 	//	static GLuint *m_programs, *m_attribs, m_num;
 
 };

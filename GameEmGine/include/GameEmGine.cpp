@@ -202,7 +202,7 @@ void GameEmGine::run()
 
 	while(!glfwWindowShouldClose(m_window->getWindow()) && !exitGame)//update loop
 	{
-		glClearColor((float)m_colour.colorR / 255, (float)m_colour.colorG / 255, (float)m_colour.colorB / 255, (float)m_colour.colorA / 255);//BG colour
+		glClearColor((float)m_colour.r / 255, (float)m_colour.g / 255, (float)m_colour.b / 255, (float)m_colour.a / 255);//BG colour
 
 		InputManager::controllerUpdate();
 		update();
@@ -400,12 +400,22 @@ void GameEmGine::addModel(Model * model)
 	//m_models.back()->addFrameBuffer(m_mainBuffer);
 }
 
+void GameEmGine::addText(Text* text)
+{
+	addModel(reclass(Model*, text));
+}
+
 void GameEmGine::removeModel(Model * model)
 {
 	if(model)
 		for(unsigned a = 0; a < m_models.size(); a++)
 			if(m_models[a] == model)
 				m_models.erase(m_models.begin() + a);
+}
+
+void GameEmGine::removeText(Text* text)
+{
+	removeModel(reclass(Model*, text));
 }
 
 void GameEmGine::addCamera(Camera * cam)

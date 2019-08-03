@@ -85,14 +85,11 @@ public:
 
 	static void addModel(Model* model);
 
-	static void removeModel(Model * model);
+	static void addText(Text* text);
 
-	/*does not work!!!!*/
-	void addModelBatch(const char *model);
+	static void removeModel(Model* model);
 
-
-	void removeSprite(int m_index);
-
+	static void removeText(Text* text);
 
 	static void addCamera(Camera* camera);
 

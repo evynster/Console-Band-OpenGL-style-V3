@@ -82,6 +82,9 @@
     <ClInclude Include="Text.h">
       <Filter>EmGine\Text Render</Filter>
     </ClInclude>
+    <ClInclude Include="Character.h">
+      <Filter>EmGine\Text Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fileIO.cpp">
@@ -148,6 +151,9 @@
       <Filter>EmGine\Shader Stuff</Filter>
     </ClCompile>
     <ClCompile Include="Text.cpp">
+      <Filter>EmGine\Text Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Character.cpp">
       <Filter>EmGine\Text Render</Filter>
     </ClCompile>
   </ItemGroup>

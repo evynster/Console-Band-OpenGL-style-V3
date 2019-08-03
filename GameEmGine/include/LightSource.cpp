@@ -22,7 +22,7 @@ void LightSource::setLightType(LIGHT_TYPE type, unsigned index)
 		m_shadows[index].resize(6, new FrameBuffer("Shadow", 0));
 		for(int a = 0; a < 6; a++)
 		{
-			
+
 			m_shadows[index][a]->initDepthTexture(500, 500);
 
 			if(!m_shadows[index][a]->checkFBO())
@@ -117,7 +117,7 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 	{
 
 		glViewport(0, 0, w, h);
-		
+
 
 		static Camera cam;
 		cam.init({(float)w,(float)h,500}, ORTHOGRAPHIC);
@@ -126,14 +126,14 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 
 		for(int a = 0; a < 6; a++)
 		{
-		//	m_shadows[index][a]->resizeColour(0, w, h);
+			//	m_shadows[index][a]->resizeColour(0, w, h);
 			m_shadows[index][a]->resizeDepth(w, h);
 
 			m_shadows[index][a]->enable();
 			//m_shader->enable();
-			Shader* shad = ResourceManager::getShader("Shaders/ShadowDepth.vtsh","Shaders/ShadowDepth.fmsh");
+			Shader* shad = ResourceManager::getShader("Shaders/ShadowDepth.vtsh", "Shaders/ShadowDepth.fmsh");
 			shad->enable();
-			shad->sendUniform("lightSpaceMatrix", m_cam->getProjectionMatrix() *  glm::lookAt(m_lights[index].position.toVec3(),
+			shad->sendUniform("lightSpaceMatrix", m_cam->getProjectionMatrix() * glm::lookAt(m_lights[index].position.toVec3(),
 				glm::vec3(0.0f, 0.0f, 0.0f),
 				glm::vec3(0.0f, 1.0f, 0.0f)));
 
@@ -165,7 +165,7 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 			}
 
 			cam.render(shad, models);
-			
+
 			//Shader* shad = ResourceManager::getShader("Shaders/ShadowShader.vtsh", "Shaders/ShadowShader.frag");
 			//shad->enable();
 			//shad->sendUniform("depthMap", 0);
@@ -174,7 +174,7 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 			//FrameBuffer::drawFullScreenQuad();
 			//glActiveTexture(GL_TEXTURE0);
 			//glBindTexture(GL_TEXTURE_2D, GL_NONE);
-		FrameBuffer::disable();
+			FrameBuffer::disable();
 		}
 
 		//m_shader->disable();
@@ -201,20 +201,10 @@ void LightSource::update()
 		glm::vec4 pos(lp.x, lp.y, lp.z, 1.0f);
 		glm::vec4 dir{m_lights[a].direction.x,m_lights[a].direction.y ,m_lights[a].direction.z ,1.0f};
 
-		if(m_lights[a].parent)
-		{
-			Transformer* trans = &m_lights[a].parent->getTransformer();
-			glm::vec3 pos2(trans->getPosition().x, trans->getPosition().y, trans->getPosition().z);
-			glm::mat4 forward = glm::lookAt(pos2, pos2 + glm::vec3(cos(trans->getRotation().x), tan(trans->getRotation().y), sin(trans->getRotation().z)),
-				{0,1,0});
-			pos = m_lights[a].parent->getTransformer().getTransformation() * m_lights[a].transform->getTransformation() * forward * glm::vec4(pos2, 1.f);
-			// dir = forward * dir;
-			//m_lights[a].direction = {tmp.x,tmp.y,tmp.z};
-		}
-		else
-		{
-			pos = m_lights[a].transform->getTransformation() * pos;
-		}
+
+
+		pos = m_lights[a].transform->getTransformation() * pos;
+
 
 
 		pos = m_cam->getCameraMatrix() * pos;

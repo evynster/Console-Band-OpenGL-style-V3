@@ -10,8 +10,8 @@ class Scene
 public:
 	virtual ~Scene() { parent = nullptr; }
 
-	//shader initialization
-	virtual void shaderInit() {}
+	////shader initialization
+	//virtual void shaderInit() = 0;
 
 	//updates within game loop
 	virtual void update(double dt) = 0;

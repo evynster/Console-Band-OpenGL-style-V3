@@ -6,6 +6,13 @@
 #include "Quat.h"
 #include "Utilities.h"
 
+enum CLASS_TYPE
+{
+	TRANSFORMER,
+	MODEL,
+	TEXT
+};
+
 class Transformer
 {
 public:
@@ -49,15 +56,17 @@ public:
 
 	void resetUpdated();
 
-	void enableDirCam(bool enable);
-
 	bool isUpdated();
 	bool isScaleUpdated();
 	bool isRotationUpdated();
 	bool isTranslatinUpdated();
 
-	void addChild(Transformer* child);
+	virtual void addChild(Transformer* child);
+	void removeChild(Transformer* child);
+	virtual Transformer* getChild(uint index);
+	virtual std::vector<Transformer*>& getChildren();
 
+	CLASS_TYPE getType();
 private:
 
 	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
@@ -67,12 +76,14 @@ private:
 		m_rotate,
 		m_scale;
 
-	std::vector<Transformer* >m_child;
+	std::vector<Transformer* >m_children;
 	Transformer* m_parent;
 	bool  m_updatedRot = true,
 		m_updatedTrans = true,
 		m_updatedScale = true,
 		m_fps;
 
+protected:
+	CLASS_TYPE m_type;
 };
 

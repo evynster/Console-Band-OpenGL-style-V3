@@ -1,5 +1,6 @@
 #include "Shader.h"
 
+std::unordered_map<GLuint,Shader*> Shader::m_shaders;
 //GLuint *Shader::m_programs = new GLuint[0], *Shader::m_attribs = new GLuint[0], Shader::m_num;
 
 Shader::Shader():m_vtsh(""), m_vtPath(""), m_fmPath(""), m_attribNum(0),
@@ -18,7 +19,8 @@ Shader::~Shader()
 
 void Shader::refresh()
 {
-	create(m_vtPath, m_fmPath);
+	for(auto& a : m_shaders)
+		a.second->create(a.second->m_vtPath, a.second->m_fmPath);
 }
 
 void Shader::create(const std::string& vertFilePath, const std::string& fragFilePath)
@@ -201,6 +203,8 @@ void Shader::linkShaders()
 
 
 	m_vertID = m_fragID = 0;
+
+	m_shaders[m_programID]=this;
 }
 
 void Shader::addAtribute(const std::string attributeName, short m_index)
@@ -225,10 +229,10 @@ GLint Shader::getUniformLocation(const char* uniform)
 	return uni;
 }
 
-void Shader::sendUniform(const char * uniform, glm::mat4 val)
+void Shader::sendUniform(const char* uniform, glm::mat4 val)
 {
 	GLint uni = getUniformLocation(uniform);
-	glUniformMatrix4fv(uni,1,false, &val[0][0]);
+	glUniformMatrix4fv(uni, 1, false, &val[0][0]);
 }
 
 void Shader::sendUniform(const char* uniform, glm::vec4 val)
@@ -240,7 +244,19 @@ void Shader::sendUniform(const char* uniform, glm::vec4 val)
 void Shader::sendUniform(const char* uniform, Coord3D<> val)
 {
 	GLint uni = getUniformLocation(uniform);
-	glUniform3f(uni, val.x, val.y, val.z);
+	glUniform3fv(uni, 1, &val.x);
+}
+
+void Shader::sendUniform(const char* uniform, float x, float y, float z)
+{
+	GLint uni = getUniformLocation(uniform);
+	glUniform3f(uni, x, y, z);
+}
+
+void Shader::sendUniform(const char* uniform, float x, float y, float z, float w)
+{
+	GLint uni = getUniformLocation(uniform);
+	glUniform4f(uni, x, y, z, w);
 }
 
 void Shader::sendUniform(const char* uniform, float val)

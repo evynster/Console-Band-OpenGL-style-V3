@@ -4,9 +4,9 @@
 #include <glm/common.hpp>
 #include <string>
 
-#define reclass(a_class,a_val) *(a_class*)&(a_val)
+#define reclass(a_class,a_val) (*(a_class*)&(a_val))
 #define uint unsigned int
-template<class T=float>
+template<class T = float>
 struct Coord2D
 {
 	T x = 0, y = 0;
@@ -395,54 +395,69 @@ struct vboInfo3D
 
 struct ColourRGBA
 {
-	GLubyte colorR, colorG, colorB, colorA;
+	GLubyte r, g, b, a;
 
-	ColourRGBA():colorR((GLubyte)255), colorG((GLubyte)255), colorB((GLubyte)255), colorA((GLubyte)255)
+	ColourRGBA():r((GLubyte)255), g((GLubyte)255), b((GLubyte)255), a((GLubyte)255)
 	{}
 
-	ColourRGBA(GLubyte r, GLubyte g, GLubyte b, GLubyte a = (GLubyte)255):colorR(r), colorG(g), colorB(b), colorA(a)
+	ColourRGBA(GLubyte a_r, GLubyte a_g, GLubyte a_b, GLubyte a_a = (GLubyte)255):r(a_r), g(a_g), b(a_b), a(a_a)
 	{}
 
 	void set(ColourRGBA rgba)
 	{
 		set(
-			rgba.colorR,
-			rgba.colorG,
-			rgba.colorB,
-			rgba.colorA);
+			rgba.r,
+			rgba.g,
+			rgba.b,
+			rgba.a);
 	}
 
-	void set(GLubyte r, GLubyte g, GLubyte b)
+	void set(GLubyte a_r, GLubyte a_g, GLubyte a_b)
 	{
-		this[0][0] = r;
-		this[0][1] = g;
-		this[0][2] = b;
+		this[0][0] = a_r;
+		this[0][1] = a_g;
+		this[0][2] = a_b;
 	}
 
-	void set(GLubyte r, GLubyte g, GLubyte b, GLubyte a)
+	void set(GLubyte a_r, GLubyte a_g, GLubyte a_b, GLubyte a_a)
 	{
-		this[0][0] = r;
-		this[0][1] = g;
-		this[0][2] = b;
-		this[0][3] = a;
+		this[0][0] = a_r;
+		this[0][1] = a_g;
+		this[0][2] = a_b;
+		this[0][3] = a_a;
+	}
+	
+	void set(float a_r, float a_g, float a_b)
+	{
+		this[0][0] = (GLubyte)a_r * 255;
+		this[0][1] = (GLubyte)a_g * 255;
+		this[0][2] = (GLubyte)a_b * 255;
+	}
+
+	void set(float a_r, float a_g, float a_b, float a_a)
+	{
+		this[0][0] = (GLubyte)a_r * 255;
+		this[0][1] = (GLubyte)a_g * 255;
+		this[0][2] = (GLubyte)a_b * 255;
+		this[0][3] = (GLubyte)a_a * 255;
 	}
 
 	ColourRGBA operator+(ColourRGBA rgba)
 	{
 		return ColourRGBA{
-			GLubyte(colorR + rgba[0]),
-			GLubyte(colorG + rgba[1]),
-			GLubyte(colorB + rgba[2]),
-			GLubyte(colorA + rgba[3])};
+			GLubyte(r + rgba[0]),
+			GLubyte(g + rgba[1]),
+			GLubyte(b + rgba[2]),
+			GLubyte(a + rgba[3])};
 	}
 
 	ColourRGBA operator*(float rgba)
 	{
 		return ColourRGBA{
-			GLubyte(colorR * rgba),
-			GLubyte(colorG * rgba),
-			GLubyte(colorB * rgba),
-			GLubyte(colorA * rgba)};
+			GLubyte(r * rgba),
+			GLubyte(g * rgba),
+			GLubyte(b * rgba),
+			GLubyte(a * rgba)};
 	}
 
 	friend ColourRGBA operator*(float rgba, ColourRGBA colour)
@@ -456,10 +471,10 @@ struct ColourRGBA
 	ColourRGBA operator*(ColourRGBA rgba)
 	{
 		return ColourRGBA{
-			GLubyte(colorR * (float)rgba.colorR / 255),
-			GLubyte(colorG * (float)rgba.colorG / 255),
-			GLubyte(colorB * (float)rgba.colorB / 255),
-			GLubyte(colorA * (float)rgba.colorA / 255)};
+			GLubyte(r * (float)rgba.r / 255),
+			GLubyte(g * (float)rgba.g / 255),
+			GLubyte(b * (float)rgba.b / 255),
+			GLubyte(a * (float)rgba.a / 255)};
 	}
 
 	void operator*=(ColourRGBA rgba)
@@ -473,13 +488,13 @@ struct ColourRGBA
 		switch(m_index)
 		{
 		case 0:
-			return static_cast<GLubyte&>(colorR);
+			return static_cast<GLubyte&>(r);
 		case 1:
-			return static_cast<GLubyte&>(colorG);
+			return static_cast<GLubyte&>(g);
 		case 2:
-			return static_cast<GLubyte&>(colorB);
+			return static_cast<GLubyte&>(b);
 		case 3:
-			return static_cast<GLubyte&>(colorA);
+			return static_cast<GLubyte&>(a);
 		}
 		return *error;
 	}
@@ -545,10 +560,10 @@ struct Vertex2D
 	//uses the 0-255 representation instead of 0-1
 	void setColour(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255)
 	{
-		colour.colorR = r;
-		colour.colorG = g;
-		colour.colorB = b;
-		colour.colorA = a;
+		colour.r = r;
+		colour.g = g;
+		colour.b = b;
+		colour.a = a;
 	}
 	//sets uv
 	void setUV(float u, float v)
@@ -560,7 +575,7 @@ struct Vertex2D
 	void print()
 	{
 		printf("Coord2D: (%f, %f)\n", coord.x, coord.y);
-		printf("Colour : (%d, %d, %d, %d)\n", colour.colorR, colour.colorG, colour.colorB, colour.colorA);
+		printf("Colour : (%d, %d, %d, %d)\n", colour.r, colour.g, colour.b, colour.a);
 		printf("UV     : (%f, %f)\n\n", uv.uv_u, uv.uv_v);
 	}
 };
@@ -580,10 +595,10 @@ struct Vertex3D
 	//uses the 0-255 representation instead of 0-1
 	void setColour(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255)
 	{
-		colour.colorR = r;
-		colour.colorG = g;
-		colour.colorB = b;
-		colour.colorA = a;
+		colour.r = r;
+		colour.g = g;
+		colour.b = b;
+		colour.a = a;
 	}
 	//sets uv
 	void setUV(float u, float v)
@@ -602,7 +617,7 @@ struct Vertex3D
 	void print()
 	{
 		printf("Coord3D: (%f, %f, %f)\n", coord.x, coord.y, coord.z);
-		printf("Colour : (%d, %d, %d, %d)\n", colour.colorR, colour.colorG, colour.colorB, colour.colorA);
+		printf("Colour : (%d, %d, %d, %d)\n", colour.r, colour.g, colour.b, colour.a);
 		printf("UV     : (%f, %f)\n\n", uv.uv_u, uv.uv_v);
 	}
 };

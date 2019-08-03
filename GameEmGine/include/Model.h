@@ -15,7 +15,7 @@
 
 class Camera;
 
-class Model
+class Model: public Transformer
 {
 public:
 	Model();
@@ -35,12 +35,6 @@ public:
 
 
 	void render(Shader& shader, Camera* cam);
-
-	Transformer& getTransformer();
-
-	void removeChild(Model* child);
-
-	void addChild(Model* child);
 
 	void setColour(float r, float g, float b, float a);
 
@@ -84,6 +78,7 @@ public:
 	bool isTransparent();
 	void print();
 
+
 private:
 	void boundingBoxInit();
 	void drawBoundingBox();
@@ -99,7 +94,7 @@ private:
 	Camera* m_camera;
 
 	GLuint m_BBVaoID = 0, m_BBVboID = 0;
-	Transformer m_transform;
+	//Transformer m_transform;
 
 	Coord3D<>
 		m_topLeftBack,
@@ -120,8 +115,8 @@ private:
 	bool m_enableBB = false;
 
 	//std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
-	std::vector<Model*> m_children;
-	Model* m_parent;
+	//std::vector<Model*> m_children;
+	//Model* m_parent;
 	//std::vector <Texture2D> loadedTextures;
 	//std::string dir;
 

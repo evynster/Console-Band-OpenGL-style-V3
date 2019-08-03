@@ -157,7 +157,7 @@ void Mesh::loadMaterials(const char* path)
 				float a[3];
 				sscanf_s(str, "Ka %f %f %f", &a[0], &a[1], &a[2]);
 				for(auto& b : m_textures.back().second)
-					b.colour.colorA = (GLubyte)(255 * a[0] * a[1] * a[2]);
+					b.colour.a = (GLubyte)(255 * a[0] * a[1] * a[2]);
 			}
 			else if(strstr(str, "Kd"))
 			{
@@ -165,7 +165,7 @@ void Mesh::loadMaterials(const char* path)
 				sscanf_s(str, "Kd %f %f %f", &r, &g, &b);
 				for(auto& a : m_textures.back().second)
 					if(a.type == TEXTURE_TYPE::DIFFUSE)
-						a.colour.set((GLubyte)r * 255, (GLubyte)g * 255, (GLubyte)b * 255);
+						a.colour.set(r , g, b);
 			}
 			else if(strstr(str, "Ks"))
 			{

@@ -8,6 +8,7 @@
 #include "Quat.h"
 #include "Shader.h"
 #include "Model.h"
+#include "Text.h"
 
 class Model;
 

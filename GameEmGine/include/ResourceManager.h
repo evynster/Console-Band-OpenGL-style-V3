@@ -6,15 +6,16 @@
 #include "Texture.h"
 #include "ImageLoader.h"
 #include "Shader.h"
-#include "Text.h"
+#include "Character.h"
+
 
 struct CharacterCache
 {
 	//creates a texture
-	static Character& getCharacter(const char);
+	static Character& getCharacter(const char,const char*);
 
 private:
-	static std::map<char, Character> m_characters;
+	static std::map<std::pair<char,std::string>, Character> m_characters;
 };
 
 struct Texture2DCache
@@ -49,10 +50,10 @@ private:
 class ResourceManager
 {
 public:
-	static Texture2D getTexture2D(const char*);
-	static Texture3D getTexture3D(const char*);
+	static Texture2D& getTexture2D(const char*);
+	static Texture3D& getTexture3D(const char*);
 	static Shader* getShader(const char*, const char*);
-	static Character* getCharacter(const char);
+	static Character& getCharacter(char, const char*);
 
 	//static GLSLCompiler& createShader(const char*, const char*);
 

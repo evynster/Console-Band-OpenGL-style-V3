@@ -14,17 +14,25 @@ public:
 		model1 = new Model("Models/SmallRobot.obj","Box1");
 		model2 = new Model(*model1,  "Box2");
 
-		GameEmGine::getMainCamera()->getTransformer().enableFPS();
-		model1->getTransformer().enableFPS();
+		
 
-		model1->getTransformer().setScale(2);
-		model2->getTransformer().setScale(1);
+		testText.setText("MAybe this Works?");
+		testText.textSize(3);
+		ColourRGBA col; col.set(1.f,0,0);
+		testText.textColour(col);
+
+		GameEmGine::getMainCamera()->enableFPS();
+		model1->enableFPS();
+
+		model1->setScale(2);
+		model2->setScale(1);
 
 		model1->enableBoundingBox(true);
 		model2->enableBoundingBox(true);
 
 		GameEmGine::addModel(model1);
 		GameEmGine::addModel(model2);
+		GameEmGine::addText(&testText);
 
 		keyPressed =
 			[&](int key, int mod)->void
@@ -34,6 +42,9 @@ public:
 				GameEmGine::getMainCamera()->getTransformer().reset();
 				GameEmGine::setCameraPosition({0,0,-5});
 			}
+
+			if(key == GLFW_KEY_F5)
+				Shader::refresh();
 
 			if(key == GLFW_KEY_TAB)
 				tab = !tab;			
@@ -113,27 +124,27 @@ public:
 		{
 			// Movement
 			if(moveLeft)
-				model1->getTransformer().translateBy({-.05f,0.f,0.f});
+				model1->translateBy({-.05f,0.f,0.f});
 			if(moveRight)
-				model1->getTransformer().translateBy({.05f,0,0});
+				model1->translateBy({.05f,0,0});
 			if(moveForward)
-				model1->getTransformer().translateBy({0,0,.05f});
+				model1->translateBy({0,0,.05f});
 			if(moveBack)
-				model1->getTransformer().translateBy({0,0,-.05f});
+				model1->translateBy({0,0,-.05f});
 			if(moveUp)
-				model1->getTransformer().translateBy({0,.05f,0});
+				model1->translateBy({0,.05f,0});
 			if(moveDown)
-				model1->getTransformer().translateBy({0,-.05f,0});
+				model1->translateBy({0,-.05f,0});
 
 			// Rotation
 			if(rotLeft)
-				model1->getTransformer().rotateBy({0,-5,0});
+				model1->rotateBy({0,-5,0});
 			if(rotRight)
-				model1->getTransformer().rotateBy({0,5,0});
+				model1->rotateBy({0,5,0});
 			if(rotUp)
-				model1->getTransformer().rotateBy({5,0,0});
+				model1->rotateBy({5,0,0});
 			if(rotDown)
-				model1->getTransformer().rotateBy({-5,0,0});
+				model1->rotateBy({-5,0,0});
 		}
 		else
 		{
@@ -173,7 +184,10 @@ public:
 private:
 
 	Model* model1, * model2;
+	Text testText;
 };
+
+
 
 int main()
 {

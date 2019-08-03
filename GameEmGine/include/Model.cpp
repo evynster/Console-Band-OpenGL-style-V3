@@ -3,16 +3,19 @@
 #include <ctime>
 
 Model::Model()
-{}
+{
+	m_type = MODEL;
+}
 
 Model::Model(Model& model, const char* tag):
-	m_transform(model.m_transform),
+	Transformer(model),
 	m_mesh(model.m_mesh),
 	m_colour(model.m_colour),
 	m_transBB(glm::mat4(1)),
 	m_render(model.m_render),
 	m_tag(tag)
 {
+	m_type = MODEL;
 	m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
 	float top = m_mesh.top.y,
@@ -39,6 +42,7 @@ Model::Model(Model& model, const char* tag):
 Model::Model(const char* path, const char* tag):
 	m_transBB(glm::mat4(1)), m_tag(tag)
 {
+	m_type = MODEL;
 
 	if(loadModel(path))
 	{
@@ -152,13 +156,13 @@ bool Model::collision3D(Model* box1, Model* box2)
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* rot1 = &box1->m_transform.getRotationMatrix(),
-		* rot2 = &box2->m_transform.getRotationMatrix();
+		* rot1 = &box1->getRotationMatrix(),
+		* rot2 = &box2->getRotationMatrix();
 
 	Coord3D<> AxisX1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisX, 1));
 	Coord3D<> AxisY1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisY, 1));
 	Coord3D<> AxisZ1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
-		 
+
 	Coord3D<> AxisX2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisX, 1));
 	Coord3D<> AxisY2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisY, 1));
 	Coord3D<> AxisZ2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
@@ -188,13 +192,13 @@ bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Mo
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* trans1 = &box1.m_transform.getRotationMatrix(),
-		* trans2 = &box2.m_transform.getRotationMatrix();
+		* trans1 = &box1.getRotationMatrix(),
+		* trans2 = &box2.getRotationMatrix();
 
 	Coord3D<> AxisX1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisX, 1));
 	Coord3D<> AxisY1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisY, 1));
 	Coord3D<> AxisZ1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
-		 
+
 	Coord3D<> AxisX2 = *(Coord3D<>*) & (*trans2 * glm::vec4(*(glm::vec3*) & AxisX, 1));
 	Coord3D<> AxisY2 = *(Coord3D<>*) & (*trans2 * glm::vec4(*(glm::vec3*) & AxisY, 1));
 	Coord3D<> AxisZ2 = *(Coord3D<>*) & (*trans2 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
@@ -204,7 +208,7 @@ bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Mo
 
 	return (fabs(dotProduct(RPos, plane)) >
 		(
-			fabs(dotProduct((AxisX1 * (box1.m_width/2)), plane)) +
+			fabs(dotProduct((AxisX1 * (box1.m_width / 2)), plane)) +
 			fabs(dotProduct((AxisY1 * (box1.m_height / 2)), plane)) +
 			fabs(dotProduct((AxisZ1 * (box1.m_depth / 2)), plane)) +
 
@@ -261,22 +265,12 @@ bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Mo
 
 void Model::render(Shader& shader, Camera* cam)
 {
-	float colour[4]{(float)m_colour.colorR / 255,(float)m_colour.colorG / 255,(float)m_colour.colorB / 255,(float)m_colour.colorA / 255};
+	float colour[4]{(float)m_colour.r / 255,(float)m_colour.g / 255,(float)m_colour.b / 255,(float)m_colour.a / 255};
 	m_camera = cam;
-	shader.enable();
 	m_shader = &shader;
 	glm::mat4 transformationMat(1);
-	glUniformMatrix4fv(shader.getUniformLocation("uModel"), 1, GL_FALSE, &((transformationMat = ([&]()->glm::mat4
-		{
-			glm::mat4 tmp(1);
-			Model* parent = m_parent;
-			while(parent)
-			{
-				tmp = parent->getTransformer().getTransformation() * tmp;
-				parent = parent->m_parent;
-			}
-			return tmp;
-		}() * m_transform.getTransformation()))[0][0]));
+	shader.enable();
+	glUniformMatrix4fv(shader.getUniformLocation("uModel"), 1, GL_FALSE, &(getTransformation()[0][0]));
 
 	glUniform4fv(shader.getUniformLocation("colourMod"), 1, colour);
 	shader.disable();
@@ -296,11 +290,11 @@ void Model::render(Shader& shader, Camera* cam)
 		if(m_enableBB)
 			drawBoundingBox();
 
-		m_transform.resetUpdated();
+		resetUpdated();
 
 		//render child meshes
-		for(auto& a : m_children)
-			a->render(shader, cam);
+		for(auto& a : getChildren())
+			reclass(Model*, a)->render(shader, cam);
 	}
 }
 
@@ -316,28 +310,6 @@ void Model::drawBoundingBox()
 	glBindVertexArray(0);
 
 	m_shaderBB->disable();
-}
-
-Transformer& Model::getTransformer()
-{
-	return m_transform;
-}
-
-void Model::removeChild(Model* child)
-{
-	if(child)
-	{
-		auto ref = std::find(m_children.begin(), m_children.end(), child);
-		if(ref != m_children.end())
-			m_children.erase(ref);
-	}
-}
-
-void Model::addChild(Model* child)
-{
-	m_children.push_back(child);
-	m_children.back()->m_parent = this;
-	//m_transform.addChild(&child->m_transform);
 }
 
 void Model::setColour(float r, float g, float b, float a)
@@ -414,8 +386,6 @@ void Model::boundingBoxUpdate()
 		m_shaderBB->disable();
 	}
 
-	static glm::mat4 tmpMat;
-
 	std::vector<glm::vec4> bounds =
 	{
 	{*(glm::vec3*) & m_mesh.right,1},
@@ -426,10 +396,9 @@ void Model::boundingBoxUpdate()
 	{*(glm::vec3*) & m_mesh.back,1}
 	};
 
-	tmpMat = m_parent ? m_parent->m_transform.getScaleMatrix() *
-		m_transform.getScaleMatrix() : m_transform.getScaleMatrix();
+
 	for(auto& a : bounds)
-		a = tmpMat * a;
+		a = getScaleMatrix() * a;
 
 
 	m_width = abs(bounds[0].x - bounds[1].x);
@@ -447,13 +416,11 @@ void Model::boundingBoxUpdate()
 	{*(glm::vec3*) & m_mesh.back,1}
 	};
 
-	tmpMat = m_parent ? m_parent->m_transform.getTransformation() *
-		m_transform.getTransformation() : m_transform.getTransformation();
-	
-	for(auto& a : bounds)
-		a = tmpMat * a;
 
-	m_center = 
+	for(auto& a : bounds)
+		a = getTransformation() * a;
+
+	m_center =
 		(Coord3D<>(
 			bounds[0].x + bounds[1].x,
 			bounds[2].y + bounds[3].y,
@@ -574,3 +541,4 @@ void Model::print()
 		"Center: (%f, %f, %f)\n"
 		, m_tag, m_width, m_height, m_depth, m_center.x, m_center.y, m_center.z);
 }
+

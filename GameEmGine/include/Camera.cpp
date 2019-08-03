@@ -133,13 +133,20 @@ void Camera::rotateBy(float angle, Coord3D<> direction)
 
 void Camera::render(Shader* shader, std::vector<Model*>& models, bool trans)
 {
+	Shader* shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh");
 	for(auto& a : models)
-		if(trans == a->isTransparent())
+		if(a->getType() == MODEL)
 		{
-			a->render(*shader, this);
+			if(trans == a->isTransparent())
+				a->render(*shader, this);
+		}
+		else if(a->getType() == TEXT)
+		{
+			Text* tmp=reclass(Text*, a);
+			if(trans == tmp->isTransparent())
+				tmp->render(*shader2, this);
 		}
 }
-
 
 Coord3D<> Camera::getPosition()
 {
