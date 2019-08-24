@@ -16,16 +16,13 @@ InputManager::m_keyAll,
 InputManager::m_mouseButtonAll;
 #pragma endregion
 
-InputManager::InputManager()
+void InputManager::init()
 {
 	glfwInit();
 	glfwSetKeyCallback(glfwGetCurrentContext(), keyUpdate);
 	glfwSetMouseButtonCallback(glfwGetCurrentContext(), mouseButtonUpdate);
 	//glfwSetJoystickCallback(xinputConnectionUpdate);
 }
-
-InputManager::~InputManager()
-{}
 
 void InputManager::mouseButtonPressCallback(std::function<void(int, int)>mouseButton)
 {
@@ -140,9 +137,9 @@ bool InputManager::isControllerConnected(unsigned int m_index)
 	return XinputManager::controllerConnected(m_index);
 }
 
-XinputDevice& InputManager::getController(unsigned int m_index)
+XinputDevice* InputManager::getController(unsigned int m_index)
 {
-	return *XinputManager::getController(m_index);
+	return XinputManager::getController(m_index);
 }
 
 void InputManager::controllerUpdate()

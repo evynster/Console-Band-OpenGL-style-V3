@@ -19,6 +19,7 @@
 #include "LightSource.h"
 #include "Text.h"
 
+#define Game GameEmGine
 
 class GameEmGine
 {
@@ -62,7 +63,7 @@ public:
 
 	static Camera * getMainCamera();
 
-	static void setCameraType(CAMERA_TYPE type);
+	static void setCameraType(CAMERA_TYPE type,ProjectionPeramiters* proj);
 
 	/*
 	moves the camera position in pixels
@@ -142,8 +143,7 @@ private:
 	static std::vector<Camera*> m_cameras;
 	static FrameBuffer* m_mainFrameBuffer,*m_postBuffer,*m_buffer1,*m_buffer2,*m_greyscaleBuffer,*m_outline,*m_shadowBuffer;
 	static std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
-	static InputManager *m_inputManager;
-	static std::vector<Model*> m_models;
+	static std::map<void*, Model*> m_models;
 	static Scene* m_mainScene;
 	static std::vector<Text*> m_text;
 

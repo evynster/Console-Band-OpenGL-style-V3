@@ -23,7 +23,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="menu.h">
+    <ClInclude Include="SongSelect.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Difficulty.h">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Song.h">
       <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>

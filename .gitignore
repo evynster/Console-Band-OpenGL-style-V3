@@ -27,8 +27,19 @@
 *.out
 *.app
 
+# Keep!
+!*.obj
+!*.lib
+
+# Other
 \.vs/
 
 *junck/
 
 Console Band \(OpenGL style\) V3/x64/
+
+*.iobj
+
+*.ipdb
+
+GameEmGine/lib/

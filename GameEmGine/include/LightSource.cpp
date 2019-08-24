@@ -19,7 +19,7 @@ void LightSource::setLightType(LIGHT_TYPE type, unsigned index)
 
 	if(type == LIGHT_TYPE::POINT)
 	{
-		m_shadows[index].resize(6, new FrameBuffer("Shadow", 0));
+		m_shadows[index].resize(6, new FrameBuffer(0, "Shadow"));
 		for(int a = 0; a < 6; a++)
 		{
 
@@ -40,7 +40,7 @@ void LightSource::setLightType(LIGHT_TYPE type, unsigned index)
 
 void LightSource::translate(Coord3D<> pos, unsigned m_index)
 {
-	m_lights[m_index].transform->translate(pos.x, pos.y, pos.z);
+	m_lights[m_index].translate(pos.x, pos.y, pos.z);
 }
 
 void LightSource::setDirection(Coord3D<> dir, int m_index)
@@ -83,9 +83,9 @@ void LightSource::setAttenuationQuadratic(float attenQuad, unsigned m_index)
 	m_lights[m_index].attenuationQuadratic = attenQuad;
 }
 
-void LightSource::setParent(Model* parent, unsigned m_index)
+void LightSource::setParent(Transformer* parent, unsigned index)
 {
-	m_lights[m_index].parent = parent;
+	parent->addChild(&m_lights[index]);
 }
 
 void LightSource::setCamera(Camera* cam)
@@ -102,7 +102,12 @@ void LightSource::setLightAmount(unsigned size)
 {
 	m_size = size > 0 ? size : 0;
 	m_lights.resize(m_size);
-	m_shadows.resize(m_size, std::vector<FrameBuffer*>(0, new FrameBuffer("shadow", 0)));
+	m_shadows.resize(m_size, std::vector<FrameBuffer*>(0, new FrameBuffer(0, "shadow")));
+}
+
+void LightSource::enableLight(int index, bool enable)
+{
+	m_lights[index].enable = enable;
 }
 
 unsigned LightSource::size()
@@ -110,7 +115,7 @@ unsigned LightSource::size()
 	return m_size;
 }
 
-std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std::vector<Model*>& models, unsigned index)
+std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std::map<void*, Model*>& models, unsigned index)
 {
 	models;
 	if(m_lights[index].type == LIGHT_TYPE::POINT)
@@ -122,7 +127,7 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 		static Camera cam;
 		cam.init({(float)w,(float)h,500}, ORTHOGRAPHIC);
 
-		cam.translate(m_lights[index].transform->getPosition());
+		cam.translate(m_lights[index].getPosition());
 
 		for(int a = 0; a < 6; a++)
 		{
@@ -164,6 +169,8 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 				break;
 			}
 
+
+
 			cam.render(shad, models);
 
 			//Shader* shad = ResourceManager::getShader("Shaders/ShadowShader.vtsh", "Shaders/ShadowShader.frag");
@@ -190,24 +197,33 @@ LightInfo LightSource::getLightInfo(unsigned index)
 
 void LightSource::update()
 {
-	char buff[90];
+	char buff[30];
 	m_shader->enable();
 	m_shader->sendUniform("LightAmount", (int)m_lights.size());
 	m_shader->sendUniform("LightAmbient", Coord3D<>{m_ambient[0] / 255.0f, m_ambient[1] / 255.0f, m_ambient[2] / 255.0f});
 
 	for(unsigned a = 0; a < m_lights.size(); a++)
 	{
-		Coord3D<> lp = m_lights[a].transform->getPosition();
+		sprintf_s(buff, "LightEnable[%d]", a);
+		if(!m_lights[a].enable)
+		{
+			m_shader->sendUniform(buff, false);
+			continue;
+		}
+		m_shader->sendUniform(buff, false);
+
+		Coord3D<> lp = m_lights[a].getPosition();
 		glm::vec4 pos(lp.x, lp.y, lp.z, 1.0f);
-		glm::vec4 dir{m_lights[a].direction.x,m_lights[a].direction.y ,m_lights[a].direction.z ,1.0f};
+		glm::vec4 dir{reclass(glm::vec3,m_lights[a].direction),1.0f};
 
 
-
-		pos = m_lights[a].transform->getTransformation() * pos;
-
-
-
+		pos = m_lights[a].getTranslationMatrix() * pos;
 		pos = m_cam->getCameraMatrix() * pos;
+
+		dir = m_lights[a].getRotationMatrix() * dir;
+		dir = glm::normalize(dir);
+		dir = m_cam->getTransformer().getRotationMatrix() * dir;
+		dir = glm::normalize(dir);
 
 		sprintf_s(buff, "LightType[%d]", a);
 		glUniform1i(m_shader->getUniformLocation(buff), (int)m_lights[a].type);

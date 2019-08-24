@@ -5,7 +5,28 @@
 #include <string>
 
 #define reclass(a_class,a_val) (*(a_class*)&(a_val))
-#define uint unsigned int
+//#define unsigned int unsigned int
+//#define ushort unsigned short
+
+inline char* cDir(char* dir)
+{
+	char* tmp;
+	if(strlen(dir) > 0)
+		while(bool(tmp = strchr(dir, '\\')))
+		{
+			tmp[0] = '/';
+		}
+
+	if(strlen(dir) > 1)
+		while(bool(tmp = strstr(dir, "//")))
+		{
+			memmove_s(tmp, strlen(tmp), tmp + 1, strlen(tmp + 1));
+			dir[strlen(dir) - 1] = 0;
+		}
+
+	return dir;
+}
+
 template<class T = float>
 struct Coord2D
 {
@@ -124,7 +145,7 @@ struct Coord3D
 		return glm::vec3(x, y, z);
 	}
 
-	static T distance(Coord3D v1, Coord3D v2)
+	static T distance(Coord3D<T> v1, Coord3D<T> v2)
 	{
 		v1 -= v2;
 		return v1.distance();
@@ -140,12 +161,12 @@ struct Coord3D
 		return (x * x + y * y + z * z);
 	}
 
-	static T dotProduct(Coord3D a, Coord3D b)
+	static T dotProduct(Coord3D<T> a, Coord3D<T> b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
 
-	static Coord3D crossProduct(Coord3D a, Coord3D b)
+	static Coord3D<T> crossProduct(Coord3D<T> a, Coord3D<T> b)
 	{
 		return
 		{
@@ -154,13 +175,13 @@ struct Coord3D
 			a.x * b.y - a.y * b.x
 		};
 	}
-	friend static Coord3D abs(Coord3D val)
+	friend static Coord3D<T> abs(Coord3D<T> val)
 	{
 		return {sqrtf(val.x * val.x),sqrtf(val.y * val.y),sqrtf(val.z * val.z)};
 	}
 
 
-	Coord3D normal()
+	Coord3D<T> normal()
 	{
 		return *this / distance();
 	}
@@ -208,62 +229,62 @@ struct Coord3D
 		return *error;
 	}
 
-	Coord3D operator+(Coord3D coord)
+	Coord3D<T> operator+(Coord3D<T> coord)
 	{
-		return {x + coord.x, y + coord.y, z + coord.z};
+		return {T(x + coord.x), T(y + coord.y), T(z + coord.z)};
 	}
 
-	Coord3D operator-(Coord3D coord)
+	Coord3D<T> operator-(Coord3D<T> coord)
 	{
-		return {x - coord.x, y - coord.y, z - coord.z};
+		return {T(x - coord.x), T(y - coord.y), T(z - coord.z)};
 	}
 
-	friend Coord3D operator*(T scaler, Coord3D coord)
+	friend Coord3D<T> operator*(T scaler, Coord3D<T> coord)
 	{
 		return {scaler * coord.x, scaler * coord.y, scaler * coord.z};
 	}
 
-	Coord3D operator*(Coord3D coord)
+	Coord3D<T> operator*(Coord3D<T> coord)
 	{
 		return {x * coord.x, y * coord.y, z * coord.z};
 	}
 
-	Coord3D operator*(T coord)
+	Coord3D<T> operator*(T coord)
 	{
 		return {x * coord, y * coord, z * coord};
 	}
 
-	Coord3D operator/(Coord3D coord)
+	Coord3D<T> operator/(Coord3D<T> coord)
 	{
 		return {x / coord.x,y / coord.y,z / coord.z};
 	}
 
-	Coord3D operator/(T coord)
+	Coord3D<T> operator/(T coord)
 	{
 		return {x / coord,y / coord,z / coord};
 	}
 
-	Coord3D& operator-() {
-		static Coord3D tmp;
+	Coord3D<T>& operator-() {
+		static Coord3D<T> tmp;
 		tmp = *this * -1;
 		return tmp;
 	}
 
-	void operator-=(Coord3D coord)
+	void operator-=(Coord3D<T> coord)
 	{
 		x -= coord.x;
 		y -= coord.y;
 		z -= coord.z;
 	}
 
-	void operator+=(Coord3D coord)
+	void operator+=(Coord3D<T> coord)
 	{
 		x += coord.x;
 		y += coord.y;
 		z += coord.z;
 	}
 
-	void operator*=(Coord3D coord)
+	void operator*=(Coord3D<T> coord)
 	{
 		x *= coord.x;
 		y *= coord.y;
@@ -277,7 +298,7 @@ struct Coord3D
 		z *= coord;
 	}
 
-	bool operator==(Coord3D coord)const
+	bool operator==(Coord3D<T> coord)const
 	{
 		return
 			x == coord.x &&
@@ -285,25 +306,25 @@ struct Coord3D
 			z == coord.z;
 	}
 
-	bool operator!=(Coord3D coord)const
+	bool operator!=(Coord3D<T> coord)const
 	{
 		return !(*this == coord);
 	}
 
-	bool operator>(Coord3D coord)
+	bool operator>(Coord3D<T> coord)
 	{
 		return this->distanceSquare() > coord.distanceSquare();
 	}
 
-	bool operator<=(Coord3D coord)
+	bool operator<=(Coord3D<T> coord)
 	{
 		return !(*this > coord);
 	}
-	bool operator<(Coord3D coord)
+	bool operator<(Coord3D<T> coord)
 	{
 		return this->distanceSquare() < coord.distanceSquare();
 	}
-	bool operator>=(Coord3D coord)
+	bool operator>=(Coord3D<T> coord)
 	{
 		return !(*this < coord);
 	}
@@ -429,17 +450,17 @@ struct ColourRGBA
 	
 	void set(float a_r, float a_g, float a_b)
 	{
-		this[0][0] = (GLubyte)a_r * 255;
-		this[0][1] = (GLubyte)a_g * 255;
-		this[0][2] = (GLubyte)a_b * 255;
+		this[0][0] = GLubyte(a_r * 255);
+		this[0][1] = GLubyte(a_g * 255);
+		this[0][2] = GLubyte(a_b * 255);
 	}
 
 	void set(float a_r, float a_g, float a_b, float a_a)
 	{
-		this[0][0] = (GLubyte)a_r * 255;
-		this[0][1] = (GLubyte)a_g * 255;
-		this[0][2] = (GLubyte)a_b * 255;
-		this[0][3] = (GLubyte)a_a * 255;
+		this[0][0] = GLubyte(a_r * 255);
+		this[0][1] = GLubyte(a_g * 255);
+		this[0][2] = GLubyte(a_b * 255);
+		this[0][3] = GLubyte(a_a * 255);
 	}
 
 	ColourRGBA operator+(ColourRGBA rgba)
@@ -460,6 +481,15 @@ struct ColourRGBA
 			GLubyte(a * rgba)};
 	}
 
+	ColourRGBA operator/(float rgba)
+	{
+		return ColourRGBA{
+			GLubyte(r / rgba),
+			GLubyte(g / rgba),
+			GLubyte(b / rgba),
+			GLubyte(a / rgba)};
+	}
+
 	friend ColourRGBA operator*(float rgba, ColourRGBA colour)
 	{
 		return ColourRGBA{
@@ -468,24 +498,46 @@ struct ColourRGBA
 			GLubyte(colour[2] * rgba),
 			GLubyte(colour[3] * rgba)};
 	}
+	friend ColourRGBA operator/(float rgba, ColourRGBA colour)
+	{
+		return ColourRGBA{
+			GLubyte(colour[0] / rgba),
+			GLubyte(colour[1] / rgba),
+			GLubyte(colour[2] / rgba),
+			GLubyte(colour[3] / rgba)};
+	}
 	ColourRGBA operator*(ColourRGBA rgba)
 	{
 		return ColourRGBA{
-			GLubyte(r * (float)rgba.r / 255),
-			GLubyte(g * (float)rgba.g / 255),
-			GLubyte(b * (float)rgba.b / 255),
-			GLubyte(a * (float)rgba.a / 255)};
+			GLubyte(r * rgba.r / 255.f),
+			GLubyte(g * rgba.g / 255.f),
+			GLubyte(b * rgba.b / 255.f),
+			GLubyte(a * rgba.a / 255.f)};
+	}
+	
+	ColourRGBA operator/(ColourRGBA rgba)
+	{
+		return ColourRGBA{
+			GLubyte(r / (float)rgba.r / 255.f),
+			GLubyte(g / (float)rgba.g / 255.f),
+			GLubyte(b / (float)rgba.b / 255.f),
+			GLubyte(a / (float)rgba.a / 255.f)};
 	}
 
 	void operator*=(ColourRGBA rgba)
 	{
 		*this = *this * rgba;
 	}
+	
+	void operator/=(ColourRGBA rgba)
+	{
+		*this = *this / rgba;
+	}
 
-	GLubyte& operator[](int m_index)
+	GLubyte& operator[](int index)
 	{
 		GLubyte* error = nullptr;
-		switch(m_index)
+		switch(index)
 		{
 		case 0:
 			return static_cast<GLubyte&>(r);

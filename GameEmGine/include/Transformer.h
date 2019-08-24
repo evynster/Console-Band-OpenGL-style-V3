@@ -37,19 +37,19 @@ public:
 
 	/*SET SCALE*/
 
-	void setScale(float scale);
-	void scaleBy(float scale);
-	void setScale(Coord3D<>);
-	void setScale(float x, float y, float z);
-	void scaleBy(float x, float y, float z);
+	virtual void scaleBy(float scale);
+	virtual void scaleBy(float x, float y, float z);
+	virtual void setScale(Coord3D<> scale);
+	virtual void setScale(float scale);
+	virtual void setScale(float x, float y, float z);
 
 	/*GETERS*/
 	Coord3D<>  getPosition();
 	Coord3D<> getRotation();
 	Coord3D<> getScale();
-	glm::mat4& getRotationMatrix();
-	glm::mat4& getScaleMatrix();
-	glm::mat4& getTranslationMatrix();
+	glm::mat4 getRotationMatrix();
+	glm::mat4 getScaleMatrix();
+	glm::mat4 getTranslationMatrix();
 
 	/*Gets a combination of the rotation, scale, and translation matricies*/
 	glm::mat4 getTransformation();
@@ -63,7 +63,7 @@ public:
 
 	virtual void addChild(Transformer* child);
 	void removeChild(Transformer* child);
-	virtual Transformer* getChild(uint index);
+	virtual Transformer* getChild(unsigned int index);
 	virtual std::vector<Transformer*>& getChildren();
 
 	CLASS_TYPE getType();

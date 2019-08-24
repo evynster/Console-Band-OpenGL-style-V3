@@ -9,12 +9,12 @@ class Shader
 {
 public:
 	Shader();
-	Shader(Shader& shad);
+	//Shader(Shader& shad);
 	~Shader();
 	
 	//compiles and links shaders
-	void create(const std::string& vertFilePath, const std::string& fragFilePath);
-	void create(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath);
+	bool create(const std::string& vertFilePath, const std::string& fragFilePath);
+	bool create(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath);
 
 	void createDefault();
 
@@ -23,7 +23,7 @@ public:
 	bool compileShaders(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath);
 
 	//links vertx and fragment shaders into a single shader
-	void linkShaders();
+	bool linkShaders();
 	/*
 	adds atributes to the shader
 	(ONLY USE if in-shader indexes are not specified)

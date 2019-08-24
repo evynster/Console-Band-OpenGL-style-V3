@@ -13,10 +13,9 @@ enum class LIGHT_TYPE
 	SPOTLIGHT
 };
 
-struct LightInfo
+struct LightInfo:public Transformer
 {
 	LIGHT_TYPE type;
-	Transformer *transform = new Transformer;
 	Model* parent;
 	ColourRGBA diffuse, specular;
 	Coord3D<> position, direction = {0,-1,0};
@@ -25,6 +24,7 @@ struct LightInfo
 		attenuationConst = .1f,
 		attenuationLinear = 0.01f,
 		attenuationQuadratic = 0.1f;
+	bool enable = true;
 
 };
 
@@ -52,7 +52,7 @@ public:
 
 	static void setAttenuationQuadratic(float attenQuad, unsigned m_index);
 
-	static void setParent(Model* parent, unsigned index);
+	static void setParent(Transformer* parent, unsigned index);
 
 	static void setCamera(Camera* cam);
 
@@ -60,9 +60,11 @@ public:
 
 	static void setLightAmount(unsigned size);
 
+	static void enableLight(int index, bool enable);
+
 	static unsigned size();
 
-	static std::vector<FrameBuffer*> shadowBuffers(unsigned w, unsigned h, std::vector<Model*>&, unsigned index);
+	static std::vector<FrameBuffer*> shadowBuffers(unsigned w, unsigned h, std::map<void*, Model*>&, unsigned index);
 
 	static LightInfo getLightInfo(unsigned index);
 
@@ -74,7 +76,7 @@ private:
 	static std::vector<std::vector<FrameBuffer*>>m_shadows;
 	static unsigned m_size;
 
-	static Shader *m_shader;
+	static Shader* m_shader;
 	static Camera* m_cam;
 	static LightInfo m_info;
 

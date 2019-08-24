@@ -29,6 +29,7 @@ public:
 
 	void unload();
 
+	void replaceTexture(int mesh,int index,GLuint tex);
 	GLuint getNumFaces(int m_index)const;
 	GLuint getNumVerticies(int m_index)const;
 
@@ -38,6 +39,9 @@ private:
 	void loadMaterials(const char * path);
 
 	void init();
+
+
+	std::vector<std::vector<GLuint>> m_replaceTex;
 
 	bool ani;
 

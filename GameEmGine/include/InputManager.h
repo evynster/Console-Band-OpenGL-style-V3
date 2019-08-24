@@ -54,63 +54,37 @@ class InputManager
 {
 public:
 
-	InputManager();
-	~InputManager();
+	//must be called to work
+	static void init();
 
-	void mouseButtonPressCallback(std::function<void(int, int)> mouseButton);
+	static void mouseButtonPressCallback(std::function<void(int, int)> mouseButton);
 
-	void mouseButtonReleaseCallback(std::function<void(int, int)> mouseButton);
-
-	void mouseButtonPressCallback(void mouseButton(int button, int mods));
-
-	void mouseButtonReleaseCallback(void mouseButton(int button, int mods));
-
-	void setMouseButtonAllCallback(void mouseButton(int state, int button, int mods));
+	static void mouseButtonReleaseCallback(std::function<void(int, int)> mouseButton);
 
 	static Coord2D<> getMouseCursorPosition();
 
-	void setKeyPressedCallback(std::function<void(int, int)> key);
-
-	void setKeyReleasedCallback(std::function<void(int, int)> key);
-
-	void setKeyAllCallback(std::function<void(int, int, int)> key);
-
-	void controllerConnectedCallback(std::function<void(int)> controllerConnection);
-
-	void controllerDisconnectedCallback(std::function<void(int)> controllerConnection);
-
-	void controllerAllConnectionCallback(std::function<void(int, int)> connected);
-
 	/*
-	Callback for whenever any key is pressed or held
+	Callback for whenever any key is pressed
 	*/
-	void setKeyPressedCallback(void key(int key, int mod));
+	static void setKeyPressedCallback(std::function<void(int, int)> key);
 
 	/*
 	Callback for whenever any key is released
 	*/
-	void setKeyReleasedCallback(void key(int key, int mod));
+	static void setKeyReleasedCallback(std::function<void(int, int)> key);
 
 	/*
-	Callback for any key pressed or released
+	Callback for any key pressed, held, or released
 	*/
-	void setKeyAllCallback(void key(int state, int key, int mod));
-	
-	//void controllerConnectedCallback(void controllerConnection(int controllerNum));
-	//
-	//void controllerDisconnectedCallback(void controllerConnection(int controllerNum));
-	//
-	//void controllerAllConnectionCallback(void controllerConnection(int controllerNum, int connected));
+	static void setKeyAllCallback(std::function<void(int, int, int)> key);
 
-	int controllersConnected();
+	static int controllersConnected();
 
-	bool isControllerConnected(unsigned int m_index);
+	static bool isControllerConnected(unsigned int m_index);
 
-	XinputDevice& getController(unsigned int m_index);
+	static XinputDevice* getController(unsigned int m_index);
 
 	static void controllerUpdate();
-
-	//template<class T> friend void operator=(T[], T*);
 
 private:
 	
@@ -118,7 +92,7 @@ private:
 	static void keyUpdate(GLFWwindow *, int key, int scancode, int action, int mods);
 	//static void xinputConnectionUpdate(int controller, int connected);
 
-	void setMouseButtonAllCallback(std::function<void(int, int, int)> mouseButton);
+	static void setMouseButtonAllCallback(std::function<void(int, int, int)> mouseButton);
 	
 	//static std::function<void(int)>
 	//	m_controllerConneced,
@@ -135,10 +109,3 @@ private:
 		m_mouseButtonAll;
 };
 
-//template<class T>
-// void operator=(T a[], T* b)
-//{
-//	int size = sizeof(a) / sizeof(T);
-//	for(int c = 0; c < size; c++)
-//		a[c] = b[c];
-//}

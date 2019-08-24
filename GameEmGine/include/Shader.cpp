@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-std::unordered_map<GLuint,Shader*> Shader::m_shaders;
+std::unordered_map<GLuint, Shader*> Shader::m_shaders;
 //GLuint *Shader::m_programs = new GLuint[0], *Shader::m_attribs = new GLuint[0], Shader::m_num;
 
 Shader::Shader():m_vtsh(""), m_vtPath(""), m_fmPath(""), m_attribNum(0),
@@ -23,16 +23,18 @@ void Shader::refresh()
 		a.second->create(a.second->m_vtPath, a.second->m_fmPath);
 }
 
-void Shader::create(const std::string& vertFilePath, const std::string& fragFilePath)
+bool Shader::create(const std::string& vertFilePath, const std::string& fragFilePath)
 {
 	if(compileShaders(vertFilePath, fragFilePath))
-		linkShaders();
+		return	linkShaders();
+	return false;
 }
 
-void Shader::create(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath)
+bool Shader::create(const std::string& vertFilePath, const std::string& fragFilePath, const std::string& geoFilePath)
 {
 	if(compileShaders(vertFilePath, fragFilePath, geoFilePath))
-		linkShaders();
+		return	linkShaders();
+	return false;
 }
 
 void Shader::createDefault()
@@ -117,6 +119,9 @@ bool Shader::compileShaders(const std::string& vertFilePath, const std::string& 
 	m_vtPath = vertFilePath;
 	m_fmPath = fragFilePath;
 
+	cDir((char*)m_vtPath.c_str());
+	cDir((char*)m_fmPath.c_str());
+
 	glDeleteProgram(m_programID);
 
 	m_programID = glCreateProgram();
@@ -150,7 +155,7 @@ bool Shader::compileShaders(const std::string& vertFilePath, const std::string& 
 	return true;
 }
 
-void Shader::linkShaders()
+bool Shader::linkShaders()
 {
 	glAttachShader(m_programID, m_vertID);
 
@@ -188,7 +193,7 @@ void Shader::linkShaders()
 		puts("\n");
 		//system("pause");
 		// In this simple program, we'll just leave
-		return;
+		return false;
 	}
 
 	glDetachShader(m_programID, m_vertID);
@@ -204,7 +209,9 @@ void Shader::linkShaders()
 
 	m_vertID = m_fragID = 0;
 
-	m_shaders[m_programID]=this;
+	m_shaders[m_programID] = this;
+
+	return true;
 }
 
 void Shader::addAtribute(const std::string attributeName, short m_index)
@@ -223,7 +230,8 @@ GLint Shader::getUniformLocation(const char* uniform)
 	GLint uni = glGetUniformLocation(m_programID, uniform);
 	if(uni < 0)
 	{
-		printf("uniform could not find %s \nwithin %s or %s shaders\n\n", uniform, m_vtPath.c_str(), m_fmPath.c_str());
+		printf("could not find uniform variable \"%s\" \n"
+			"within \"%s\" or \"%s\" shaders\n\n", uniform, m_vtPath.substr(m_vtPath.find_last_of('/') + 1).c_str(), m_fmPath.substr(m_fmPath.find_last_of('/') + 1).c_str());
 	}
 
 	return uni;

@@ -1,5 +1,6 @@
 #include "Character.h"
 
+
 FT_Library Character::m_ft;
 FT_Face Character::m_face ;
 
@@ -15,7 +16,7 @@ Character Character::loadCharacter(const char c, const char* font)
 	if(FT_New_Face(m_ft, "fonts/arial.ttf", 0, &m_face))
 		printf("ERROR::FREETYPE: Failed to load font \"%s\"\n", font);
 
-	FT_Set_Pixel_Sizes(m_face, 0, 48);
+	FT_Set_Pixel_Sizes(m_face, 0, CHARACTER_SAMPLE_SIZE);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
@@ -55,7 +56,7 @@ Character Character::loadCharacter(const char c, const char* font)
 
 	return	tmp = {
 		   texture,
-		   Coord2D<uint>((m_face)->glyph->bitmap.width, (m_face)->glyph->bitmap.rows),
+		   Coord2D<int>((m_face)->glyph->bitmap.width, (m_face)->glyph->bitmap.rows),
 		   Coord2D<int>((m_face)->glyph->bitmap_left, (m_face)->glyph->bitmap_top),
 		   (GLuint)(m_face)->glyph->advance.x
 	};

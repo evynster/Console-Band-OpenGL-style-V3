@@ -10,11 +10,11 @@ Character& CharacterCache::getCharacter(char c, const char* font)
 {
 	auto it = m_characters.find({c, font});
 
-	
+
 	if(it == m_characters.end())
 	{
-		Character tmp = Character::loadCharacter( c, font);
-		m_characters.insert({{c,font},tmp});
+		Character tmp = Character::loadCharacter(c, font);
+		m_characters.insert({{c, font},tmp});
 		return m_characters[{c, font}];
 	}
 	//printf("cashed image loaded\n");
@@ -55,10 +55,13 @@ Shader* ShaderCache::getShader(const char* vtsh, const char* fmsh)
 	if(it == m_shaders.end())
 	{
 		Shader* tmp = new Shader;
-		tmp->create(vtsh, fmsh);
-		m_shaders[{ (std::string)vtsh, (std::string)fmsh }] = tmp;
+		if(tmp->create(vtsh, fmsh))
+		{
+			m_shaders[{ (std::string)vtsh, (std::string)fmsh }] = tmp;
 
-		return m_shaders[{ (std::string)vtsh, (std::string)fmsh }];
+			return m_shaders[{ (std::string)vtsh, (std::string)fmsh }];
+		}
+		return nullptr;
 	}
 
 	return it->second;

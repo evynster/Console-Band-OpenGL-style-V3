@@ -43,24 +43,8 @@ void Transformer::rotate(Coord3D<> angles)
 	if(angles.x)
 		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.x), Coord3D<>{1, 0, 0});
 
-	if(m_fps)
-	{
-		m_forward = reclass(Coord3D<>, m_rotate * glm::vec4(0, 0, 1, 1));
-		m_up = reclass(Coord3D<>, m_rotate * glm::vec4(0, 1, 0, 1));
-		m_right = reclass(Coord3D<>, m_rotate * glm::vec4(1, 0, 0, 1));
-	}
 
-	m_forward.normalize();
-	m_up.normalize();
-	m_right.normalize();
-	
-	if(m_parent)
-		[&]() {
-		Transformer* parent = m_parent;
-		while(parent)
-			m_rotate = m_parent->m_rotate * m_rotate,
-			parent = m_parent->m_parent;
-	}();
+
 }
 
 void Transformer::rotateBy(Coord3D<> angles)
@@ -71,22 +55,28 @@ void Transformer::rotateBy(Coord3D<> angles)
 
 void Transformer::translateBy(float x, float y, float z)
 {
-	translateBy( Coord3D<>{x, y, z});
+	translateBy(Coord3D<>{x, y, z});
 }
 
 void Transformer::translateBy(Coord3D<> pos)
 {
 	m_updatedTrans = true;
+
+	if(m_fps)
+	{
+		m_forward = reclass(Coord3D<>, m_rotate * glm::vec4(0, 0, 1, 1));
+		m_up = reclass(Coord3D<>, m_rotate * glm::vec4(0, 1, 0, 1));
+		m_right = reclass(Coord3D<>, m_rotate * glm::vec4(1, 0, 0, 1));
+
+		m_forward.normalize();
+		m_up.normalize();
+		m_right.normalize();
+	}
 	m_translate = glm::translate(m_translate, reclass(glm::vec3, ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x))));
 	m_posDat += ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x));
 
-	if(m_parent)
-		[&]() {
-		Transformer* parent = m_parent;
-		while(parent)
-			m_translate = m_parent->m_translate * m_translate,
-			parent = m_parent->m_parent;
-	}();
+
+
 }
 
 void Transformer::translate(float x, float y, float z)
@@ -97,21 +87,27 @@ void Transformer::translate(float x, float y, float z)
 void Transformer::translate(Coord3D<> pos)
 {
 	m_updatedTrans = true;
+
+	if(m_fps)
+	{
+		m_forward = reclass(Coord3D<>, m_rotate * glm::vec4(0, 0, 1, 1));
+		m_up = reclass(Coord3D<>, m_rotate * glm::vec4(0, 1, 0, 1));
+		m_right = reclass(Coord3D<>, m_rotate * glm::vec4(1, 0, 0, 1));
+
+		m_forward.normalize();
+		m_up.normalize();
+		m_right.normalize();
+	}
+
 	m_posDat = pos;
 	m_translate = glm::translate(glm::mat4(1), reclass(glm::vec3, ((m_forward * -m_posDat.z) + (m_up * m_posDat.y) + (m_right * m_posDat.x))));
 
-	if(m_parent)
-		[&]() {
-		Transformer* parent = m_parent;
-		while(parent)
-			m_translate = m_parent->m_translate * m_translate,
-			parent = m_parent->m_parent;
-	}();
+
 }
 
 void Transformer::scaleBy(float scale)
 {
-	scaleBy(scale, scale, scale);
+	scaleBy(m_scaleDat.x + scale, m_scaleDat.y + scale, m_scaleDat.z + scale);
 }
 
 void Transformer::scaleBy(float x, float y, float z)
@@ -133,15 +129,7 @@ void Transformer::setScale(float x, float y, float z)
 {
 	m_updatedScale = true;
 	m_scaleDat = Coord3D<>(x, y, z);
-	m_scale = glm::scale(glm::mat4(1), *(glm::vec3*) & m_scaleDat);
-
-	if(m_parent)
-		[&]() {
-		Transformer* parent = m_parent;
-		while(parent)
-			m_scale = m_parent->m_scale * m_scale,
-			parent = m_parent->m_parent;
-	}();
+	m_scale = glm::scale(glm::mat4(1), reclass(glm::vec3, m_scaleDat));
 }
 
 Coord3D<> Transformer::getPosition()
@@ -159,29 +147,59 @@ Coord3D<> Transformer::getScale()
 	return m_scaleDat;
 }
 
-glm::mat4& Transformer::getRotationMatrix()
+glm::mat4 Transformer::getRotationMatrix()
 {
-	//	m_updatedRot = false;
-	return m_rotate;
+	for(auto& a : m_children)
+		a->m_updatedRot = true;
+
+	static glm::mat4 tmp; tmp = m_rotate;
+	static Transformer* parent; parent = m_parent;
+
+	if(m_parent)
+		while(parent)
+			tmp = parent->m_rotate * tmp,
+			parent = parent->m_parent;
+
+
+	return tmp;
 }
 
-glm::mat4& Transformer::getScaleMatrix()
+glm::mat4 Transformer::getScaleMatrix()
 {
-	//	m_updatedScale = false;
-	return m_scale;
+	for(auto& a : m_children)
+		a->m_updatedScale = true;
+
+	static glm::mat4 tmp; tmp = m_scale;
+	static Transformer* parent; parent = m_parent;
+	if(m_parent)
+		while(parent)
+			tmp = parent->m_scale * tmp,
+			parent = parent->m_parent;
+
+
+	return tmp;
 }
 
-glm::mat4& Transformer::getTranslationMatrix()
+glm::mat4 Transformer::getTranslationMatrix()
 {
-	//	m_updatedTrans = false;
-	return m_translate;
+	for(auto& a : m_children)
+		a->m_updatedTrans = true;
+
+	static glm::mat4 tmp; tmp = m_translate;
+	static Transformer* parent; parent = m_parent;
+
+	if(m_parent)
+		while(parent)
+			tmp = parent->m_translate * tmp,
+			parent = parent->m_parent;
+
+	return tmp;
 }
 
 glm::mat4 Transformer::getTransformation()
 {
-	//	m_updatedRot = m_updatedTrans
-	//		= m_updatedScale = false;
-	return   m_translate * m_rotate * m_scale;
+
+	return   getTranslationMatrix() * getRotationMatrix() * getScaleMatrix();
 }
 
 void Transformer::resetUpdated()
@@ -212,23 +230,23 @@ bool Transformer::isTranslatinUpdated()
 
 void Transformer::addChild(Transformer* child)
 {
-	m_children.push_back(child);
+	if(std::find(m_children.begin(), m_children.end(), child) == m_children.end())
+		m_children.push_back(child);
 	child->m_parent = this;
 }
-
 
 void Transformer::removeChild(Transformer* child)
 {
 	if(child)
 	{
 		std::vector<Transformer*>::iterator ref;
-		while(( ref = std::find(m_children.begin(), m_children.end(), child) ) != m_children.end())
+		while((ref = std::find(m_children.begin(), m_children.end(), child)) != m_children.end())
 			m_children.erase(ref);
-		
+
 	}
 }
 
-Transformer* Transformer::getChild(uint index)
+Transformer* Transformer::getChild(unsigned int index)
 {
 	return m_children[index];
 }

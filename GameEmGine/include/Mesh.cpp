@@ -15,6 +15,7 @@ Mesh::Mesh(Mesh& mesh):
 	m_vboID(mesh.m_vboID),
 	m_numVerts(mesh.m_numVerts),
 	m_textures(mesh.m_textures),
+	m_replaceTex(mesh.m_replaceTex),
 	top(mesh.top),
 	bottom(mesh.bottom),
 	left(mesh.left),
@@ -34,24 +35,9 @@ Mesh::~Mesh()
 
 	if(!ani)
 		unload();
-}
 
-//converts directory paths
-void cDir(char* dir)
-{
-	char* tmp;
-	if(strlen(dir) > 0)
-		while(bool(tmp = strchr(dir, '\\')))
-		{
-			tmp[0] = '/';
-		}
-
-	if(strlen(dir) > 1)
-		while(bool(tmp = strstr(dir, "//")))
-		{
-			memmove_s(tmp, strlen(tmp), tmp + 1, strlen(tmp + 1));
-			dir[strlen(dir) - 1] = 0;
-		}
+	m_textures.clear();
+	m_replaceTex.clear();
 }
 
 std::string substr(const char* str, const char* find)
@@ -117,7 +103,7 @@ void Mesh::loadMaterials(const char* path)
 				char str2[CHAR_BUFF_SIZE];
 				sscanf_s(str, "newmtl %s", str2, CHAR_BUFF_SIZE);
 				m_textures.push_back({std::string(str2), std::vector<Texture2D>()});
-
+				m_replaceTex.push_back(std::vector<GLuint>());
 				if(strstr(str, "None"))
 					return;
 			}
@@ -129,23 +115,28 @@ void Mesh::loadMaterials(const char* path)
 			else if(strstr(str, "map_Kd"))
 			{
 				char str2[CHAR_BUFF_SIZE];
-				sscanf_s(str, "map_Kd %s", &str2, (unsigned)_countof(str2));
+				//sscanf_s(str, "map_Kd %s", &str2, (unsigned)_countof(str2));
+				memcpy_s(str2, CHAR_BUFF_SIZE, str + 7, CHAR_BUFF_SIZE - 7);
+
 				//path.resizeDepth(path.c_str());
 				cDir(str2);
 				std::string tmpStr(substr(path, "/") + str2);
 				m_textures.back().second.push_back(ResourceManager::getTexture2D(tmpStr.c_str()));
 				m_textures.back().second.back().type = TEXTURE_TYPE::DIFFUSE;
+				m_replaceTex.back().push_back(0);
 
 			}
 			else if(strstr(str, "map_Ks"))
 			{
 				char str2[CHAR_BUFF_SIZE];
-				sscanf_s(str, "map_Ks %s", &str2, (unsigned)_countof(str2));
+				memcpy_s(str2, CHAR_BUFF_SIZE, str + 7, CHAR_BUFF_SIZE - 7);
+
 				//path.resizeDepth(path.c_str());
 				cDir(str2);
 				std::string tmpStr(substr(path, "/") + str2);
 				m_textures.back().second.push_back(ResourceManager::getTexture2D(tmpStr.c_str()));
 				m_textures.back().second.back().type = TEXTURE_TYPE::SPECULAR;
+				m_replaceTex.back().push_back(0);
 
 			}
 			else if(strstr(str, "Ns"))
@@ -165,7 +156,7 @@ void Mesh::loadMaterials(const char* path)
 				sscanf_s(str, "Kd %f %f %f", &r, &g, &b);
 				for(auto& a : m_textures.back().second)
 					if(a.type == TEXTURE_TYPE::DIFFUSE)
-						a.colour.set(r , g, b);
+						a.colour.set(r, g, b);
 			}
 			else if(strstr(str, "Ks"))
 			{
@@ -416,7 +407,7 @@ bool Mesh::loadMesh(std::string path)
 							norms[(unsigned int)(faces[a].second[c].norm[b] - 1)].z);
 
 					}
-					
+
 					//fwrite(&tmp.coord, sizeof(char), sizeof(float) * 3, bin);
 					//fwrite(&tmp.uv, sizeof(char), sizeof(float) * 2, bin);
 					//fwrite(&tmp.norm, sizeof(char), sizeof(float) * 3, bin);
@@ -722,7 +713,7 @@ std::vector< std::pair<std::string, std::vector<Vertex3D>>> Mesh::loadAni(std::s
 	return m_unpackedData;
 }
 
-void Mesh::render(Shader & shader)
+void Mesh::render(Shader& shader)
 {
 	shader.enable();
 	for(unsigned a = 0; a < m_vaoID.size(); a++)
@@ -741,7 +732,7 @@ void Mesh::render(Shader & shader)
 					{
 						textured = true;
 						glUniform1i(shader.getUniformLocation("uTex"), c);
-						glBindTexture(GL_TEXTURE_2D, d.id);
+						glBindTexture(GL_TEXTURE_2D, m_replaceTex[a][b] ? m_replaceTex[a][b] : d.id);
 					}
 				c++;
 			}
@@ -820,6 +811,11 @@ void Mesh::init()
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+void Mesh::replaceTexture(int mesh, int index, GLuint tex)
+{
+	m_replaceTex[mesh][index] = tex;
 }
 
 void Mesh::editVerts(std::vector< std::pair<std::string, std::vector<Vertex3D>>> verts1, std::vector< std::pair<std::string, std::vector<Vertex3D>>> verts2)

@@ -11,7 +11,7 @@
 #include "Physics3D.h"
 #include "Mesh.h"
 #include "Animation.h"
-#include "FrameBuffer.h"
+//#include "FrameBuffer.h"
 
 class Camera;
 
@@ -23,18 +23,17 @@ public:
 	Model(const char* path, const char* tag = "");
 	virtual ~Model();
 
-	bool collision2D(Model* k);
+	bool collision2D(Model* k, Coord3D<bool> ignore);
 
-	bool collision2D(Model* l, Model* k);
+	bool collision2D(Model* l, Model* k, Coord3D<bool> ignore);
 
 	bool collision3D(Model* k);
 
 	bool collision3D(Model* l, Model* k);
 
 	bool getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& Plane, Model& box1, Model& box2);
-
-
-	void render(Shader& shader, Camera* cam);
+	
+	virtual void render(Shader& shader, Camera* cam);
 
 	void setColour(float r, float g, float b, float a);
 
@@ -73,11 +72,15 @@ public:
 	Mesh* getMesh();
 	Shader* getShader();
 
+	void replaceTexture(int mesh,int index,GLuint tex);
+
 	void setToRender(bool render);
 	void setTransparent(bool trans);
 	bool isTransparent();
 	void print();
 
+protected:
+	ColourRGBA m_colour;
 
 private:
 	void boundingBoxInit();
@@ -108,7 +111,6 @@ private:
 		m_center;
 
 	float m_width, m_height, m_depth;
-	ColourRGBA m_colour;
 	Shader* m_shader, * m_shaderBB;
 	Vertex3D* m_vertBBDat = new Vertex3D[12 * 3];
 	glm::mat4 m_transBB;

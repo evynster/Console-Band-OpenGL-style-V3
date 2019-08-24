@@ -1,15 +1,15 @@
 #include "Camera.h"
 
-Camera::Camera(Size3D size, CAMERA_TYPE type):m_scale(1), m_projMat(1), m_objMat(1), m_cameraUpdate(true), m_position(new Coord3D<>{0,0,0}), m_positionBy(new Coord3D<>{0,0,0})
+Camera::Camera(Size3D size, CAMERA_TYPE type, ProjectionPeramiters* peram):m_scale(1), m_projMat(1), m_objMat(1), m_cameraUpdate(true), m_position(new Coord3D<>{0,0,0}), m_positionBy(new Coord3D<>{0,0,0})
 {
 	//m_position = new Coord3D{-.25,-.5,0};
-	init(size, type);
+	init(size, type, peram);
 }
 
 Camera::~Camera()
 {}
 
-void Camera::init(Size3D size, CAMERA_TYPE type)
+void Camera::init(Size3D size, CAMERA_TYPE type, ProjectionPeramiters* peram)
 {
 	//int w, h;
 	//glfwGetFramebufferSize(glfwGetCurrentContext(), &w, &h); //window size in pixels
@@ -18,10 +18,11 @@ void Camera::init(Size3D size, CAMERA_TYPE type)
 	*m_size = size;
 
 	m_viewMat = glm::lookAt(glm::vec3(0, 0, .1f), glm::vec3{0,0,0}, glm::vec3{0.0f,1.0f,0.0f});
-	setType(type);
+	setType(type, peram);
 }
 
-void Camera::setType(CAMERA_TYPE type, projectionPeramiters* peram)
+
+void Camera::setType(CAMERA_TYPE type, ProjectionPeramiters* peram)
 {
 	OrthoPeramiters* peram1 = reclass(OrthoPeramiters*, peram);
 	FrustumPeramiters* peram2 = reclass(FrustumPeramiters*, peram);
@@ -31,15 +32,14 @@ void Camera::setType(CAMERA_TYPE type, projectionPeramiters* peram)
 		if(!peram)
 			m_projMat = glm::ortho(-m_size->width * 100, m_size->width * 100, -m_size->height * 100, m_size->height * 100, -m_size->depth, m_size->depth);
 		else
-			m_projMat = glm::ortho(peram1->left, peram1->right, peram1->bottom, peram1->top, peram1->front, peram1->back);
+			m_projMat = glm::ortho(peram1->left, peram1->right, peram1->bottom, peram1->top, peram1->zNear, peram1->zFar);
 
 		break;
 	case FRUSTUM:
 		if(!peram)
 			m_projMat = glm::perspective(glm::radians(75.f), m_size->width / m_size->height, .1f, m_size->depth);
 		else
-			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->front, peram2->back);
-
+			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->zNear, peram2->zFar);
 		break;
 	default:
 		m_projMat = glm::mat4(1);
@@ -131,21 +131,26 @@ void Camera::rotateBy(float angle, Coord3D<> direction)
 	m_cameraUpdate = true;
 }
 
-void Camera::render(Shader* shader, std::vector<Model*>& models, bool trans)
+void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 {
 	Shader* shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh");
 	for(auto& a : models)
-		if(a->getType() == MODEL)
+		switch(a.second->getType())
 		{
-			if(trans == a->isTransparent())
-				a->render(*shader, this);
-		}
-		else if(a->getType() == TEXT)
-		{
-			Text* tmp=reclass(Text*, a);
+		case MODEL:
+
+			if(trans == a.second->isTransparent())
+				a.second->render(*shader, this);
+			break;
+
+		case TEXT:
+
+			Text* tmp = reclass(Text*, a.second);
 			if(trans == tmp->isTransparent())
 				tmp->render(*shader2, this);
+			break;
 		}
+
 }
 
 Coord3D<> Camera::getPosition()

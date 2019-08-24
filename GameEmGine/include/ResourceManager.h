@@ -11,16 +11,16 @@
 
 struct CharacterCache
 {
-	//creates a texture
-	static Character& getCharacter(const char,const char*);
+	//creates a character
+	static Character& getCharacter(const char, const char*);
 
 private:
-	static std::map<std::pair<char,std::string>, Character> m_characters;
+	static std::map<std::pair<char, std::string>, Character> m_characters;
 };
 
 struct Texture2DCache
-{			
-	//creates a texture
+{
+	//creates a 2D texture
 	static Texture2D& getTexture(const char*);
 
 private:
@@ -29,18 +29,17 @@ private:
 
 
 struct Texture3DCache
-{		 
-	//creates a texture
+{
+	//creates a 3D texture
 	static Texture3D& getTexture(const char*);
 
 private:
 	static std::map<std::string, Texture3D> m_textures;
 };
 
-class ShaderCache
+struct ShaderCache
 {
-public:
-	//creates a texture
+	//creates a Shader
 	static Shader* getShader(const char*, const char*);
 
 private:
