@@ -21,7 +21,7 @@ public:
 	~Transformer();
 
 	void reset();
-	void enableFPS(bool enable = true);
+	void enableFPSMode(bool enable = true);
 	/*SET ROTATION*/
 
 	void rotate(Coord3D<> direction);
@@ -44,7 +44,7 @@ public:
 	virtual void setScale(float x, float y, float z);
 
 	/*GETERS*/
-	Coord3D<>  getPosition();
+	Coord3D<> getPosition();
 	Coord3D<> getRotation();
 	Coord3D<> getScale();
 	glm::mat4 getRotationMatrix();

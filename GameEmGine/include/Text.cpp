@@ -43,7 +43,7 @@ void Text::setText(std::string text)
 
 void Text::textSize(short s)
 {
-	setScale(s*.01f);
+	setScale(s * .01f);
 }
 
 void Text::setColour(float r, float g, float b)
@@ -125,7 +125,7 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 		xpos = (x + (float)ch.bearing.x * getScale().x);
 		ypos = texture ?
 			y + (((float(ch.size.y - ch.bearing.y)) * getScale().x) + ((m_initY - ch.size.y * getScale().x))) :
-			y - (float(ch.size.y - ch.bearing.y)* getScale().x);
+			y - (float(ch.size.y - ch.bearing.y) * getScale().x);
 
 		w = (float)ch.size.x * getScale().x;
 		h = (float)ch.size.y * getScale().x;
@@ -172,11 +172,12 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 			}
 }
 
-void Text::toFramebufferTexture()
+void Text::toFramebufferTexture(unsigned int width)
 {
+	width;
 	static Coord3D<> tmpSize;
 	tmpSize = getScale();
-	setScale(1);
+
 	float
 		ypos = 0,
 		h = 0,
@@ -193,14 +194,16 @@ void Text::toFramebufferTexture()
 
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.advance >> 6) * getScale().x; // Bitshift by 6 to get value in pixels (2^6 = 64)
+		x += (ch.advance >> 6); // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 
+	if(width)
+		setScale(width / x);
+
+
+	x *= getScale().x;
 	ypos *= getScale().x;
 	h *= getScale().x;
-
-	//int winW, winH;
-	//glfwGetFramebufferSize(glfwGetCurrentContext(), &winW, &winH);
 
 	static Camera cam; cam.setType(ORTHOGRAPHIC, &OrthoPeramiters{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f});
 

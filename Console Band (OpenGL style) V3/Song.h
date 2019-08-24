@@ -501,7 +501,7 @@ class Song:public Scene
 		for(int a = 0; a < 5; a++)
 			Game::addModel((fretBoard)[a] = new Model("models/note/note.obj")),
 			(fretBoard)[a]->setColour((*fretColour)[a] / 2),
-			(fretBoard)[a]->enableFPS(),
+			(fretBoard)[a]->enableFPSMode(),
 			(fretBoard)[a]->rotate({45,0,0}),
 
 			//change model location
@@ -652,7 +652,7 @@ class Song:public Scene
 					if(!(*guitarTrackTmp)[a][b].note)
 						Game::addModel((*guitarTrackTmp)[a][b].note = new Model(*note)),
 						(*guitarTrackTmp)[a][b].note->setColour((*fretColour)[a]),
-						(*guitarTrackTmp)[a][b].note->enableFPS(),
+						(*guitarTrackTmp)[a][b].note->enableFPSMode(),
 						(*guitarTrackTmp)[a][b].note->rotate({45,0,0});
 
 					//change model location

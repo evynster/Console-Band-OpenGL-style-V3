@@ -14,36 +14,23 @@ public:
 		Game::setCameraType(FRUSTUM, &peram);
 
 
-		model[0] = new Model("Models/note/note.obj", "Box1");
+		model[0] = new Model("Models/controls/controller.obj", "Box1");
 
-		model[0]->setScale(1);
+		model[0]->setScale(.01);
 		testText.setText("Maybe this Works?");
 		testText.setColour(1, .5, 0);
 		testText.textSize(1);
 
-		
+
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");
 
-		//model[0]->addChild(model[1]);
-		////model[0]->addChild(&testText);
 		Game::addText(&testText);
-		//model[1]->addChild(model[2]);
-
 
 		Game::getMainCamera()->enableFPS();
 
-
-		//model[0]->setScale(1);
-		//model2->setScale(1);
-
-		//model[0]->enableBoundingBox(true);
-		//model2->enableBoundingBox(true);
-
-		//Game::addModel(model2);
 		Game::addModel(model[0]);
-		//Game::addText(&testText);
-
+		
 		keyPressed =
 			[&](int key, int mod)->void
 		{
@@ -59,11 +46,10 @@ public:
 			//static int count;
 			if(key == GLFW_KEY_TAB)
 				tab = !tab;//	std::swap(model[0], model[count++]);
-			//count = count % 2 + 1;
 
 			static bool fps = 0;
 			if(key == 'F')
-				model[0]->enableFPS(fps = !fps);
+				model[0]->enableFPSMode(fps = !fps);
 
 			if(key == 'A')
 				moveLeft = true;
@@ -131,9 +117,9 @@ public:
 			if(key == GLFW_KEY_DOWN)
 				rotDown = false;
 		};
-		testText.toFramebufferTexture();
-		model[0]->replaceTexture(0, 0, testText.getFramebuffer()->getColorHandle(0));
 
+		testText.toFramebufferTexture(200);
+		model[0]->replaceTexture(0, 0, testText.getFramebuffer()->getColorHandle(0));
 	}
 
 	void cameraMovement()
@@ -165,7 +151,7 @@ public:
 
 	void update(double dt)
 	{
-	
+
 		if(tab)
 		{
 			// Movement
@@ -197,11 +183,11 @@ public:
 			cameraMovement();
 		}
 
-		model[0]->print();
-		puts("");
-
-		printf(model[0]->collision2D(model[1], {0,1,0}) ? "collision\n" : "no collision\n");
-		puts("\n");
+		//model[0]->print();
+		//puts("");
+		//
+		//printf(model[0]->collision2D(model[1], {0,1,0}) ? "collision\n" : "no collision\n");
+		//puts("\n");
 
 	}
 private:

@@ -32,7 +32,7 @@ public:
 
 	void render(Shader& s, Camera* cam, bool texture = false);
 
-	void toFramebufferTexture();
+	void toFramebufferTexture(unsigned int width=720);
 
 	FrameBuffer* getFramebuffer();
 

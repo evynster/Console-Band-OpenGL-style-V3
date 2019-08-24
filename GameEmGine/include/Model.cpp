@@ -86,22 +86,7 @@ bool Model::collision2D(Model* box2, Coord3D<bool>ignore)
 
 bool Model::collision2D(Model* box1, Model* box2, Coord3D<bool>ignore)
 {
-	ignore;
-	////if distance between mod in the x OR z is less than half of both widths combined then collide and don't allow any more movement in that direction.
-	//Coord3D<> thing = box1->getCenter() - box2->getCenter();
-	//
-	//float distanceX = abs(thing.x);
-	//float distanceZ = abs(thing.z);
-	//
-	//float capW = (box1->getWidth() + box2->getWidth()) / 2;
-	//float capD = (box1->getDepth() + box2->getDepth()) / 2;
-	//
-	//if(std::abs(distanceX) <= capW)
-	//	if(std::abs(distanceZ) <= capD)
-	//		return true;
-	//
-	//return false;
-
+	
 	static Coord3D<> RPos;
 	ignore = (Coord3D<bool>{1, 1, 1}-ignore);
 	RPos = {(float)ignore.x,(float)ignore.y,(float)ignore.z};
@@ -147,21 +132,6 @@ bool Model::collision3D(Model* k)
 {
 	return collision3D(this, k);
 }
-
-//float dotProduct(Coord3D<> a, Coord3D<> b)
-//{
-//	return a.x * b.x + a.y * b.y + a.z * b.z;
-//}
-//
-//Coord3D<> crossProduct(Coord3D<> a, Coord3D<> b)
-//{
-//	return
-//	{
-//		a.y * b.z - a.z * b.y,
-//		a.z * b.x - a.x * b.z,
-//		a.x * b.y - a.y * b.x
-//	};
-//}
 
 bool Model::collision3D(Model* box1, Model* box2)
 {

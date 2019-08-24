@@ -54,7 +54,7 @@ CAMERA_TYPE Camera::getType()
 
 void Camera::enableFPS(bool enable)
 {
-	m_transform.enableFPS(enable);
+	m_transform.enableFPSMode(enable);
 }
 
 bool Camera::update()

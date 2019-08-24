@@ -13,7 +13,7 @@ void Transformer::reset()
 	m_posDat = m_rotDat = m_scaleDat = {0,0,0};
 }
 
-void Transformer::enableFPS(bool enable)
+void Transformer::enableFPSMode(bool enable)
 {
 	m_fps = enable;
 	if(!enable)
