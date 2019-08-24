@@ -20,7 +20,7 @@ public:
 		testText.setText("Maybe this Works?");
 		testText.setColour(1, .5, 0);
 		testText.textSize(1);
-		testText.
+
 		
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");

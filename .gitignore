@@ -29,7 +29,8 @@
 
 # Keep!
 !*.obj
-!*.lib
+!externals/lib/
+!*.dll
 
 # Other
 \.vs/
