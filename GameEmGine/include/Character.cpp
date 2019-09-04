@@ -8,7 +8,7 @@ Character Character::loadCharacter(const char c, const char* font)
 {
 	
 
-	Character tmp;
+	static Character tmp;
 
 	if(FT_Init_FreeType(&m_ft))
 		printf("ERROR::FREETYPE: Could not init FreeType Library\n");

@@ -20,7 +20,11 @@ public:
 
 	std::function<void(void)>render;
 
-	std::function<void(int, int)>
+	std::function<void(int state, int button, int mod)>
+		keyInput,
+		mouseInput;
+
+	std::function<void(int button, int mod)>
 		//instance key is pressed 
 		keyPressed,
 

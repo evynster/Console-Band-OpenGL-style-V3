@@ -19,10 +19,12 @@ enum CAMERA_TYPE
 	FRUSTUM
 };
 
+#pragma region Structs
+
 struct ProjectionPeramiters
 {
 	ProjectionPeramiters(float znear, float zfar):zNear(znear), zFar(zfar) {}
-	~ProjectionPeramiters()=default;
+	~ProjectionPeramiters() = default;
 
 	void setNear(float znear) { zNear = znear; }
 	void setFar(float zfar) { zFar = zfar; }
@@ -35,7 +37,7 @@ struct OrthoPeramiters:public ProjectionPeramiters
 {
 	OrthoPeramiters(float  a_left, float a_right, float a_bottom, float a_top, float a_near, float a_far):
 		ProjectionPeramiters(a_near, a_far),
-		left(a_left),right(a_right),bottom(a_bottom),top(a_top){}
+		left(a_left), right(a_right), bottom(a_bottom), top(a_top) {}
 
 	void setLeft(float a_left) { left = a_left; }
 	void setRight(float a_right) { right = a_right; }
@@ -57,48 +59,80 @@ struct FrustumPeramiters:public ProjectionPeramiters
 	void setAspect(float a_aspect) { aspect = a_aspect; }
 	float angle, aspect;
 };
-class Camera
+#pragma endregion
+
+class Camera:public Transformer
 {
 public:
-	Camera(Size3D = {1,1,1}, CAMERA_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
+	Camera(Coord3D<> = {1,1,1}, CAMERA_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	~Camera();
 
-	void init(Size3D = {}, CAMERA_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
+	void init(Coord3D<> = {}, CAMERA_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	void setType(CAMERA_TYPE type, ProjectionPeramiters* peram = nullptr);
-	CAMERA_TYPE getType();
-	void enableFPS(bool enable = true);
 	bool update();
 
-	void translate(Coord3D<>);
-	void movePositionBy(Coord3D<> position);
-	void setScale(const float);
-	void rotate(float angle, Coord3D<> direction);
+	/*SET POSITION*/
 
-	void rotateBy(float angle, Coord3D<> direction);
+	void translate(float x, float y, float z);
+	void translate(Coord3D<> pos);
+	void translateBy(float x, float y, float z);
+	void translateBy(Coord3D<> pos);
 
+	/*SET SCALE*/
+
+	void setScale(float scale);
+
+	/*SET ROTATION*/
+
+	void rotate(Coord3D<> angles);
+	void rotate(float x, float y, float z);
+	void rotateBy(Coord3D<> angles);
+	void rotateBy(float x, float y, float z);
+
+
+	//render objects
 	void render(Shader* shader, std::map<void*, Model*>& models, bool transparent = false);
 
+	/*GETTERS*/
+	Coord3D<> getRotation();
 
-	Coord3D<> getPosition();
-	float& getScale();
 	glm::mat4 getProjectionMatrix();
 	glm::mat4 getViewMatrix();
 	glm::mat4 getCameraMatrix();
-
 	glm::mat4 getObjectMatrix();
-	Transformer& getTransformer();
+
+	CAMERA_TYPE getType();
 
 protected:
-	bool m_cameraUpdate, m_isTranslate, m_isTranslateBy;
+
+	bool m_cameraUpdate,
+		m_isTranslate, m_isTranslateBy,
+		m_isRotate, m_isRotateBy;
+
 	float m_scale;
-	Size3D* m_size = new Size3D;
-	Coord3D<>* m_position, * m_positionBy;
+
+	Coord3D<> m_size,
+		m_position, m_positionBy,
+		m_rotate, m_rotateBy;
+
 	CAMERA_TYPE m_type = FRUSTUM;
 
-	Transformer m_transform;
 	glm::mat4 m_cameraMat;
 	glm::mat4 m_projMat;
 	glm::mat4 m_viewMat;
 	glm::mat4 m_objMat;
+
+private:
+	/*REMOVED FROM TRANSFORMER*/
+
+	void scaleBy(float scale) { scale; }
+	void scaleBy(float x, float y, float z) { x, y, z; }
+	void setScale(Coord3D<> scale) { scale; }
+	void setScale(float x, float y, float z) { x, y, z; }
+
+	void resetUpdated() {}
+	bool isScaleUpdated() { return false; }
+	bool isRotationUpdated() { return false; }
+	bool isTranslatinUpdated() { return false; }
 };
 

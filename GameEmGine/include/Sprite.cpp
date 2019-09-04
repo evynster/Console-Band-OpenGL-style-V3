@@ -187,7 +187,7 @@ void Sprite::rotateBy(float deg)
 	deg;
 }
 
-Size2D & Sprite::getSize()
+Coord2D<>& Sprite::getSize()
 {
 	return size;
 }

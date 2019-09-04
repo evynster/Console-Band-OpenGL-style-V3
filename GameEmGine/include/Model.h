@@ -20,12 +20,13 @@ class Model: public Transformer
 public:
 	Model();
 	Model(Model& model, const char* tag = "");
+	Model(primitiveMesh* model, const char* tag = "");
 	Model(const char* path, const char* tag = "");
 	virtual ~Model();
 
-	bool collision2D(Model* k, Coord3D<bool> ignore);
+	bool collision2D(Model* k, Coord3D<float> ignore);
 
-	bool collision2D(Model* l, Model* k, Coord3D<bool> ignore);
+	bool collision2D(Model* l, Model* k, Coord3D<float> ignore);
 
 	bool collision3D(Model* k);
 

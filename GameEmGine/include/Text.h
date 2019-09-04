@@ -32,9 +32,9 @@ public:
 
 	void render(Shader& s, Camera* cam, bool texture = false);
 
-	void toFramebufferTexture(unsigned int width=720);
+	void toFramebufferTexture(unsigned int width = 720);
 
-	FrameBuffer* getFramebuffer();
+	GLuint getTexture();
 
 	bool isTransparent();
 	//static Character loadCharacter(const char c, const char* font);
@@ -45,10 +45,10 @@ private:
 	/*SET SCALE*/
 
 	void scaleBy(float scale) { Transformer::scaleBy(scale); }
-	void scaleBy(float x, float y, float z) { Transformer::scaleBy(x,y,z); }
+	void scaleBy(float x, float y, float z) { Transformer::scaleBy(x, y, z); }
 	void setScale(Coord3D<> scale) { Transformer::setScale(scale); }
 	void setScale(float scale) { Transformer::setScale(scale); }
-	void setScale(float x, float y, float z) { Transformer::setScale(x,y,z); }
+	void setScale(float x, float y, float z) { Transformer::setScale(x, y, z); }
 
 	void renderInit();
 
@@ -57,7 +57,7 @@ private:
 	std::string m_font, m_text;
 	unsigned int m_length;
 	GLuint m_vaoID, m_vboID;
-	
+
 	static float m_initY;
 };
 

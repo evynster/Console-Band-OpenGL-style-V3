@@ -10,7 +10,7 @@ uniform mat4 uProj;
 void main()
 {
     vec4 viewspace = uView * uModel * vec4(vertex.xy, 0.0, 1.0);
-    gl_Position = uProj * viewspace;
+    gl_Position = uProj * viewspace / viewspace.w;
     TexCoords = vertex.zw;
 
     TexCoords.y = abs(TexCoords.y - float(flip));

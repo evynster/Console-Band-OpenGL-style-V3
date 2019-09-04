@@ -66,7 +66,7 @@ void GameEmGine::init(std::string name, int width, int height, int x, int y, int
 	createNewWindow(name, width, height, x, y, monitor, fullScreen, visable);
 	AudioPlayer::init();
 	InputManager::init();
-	
+
 	//LUTpath = "Texture/IWLTBAP_Aspen_-_Standard.cube";
 	///////////////////////////////////////Bind Custom 3D Texture////////////////////////////////////////////
 	//
@@ -89,7 +89,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	printf("Creating The Window...\n");
 
-	m_window = new WindowCreator(name, {(float)width,(float)height}, Coord2D<>{(float)x, (float)y}, monitor, fullScreen, visable);
+	m_window = new WindowCreator(name, {width,height}, Coord2D<int>{x, y}, monitor, fullScreen, visable);
 
 	if(m_window)
 		puts("Window Creation Successful\n");
@@ -107,13 +107,13 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	printf("created the window\n");
 
-	m_mainFrameBuffer = new FrameBuffer( 3, "Main Buffer" );
-	m_shadowBuffer = new FrameBuffer( 1, "Shadow Buffer");
-	m_outline = new FrameBuffer( 1, "Sobel Outline");
-	m_postBuffer = new FrameBuffer( 1, "Post Process Buffer");
+	m_mainFrameBuffer = new FrameBuffer(3, "Main Buffer");
+	m_shadowBuffer = new FrameBuffer(1, "Shadow Buffer");
+	m_outline = new FrameBuffer(1, "Sobel Outline");
+	m_postBuffer = new FrameBuffer(1, "Post Process Buffer");
 	m_greyscaleBuffer = new FrameBuffer(1, "Greyscale");
-	m_buffer1 = new FrameBuffer( 1, "Test1");
-	m_buffer2 = new FrameBuffer( 1, "Test2");
+	m_buffer1 = new FrameBuffer(1, "Test1");
+	m_buffer2 = new FrameBuffer(1, "Test2");
 
 	m_mainFrameBuffer->initDepthTexture(getWindowWidth(), getWindowHeight());
 	m_mainFrameBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
@@ -193,7 +193,7 @@ void GameEmGine::run()
 
 
 	glEnable(GL_CULL_FACE);
-	
+
 	glEnable(GL_TEXTURE_2D);
 
 	glEnable(GL_BLEND);
@@ -204,7 +204,7 @@ void GameEmGine::run()
 	{
 		glClearColor((float)m_colour.r / 255, (float)m_colour.g / 255, (float)m_colour.b / 255, (float)m_colour.a / 255);//BG colour
 
-		InputManager::controllerUpdate();
+		InputManager::update();
 		update();
 
 		if(true)//fps calculation
@@ -328,8 +328,6 @@ void GameEmGine::fpsLimiter()
 	enter = true;
 }
 
-
-
 void GameEmGine::setScene(Scene* scene)
 {
 	m_models.clear();
@@ -340,8 +338,10 @@ void GameEmGine::setScene(Scene* scene)
 	scene->init();
 	InputManager::setKeyPressedCallback(scene->keyPressed);
 	InputManager::setKeyReleasedCallback(scene->keyReleased);
-	InputManager::mouseButtonPressCallback(scene->mousePressed);
-	InputManager::mouseButtonReleaseCallback(scene->mouseReleased);
+	InputManager::setKeyAllCallback(scene->keyInput);
+	InputManager::mouseButtonPressedCallback(scene->mousePressed);
+	InputManager::mouseButtonReleasedCallback(scene->mouseReleased);
+	InputManager::mouseButtonAllCallback(scene->mouseInput);
 
 	//m_render = scene->render;
 	m_gameLoop = [&](double a)->void {m_mainScene->update(a); };
@@ -362,19 +362,50 @@ int GameEmGine::getWindowHeight()
 	return m_window->getScreenHeight();
 }
 
+Coord3D<int> GameEmGine::getWindowSize()
+{
+	return m_window->getScreenSize();
+}
+
 Camera* GameEmGine::getMainCamera()
 {
 	return m_mainCamera;
 }
 
+bool GameEmGine::mouseCollision(Model* model)
+{
+	static Model mouse(&primitiveCube({.01f}), "Mouse");
+
+	addModel(&mouse);
+	mouse.setColour(0, 1, 0);
+
+	Camera* cam = getMainCamera();
+	//	glm::mat4 tmp = glm::inverse(cam->getProjectionMatrix());
+	Coord3D<> mPos = {InputManager::getMousePosition(),0};
+	glm::vec4 direction((mPos * 2 / (Coord3D<>{(float)getWindowSize().x, (float)getWindowSize().y, (float)getWindowSize().z} -1)).toVec3(), 1);
+	direction = {direction.x,-direction.y,1,1};
+
+
+	direction = glm::inverse((cam->getViewMatrix() * cam->getObjectMatrix()) * cam->getProjectionMatrix()) * direction;
+	direction = glm::normalize(direction);
+
+	//position = position * 2 - 1;
+	//position /= position.w;
+
+	//position.z = cam->getPosition().z;
+	mouse.translate(cam->getPosition());
+
+	return mouse.collision2D(model, reclass(Coord3D<>, direction));
+}
+
 void GameEmGine::setCameraType(CAMERA_TYPE type, ProjectionPeramiters* proj)
 {
-	m_mainCamera->setType(type,proj);
+	m_mainCamera->setType(type, proj);
 }
 
 void GameEmGine::translateCameraBy(Coord3D<> pos)
 {
-	m_mainCamera->movePositionBy(pos);
+	m_mainCamera->translateBy(pos);
 }
 
 void GameEmGine::setCameraPosition(Coord3D<> pos)
@@ -382,14 +413,14 @@ void GameEmGine::setCameraPosition(Coord3D<> pos)
 	m_mainCamera->translate(pos);
 }
 
-void GameEmGine::RotateCameraBy(float angle, Coord3D<> direction)
+void GameEmGine::rotateCameraBy(Coord3D<> direction)
 {
-	m_mainCamera->rotateBy(angle, direction);
+	m_mainCamera->rotateBy(direction);
 }
 
-void GameEmGine::setCameraAngle(float angle, Coord3D<> direction)
+void GameEmGine::rotateCamera(Coord3D<> direction)
 {
-	m_mainCamera->rotate(angle, direction);
+	m_mainCamera->rotate(direction);
 }
 
 void GameEmGine::addModel(Model* model)
@@ -434,7 +465,7 @@ void GameEmGine::update()
 
 	m_mainCamera->update();
 
-	if(m_mainCamera->getTransformer().isUpdated())
+	if(m_mainCamera->isUpdated())
 	{
 		m_modelShader->enable();
 		glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
@@ -616,15 +647,17 @@ void GameEmGine::changeViewport(GLFWwindow*, int w, int h)
 	//printf("Width : %d\n"
 	//	   "Height: %d\n\n", w, h);
 
+
+
 	//Framebuffer Resizing 
 	m_mainFrameBuffer->resizeDepth(w, h);
 	m_mainFrameBuffer->resizeColour(0, w, h);
 	m_mainFrameBuffer->resizeColour(1, w, h);
 	m_mainFrameBuffer->resizeColour(2, w, h);
-	
+
 	m_postBuffer->resizeColour(0, w, h);
 	m_greyscaleBuffer->resizeColour(0, w, h);
-	
+
 	m_buffer1->resizeColour(0, unsigned((float)w / SCREEN_RATIO), unsigned((float)h / SCREEN_RATIO));
 	m_buffer2->resizeColour(0, unsigned((float)w / SCREEN_RATIO), unsigned((float)h / SCREEN_RATIO));
 

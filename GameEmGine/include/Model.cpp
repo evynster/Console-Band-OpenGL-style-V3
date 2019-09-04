@@ -40,6 +40,39 @@ Model::Model(Model& model, const char* tag) :
 
 }
 
+Model::Model(primitiveMesh* model, const char* tag):
+Transformer(),
+m_transBB(glm::mat4(1)), m_tag(tag)
+{
+	m_type = MODEL;
+
+	if(m_mesh.loadPrimitive(model))
+	{
+		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
+
+
+		float top = m_mesh.top.y,
+			bottom = m_mesh.bottom.y,
+			left = m_mesh.left.x,
+			right = m_mesh.right.x,
+			front = m_mesh.front.z,
+			back = m_mesh.back.z;
+
+		(m_topLeftBack = {left,top,back}),
+			(m_topRightBack = {right,top,back}),
+			(m_topLeftFront = {left,top,front}),
+			(m_topRightFront = {right,top,front}),
+			(m_bottomLeftBack = {left,bottom,back}),
+			(m_bottomRightBack = {right,bottom,back}),
+			(m_bottomLeftFront = {left,bottom,front}),
+			(m_bottomRightFront = {right,bottom,front});
+
+
+		boundingBoxInit();
+		boundingBoxUpdate();
+	}
+}
+
 Model::Model(const char* path, const char* tag):
 	Transformer(),
 	m_transBB(glm::mat4(1)), m_tag(tag)
@@ -79,17 +112,18 @@ Model::~Model()
 
 /// - Collision Function - ///
 
-bool Model::collision2D(Model* box2, Coord3D<bool>ignore)
+bool Model::collision2D(Model* box2, Coord3D<>ignore)
 {
 	return collision2D(this, box2, ignore);
 }
 
-bool Model::collision2D(Model* box1, Model* box2, Coord3D<bool>ignore)
+bool Model::collision2D(Model* box1, Model* box2, Coord3D<>RPos)
 {
 	
-	static Coord3D<> RPos;
-	ignore = (Coord3D<bool>{1, 1, 1}-ignore);
-	RPos = {(float)ignore.x,(float)ignore.y,(float)ignore.z};
+	 
+	RPos.normalize();
+	RPos = (Coord3D<>{1, 1, 1}-RPos);
+	
 	RPos = (box1->m_center - box2->m_center) * RPos;
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 

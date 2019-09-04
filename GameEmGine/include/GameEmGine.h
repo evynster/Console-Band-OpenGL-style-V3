@@ -18,6 +18,9 @@
 #include "FrameBuffer.h"
 #include "LightSource.h"
 #include "Text.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 
 #define Game GameEmGine
 
@@ -61,7 +64,15 @@ public:
 	*/
 	static int getWindowHeight();
 
+	
+	/*
+	Gets window height in pixels
+	*/
+	static Coord3D<int> getWindowSize();
+
 	static Camera * getMainCamera();
+
+	static bool mouseCollision(Model* model);
 
 	static void setCameraType(CAMERA_TYPE type,ProjectionPeramiters* proj);
 
@@ -77,12 +88,12 @@ public:
 	/*
 	moves the camera angle
 	*/
-	static void RotateCameraBy(float angle, Coord3D<> direction);
+	static void rotateCameraBy( Coord3D<> direction);
 
 	/*
 		moves the camera angle
 	*/
-	static void setCameraAngle(float angle, Coord3D<> direction);
+	static void rotateCamera(Coord3D<> direction);
 
 	static void addModel(Model* model);
 

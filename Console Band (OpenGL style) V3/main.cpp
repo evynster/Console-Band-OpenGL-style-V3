@@ -4,17 +4,18 @@ class Test: public Scene
 {
 public:
 	bool moveLeft, moveRight, moveForward, moveBack, moveUp, moveDown,
-		rotLeft, rotRight, rotUp, rotDown,
+		rotLeft, rotRight, rotUp, rotDown, tiltLeft, tiltRight,
 		tab = false;
 
 	void init()
 	{
-		Game::setCameraPosition({0,0,-0});
-		FrustumPeramiters peram{75,(float)Game::getWindowWidth() / Game::getWindowHeight(),0,100};
-		Game::setCameraType(FRUSTUM, &peram);
+		Game::setCameraPosition({0,0,-2});
+		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0,100};
+		Game::setCameraType(FRUSTUM, &frustum);
 
 
-		model[0] = new Model("Models/controls/controller.obj", "Box1");
+		//model[0] = new Model("Models/controls/controller.obj", "Box1");
+		model[0] = new Model(new primitiveCube({5,5,5}), "Box1");
 
 		model[0]->setScale(.01);
 		testText.setText("Maybe this Works?");
@@ -27,16 +28,16 @@ public:
 
 		Game::addText(&testText);
 
-		Game::getMainCamera()->enableFPS();
+		Game::getMainCamera()->enableFPSMode();
 
 		Game::addModel(model[0]);
-		
+
 		keyPressed =
 			[&](int key, int mod)->void
 		{
 			if(key == GLFW_KEY_R)
 			{
-				Game::getMainCamera()->getTransformer().reset();
+				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-5});
 			}
 
@@ -69,6 +70,12 @@ public:
 			if(key == 'E')
 				moveUp = true;
 
+
+			if(key == GLFW_KEY_PAGE_UP)
+				tiltLeft = true;
+
+			if(key == GLFW_KEY_PAGE_DOWN)
+				tiltRight = true;
 
 			if(key == GLFW_KEY_LEFT)
 				rotLeft = true;
@@ -105,6 +112,12 @@ public:
 				moveUp = false;
 
 
+			if(key == GLFW_KEY_PAGE_UP)
+				tiltLeft = false;
+
+			if(key == GLFW_KEY_PAGE_DOWN)
+				tiltRight = false;
+
 			if(key == GLFW_KEY_LEFT)
 				rotLeft = false;
 
@@ -119,69 +132,80 @@ public:
 		};
 
 		testText.toFramebufferTexture(200);
-		model[0]->replaceTexture(0, 0, testText.getFramebuffer()->getColorHandle(0));
+		model[0]->replaceTexture(0, 0, testText.getTexture());
 	}
 
 	void cameraMovement()
 	{
 		// Movement
 		if(moveLeft)
-			Game::translateCameraBy({-.05f,0,0});
+			Game::translateCameraBy({-speed,0,0});
 		if(moveRight)
-			Game::translateCameraBy({.05f,0,0});
+			Game::translateCameraBy({speed,0,0});
 		if(moveForward)
-			Game::translateCameraBy({0,0,.05f});
+			Game::translateCameraBy({0,0,speed});
 		if(moveBack)
-			Game::translateCameraBy({0,0,-.05f});
+			Game::translateCameraBy({0,0,-speed});
 		if(moveUp)
-			Game::translateCameraBy({0,.05f,0});
+			Game::translateCameraBy({0,speed,0});
 		if(moveDown)
-			Game::translateCameraBy({0,-.05f,0});
+			Game::translateCameraBy({0,-speed,0});
+
+		// Rotation
+		if(tiltLeft)
+			Game::rotateCameraBy({0,0,-angle});
+		if(tiltRight)
+			Game::rotateCameraBy({0,0,angle});
+		if(rotLeft)
+			Game::rotateCameraBy({0,-angle,0});
+		if(rotRight)
+			Game::rotateCameraBy({0,angle,0});
+		if(rotUp)
+			Game::rotateCameraBy({angle,0,0});
+		if(rotDown)
+			Game::rotateCameraBy({-angle,0,0});
+	}
+
+	void objectMovement()
+	{
+		// Movement
+		if(moveLeft)
+			model[0]->translateBy({-speed,0.f,0.f});
+		if(moveRight)
+			model[0]->translateBy({speed,0,0});
+		if(moveForward)
+			model[0]->translateBy({0,0,speed});
+		if(moveBack)
+			model[0]->translateBy({0,0,-speed});
+		if(moveUp)
+			model[0]->translateBy({0,speed,0});
+		if(moveDown)
+			model[0]->translateBy({0,-speed,0});
 
 		// Rotation
 		if(rotLeft)
-			Game::RotateCameraBy(1, {0,-.5f,0});
+			model[0]->rotateBy({0,-angle,0});
 		if(rotRight)
-			Game::RotateCameraBy(1, {0,.5f,0});
-		if(rotUp)
-			Game::RotateCameraBy(1, {.5f,0,0});
+			model[0]->rotateBy({0,angle,0});
 		if(rotDown)
-			Game::RotateCameraBy(1, {-.5f,0,0});
+			model[0]->rotateBy({-angle,0,0});
+		if(rotUp)
+			model[0]->rotateBy({angle,0,0});
 	}
 
 	void update(double dt)
 	{
 
-		if(tab)
-		{
-			// Movement
-			if(moveLeft)
-				model[0]->translateBy({-.05f,0.f,0.f});
-			if(moveRight)
-				model[0]->translateBy({.05f,0,0});
-			if(moveForward)
-				model[0]->translateBy({0,0,.05f});
-			if(moveBack)
-				model[0]->translateBy({0,0,-.05f});
-			if(moveUp)
-				model[0]->translateBy({0,.05f,0});
-			if(moveDown)
-				model[0]->translateBy({0,-.05f,0});
 
-			// Rotation
-			if(rotLeft)
-				model[0]->rotateBy({0,-5,0});
-			if(rotRight)
-				model[0]->rotateBy({0,5,0});
-			if(rotUp)
-				model[0]->rotateBy({5,0,0});
-			if(rotDown)
-				model[0]->rotateBy({-5,0,0});
-		}
+		if(tab)
+			objectMovement();
 		else
-		{
 			cameraMovement();
-		}
+
+		if(Game::mouseCollision(model[0]))
+			model[0]->setColour(0, 0, 1);
+		else
+			model[0]->setColour(1, 0, 0);
 
 		//model[0]->print();
 		//puts("");
@@ -191,6 +215,7 @@ public:
 
 	}
 private:
+	float speed = 0.01, angle = 1;
 
 	Model* model[3];
 	Text testText;

@@ -47,15 +47,24 @@ void Transformer::rotate(Coord3D<> angles)
 
 }
 
+void Transformer::rotate(float x, float y, float z)
+{
+	Transformer::rotate({x,y,z});
+}
+
 void Transformer::rotateBy(Coord3D<> angles)
 {
-	m_updatedRot = true;
-	rotate(angles + m_rotDat);
+	Transformer::rotate(angles + m_rotDat);
+}
+
+void Transformer::rotateBy(float x, float y, float z)
+{
+	Transformer::rotateBy({x,y,z});
 }
 
 void Transformer::translateBy(float x, float y, float z)
 {
-	translateBy(Coord3D<>{x, y, z});
+	Transformer::translateBy({x, y, z});
 }
 
 void Transformer::translateBy(Coord3D<> pos)
@@ -81,7 +90,7 @@ void Transformer::translateBy(Coord3D<> pos)
 
 void Transformer::translate(float x, float y, float z)
 {
-	translate(Coord3D<>{x, y, z});
+	Transformer::translate(Coord3D<>{x, y, z});
 }
 
 void Transformer::translate(Coord3D<> pos)
@@ -107,22 +116,22 @@ void Transformer::translate(Coord3D<> pos)
 
 void Transformer::scaleBy(float scale)
 {
-	scaleBy(m_scaleDat.x + scale, m_scaleDat.y + scale, m_scaleDat.z + scale);
+	Transformer::scaleBy(m_scaleDat.x + scale, m_scaleDat.y + scale, m_scaleDat.z + scale);
 }
 
 void Transformer::scaleBy(float x, float y, float z)
 {
-	setScale(m_scaleDat + Coord3D<>(x, y, z));
+	Transformer::setScale(m_scaleDat + Coord3D<>(x, y, z));
 }
 
 void Transformer::setScale(float scale)
 {
-	setScale(scale, scale, scale);
+	Transformer::setScale(scale, scale, scale);
 }
 
 void Transformer::setScale(Coord3D<> scale)
 {
-	setScale(scale.x, scale.y, scale.z);
+	Transformer::setScale(scale.x, scale.y, scale.z);
 }
 
 void Transformer::setScale(float x, float y, float z)
@@ -145,6 +154,21 @@ Coord3D<> Transformer::getRotation()
 Coord3D<> Transformer::getScale()
 {
 	return m_scaleDat;
+}
+
+Coord3D<> Transformer::getForward()
+{
+	return m_forward;
+}
+
+Coord3D<> Transformer::getUp()
+{
+	return m_up;
+}
+
+Coord3D<> Transformer::getRight()
+{
+	return m_right;
 }
 
 glm::mat4 Transformer::getRotationMatrix()

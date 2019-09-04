@@ -147,22 +147,22 @@ std::vector<FrameBuffer*> LightSource::shadowBuffers(unsigned w, unsigned h, std
 			switch(a)
 			{
 			case 0:
-				cam.rotate(90, {1,0,0});
+				cam.rotate(90 * Coord3D<>{1, 0, 0});
 				break;
 			case 1:
-				cam.rotate(90, {-1,0,0});
+				cam.rotate(90 * Coord3D<>{-1, 0, 0});
 				break;
 			case 2:
-				cam.rotate(90, {0,1,0});
+				cam.rotate(90 * Coord3D<>{0, 1, 0});
 				break;
 			case 3:
-				cam.rotate(90, {0,-1,0});
+				cam.rotate(90 * Coord3D<> {0, -1, 0});
 				break;
 			case 4:
-				cam.rotate(0, {0,1, 0});
+				cam.rotate({0, 0, 0});
 				break;
 			case 5:
-				cam.rotate(180, {0,-1,0});
+				cam.rotate(180 * Coord3D<>{0, -1, 0});
 
 				break;
 			default:
@@ -222,7 +222,7 @@ void LightSource::update()
 
 		dir = m_lights[a].getRotationMatrix() * dir;
 		dir = glm::normalize(dir);
-		dir = m_cam->getTransformer().getRotationMatrix() * dir;
+		dir = m_cam->getRotationMatrix() * dir;
 		dir = glm::normalize(dir);
 
 		sprintf_s(buff, "LightType[%d]", a);

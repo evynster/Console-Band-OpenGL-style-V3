@@ -24,15 +24,17 @@ public:
 	void enableFPSMode(bool enable = true);
 	/*SET ROTATION*/
 
-	void rotate(Coord3D<> direction);
-	void rotateBy(Coord3D<> direction);
+	virtual void rotate(Coord3D<> angles);
+	virtual void rotate(float x,float y ,float z);
+	virtual void rotateBy(Coord3D<> angles);
+	virtual void rotateBy(float x, float y, float z);
 
 	/*SET POSITION*/
 
-	void translate(float x, float y, float z);
-	void translate(Coord3D<> pos);
-	void translateBy(float x, float y, float z);
-	void translateBy(Coord3D<> pos);
+	virtual void translate(float x, float y, float z);
+	virtual void translate(Coord3D<> pos);
+	virtual void translateBy(float x, float y, float z);
+	virtual void translateBy(Coord3D<> pos);
 
 
 	/*SET SCALE*/
@@ -43,10 +45,14 @@ public:
 	virtual void setScale(float scale);
 	virtual void setScale(float x, float y, float z);
 
-	/*GETERS*/
-	Coord3D<> getPosition();
-	Coord3D<> getRotation();
-	Coord3D<> getScale();
+	/*GETTERS*/
+	virtual Coord3D<> getPosition();
+	virtual Coord3D<> getRotation();
+	virtual Coord3D<> getScale();
+	Coord3D<> getForward();
+	Coord3D<> getUp();
+	Coord3D<> getRight();
+
 	glm::mat4 getRotationMatrix();
 	glm::mat4 getScaleMatrix();
 	glm::mat4 getTranslationMatrix();
@@ -54,15 +60,14 @@ public:
 	/*Gets a combination of the rotation, scale, and translation matricies*/
 	glm::mat4 getTransformation();
 
-	void resetUpdated();
-
-	bool isUpdated();
-	bool isScaleUpdated();
-	bool isRotationUpdated();
-	bool isTranslatinUpdated();
+	virtual void resetUpdated();
+	virtual bool isUpdated();
+	virtual bool isScaleUpdated();
+	virtual bool isRotationUpdated();
+	virtual bool isTranslatinUpdated();
 
 	virtual void addChild(Transformer* child);
-	void removeChild(Transformer* child);
+	virtual void removeChild(Transformer* child);
 	virtual Transformer* getChild(unsigned int index);
 	virtual std::vector<Transformer*>& getChildren();
 

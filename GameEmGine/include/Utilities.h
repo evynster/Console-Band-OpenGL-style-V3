@@ -30,8 +30,12 @@ inline char* cDir(char* dir)
 template<class T = float>
 struct Coord2D
 {
-	T x = 0, y = 0;
-
+	union
+	{
+		struct { T x, y; };
+		struct { T u, v; };
+		struct { T width, height; };
+	};
 	glm::vec2 toVec2()
 	{
 		return glm::vec2(x, y);
@@ -110,14 +114,27 @@ struct Coord2D
 template<class T = float>
 struct Coord3D
 {
-	T x = 0.0f, y = 0.0f, z = 0.0f;
+	union
+	{
+		struct { T x, y, z; };
+		struct { T width, height, depth; };
+	};
 
-	Coord3D() = default;
+
+	Coord3D():x(0), y(0), z(0) {};
 
 	Coord3D(Coord2D<T> coord)
 	{
 		x = coord.x;
 		y = coord.y;
+		z = 0;
+	}
+
+	Coord3D(Coord2D<T> coord,T last)
+	{
+		x = coord.x;
+		y = coord.y;
+		z = last;
 	}
 
 	Coord3D(T scale)
@@ -142,7 +159,17 @@ struct Coord3D
 
 	glm::vec3 toVec3()
 	{
-		return glm::vec3(x, y, z);
+		return {x,y,z};
+	}
+
+	static glm::vec3 toVec3(Coord3D<float> a0)
+	{
+		return reclass(glm::vec3, a0);
+	}
+
+	static glm::vec3 toVec3(Coord3D<int> a0)
+	{
+		return reclass(glm::vec3, a0);
 	}
 
 	static T distance(Coord3D<T> v1, Coord3D<T> v2)
@@ -330,88 +357,9 @@ struct Coord3D
 	}
 };
 
-struct Size2D
-{
-	float width = 0, height = 0;
-	float& operator[](int m_index)
-	{
-		float* error = nullptr;
-		switch(m_index)
-		{
-		case 0:
-			return static_cast<float&>(width);
-		case 1:
-			return static_cast<float&>(height);
-		}
-		return *error;
-	}
-};
-
-struct Size3D
-{
-	float width = 0, height = 0, depth = 0;
-
-	Size3D()
-	{}
-
-	Size3D(Size2D size)
-	{
-		width = size.width;
-		height = size.height;
-	}
-
-	Size3D(float w, float h, float d)
-	{
-		this->width = w;
-		this->height = h;
-		this->depth = d;
-	}
-
-	Size3D(float w, float h)
-	{
-		this->width = w;
-		this->height = h;
-	}
-
-	void set(Size2D size)
-	{
-		width = size.width;
-		height = size.height;
-	}
-
-	void set(float w, float h, float d)
-	{
-		this->width = w;
-		this->height = h;
-		this->depth = d;
-	}
-
-	void set(float w, float h)
-	{
-		this->width = w;
-		this->height = h;
-	}
-
-	float& operator[] (int m_index)
-	{
-		float* error = nullptr;
-		switch(m_index)
-		{
-		case 0:
-			return const_cast<float&>(width);
-		case 1:
-			return const_cast<float&>(height);
-		case 2:
-			return const_cast<float&>(depth);
-		}
-		return *error;
-	}
-};
-
 struct vboInfo3D
 {
-	Coord3D<> pos;
-	Size3D size;
+	Coord3D<> pos, size;
 };
 
 struct ColourRGBA
@@ -447,7 +395,7 @@ struct ColourRGBA
 		this[0][2] = a_b;
 		this[0][3] = a_a;
 	}
-	
+
 	void set(float a_r, float a_g, float a_b)
 	{
 		this[0][0] = GLubyte(a_r * 255);
@@ -514,7 +462,7 @@ struct ColourRGBA
 			GLubyte(b * rgba.b / 255.f),
 			GLubyte(a * rgba.a / 255.f)};
 	}
-	
+
 	ColourRGBA operator/(ColourRGBA rgba)
 	{
 		return ColourRGBA{
@@ -528,7 +476,7 @@ struct ColourRGBA
 	{
 		*this = *this * rgba;
 	}
-	
+
 	void operator/=(ColourRGBA rgba)
 	{
 		*this = *this / rgba;
@@ -586,14 +534,13 @@ struct UV
 
 struct VboInfo2D
 {
-	VboInfo2D(Coord2D<> c = {0,0}, Size2D s = {0,0})
+	VboInfo2D(Coord2D<> c = {0,0}, Coord2D<> s = {0,0})
 	{
 		position = c;
 		size = s;
 	}
 
-	Coord2D<> position;
-	Size2D size;
+	Coord2D<> position, size;
 protected:
 	float _angle;
 };
@@ -676,15 +623,14 @@ struct Vertex3D
 
 struct WindowInfo
 {
-	std::string* title = new std::string;
-	Size3D* size = new Size3D;
-	Coord2D<>* position = new Coord2D<>;
+	std::string title;
+	Coord3D<int> position, size;
 	int monitor;
 	void print()
 	{
-		printf("Title    : %s\n\n", title->c_str());
-		printf("Position : (%f, %f)\n", position->x, position->y);
-		printf("Size     : (%.0f, %.0f, %.0f)\n", size->width, size->height, size->depth);
+		printf("Title    : %s\n\n", title.c_str());
+		printf("Position : (%d, %d)\n", position.x, position.y);
+		printf("Size     : (%d, %d, %d)\n", size.width, size.height, size.depth);
 		printf("Monitor  : %d\n\n", monitor);
 	}
 };

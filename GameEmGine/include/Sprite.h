@@ -20,7 +20,7 @@ public:
 	void rotate(float);
 	void rotateBy(float);
 
-	Size2D& getSize();
+	Coord2D<>& getSize();
 
 private:
 	void init();

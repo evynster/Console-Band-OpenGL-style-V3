@@ -515,7 +515,7 @@ class Song:public Scene
 		{
 			if(key == GLFW_KEY_R)
 			{
-				Game::getMainCamera()->getTransformer().reset();
+				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-5});
 			}
 
@@ -613,13 +613,13 @@ class Song:public Scene
 
 		// Rotation
 		if(rotLeft)
-			Game::RotateCameraBy(1, {0,-.5f,0});
+			Game::rotateCameraBy({0,-.5f,0});
 		if(rotRight)
-			Game::RotateCameraBy(1, {0,.5f,0});
+			Game::rotateCameraBy({0,.5f,0});
 		if(rotUp)
-			Game::RotateCameraBy(1, {.5f,0,0});
+			Game::rotateCameraBy({.5f,0,0});
 		if(rotDown)
-			Game::RotateCameraBy(1, {-.5f,0,0});
+			Game::rotateCameraBy({-.5f,0,0});
 	}
 
 	void update(double dt)

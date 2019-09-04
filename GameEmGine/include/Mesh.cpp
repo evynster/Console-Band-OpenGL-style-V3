@@ -495,8 +495,38 @@ bool Mesh::loadMesh(std::string path)
 	verts.clear();
 	uvs.clear();
 	faces.clear();
-	for(auto& a : m_unpackedData)
-		a.second.clear();
+	//for(auto& a : m_unpackedData)
+	//	a.second.clear();
+	m_unpackedData.clear();
+
+	return true;
+}
+
+bool Mesh::loadPrimitive(primitiveMesh* mesh)
+{
+	if(!mesh)
+		return false;
+
+	mesh->createMesh();
+
+	m_unpackedData.push_back({"",mesh->getData()});
+	m_textures.resize(1, {"", {Texture2D(),Texture2D()}});
+	m_replaceTex.resize(1, {{0,0}});
+
+	m_textures[0].second[0].type = TEXTURE_TYPE::DIFFUSE;
+	m_textures[0].second[1].type = TEXTURE_TYPE::SPECULAR;
+
+	top = mesh->m_top;
+	bottom = mesh->m_bottom;
+	left = mesh->m_left;
+	right = mesh->m_right;
+	front = mesh->m_front;
+	back = mesh->m_back;
+
+	m_numVerts.push_back(mesh->getData().size());
+
+	init();
+
 	m_unpackedData.clear();
 
 	return true;
@@ -729,11 +759,13 @@ void Mesh::render(Shader& shader)
 
 				for(auto& d : m_textures[b].second)
 					if(d.type == TEXTURE_TYPE::DIFFUSE)
-					{
-						textured = true;
-						glUniform1i(shader.getUniformLocation("uTex"), c);
-						glBindTexture(GL_TEXTURE_2D, m_replaceTex[a][b] ? m_replaceTex[a][b] : d.id);
-					}
+						if(d.id)
+						{
+							textured = true;
+							glUniform1i(shader.getUniformLocation("uTex"), c);
+							glBindTexture(GL_TEXTURE_2D, m_replaceTex[a][b] ? m_replaceTex[a][b] : d.id);
+						}
+
 				c++;
 			}
 		}
@@ -768,7 +800,7 @@ GLuint Mesh::getNumVerticies(int m_index) const
 
 void Mesh::init()
 {
-	for(unsigned a = 0; a < m_numFaces.size(); a++)
+	for(unsigned a = 0; a < m_unpackedData.size(); a++)
 	{
 		m_vaoID.push_back({m_unpackedData[a].first ,0});
 		m_vboID.push_back({0 ,0});

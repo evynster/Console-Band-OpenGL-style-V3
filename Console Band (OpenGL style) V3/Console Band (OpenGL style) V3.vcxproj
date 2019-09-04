@@ -159,9 +159,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Difficulty.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Song.h" />
     <ClInclude Include="SongSelect.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,8 +2,9 @@
 #include "XinputManager.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <functional>
 #include "Utilities.h"
+#include <functional>
+#include <unordered_map>
 
 /***Enums***/
 
@@ -39,17 +40,14 @@ enum MouseButton
 	MOUSE_BUTTON_7,
 	MOUSE_BUTTON_8,
 
-	LEFT_BUTTON = 0,
-	RIGHT_BUTTON = 1,
-	MIDDLE_BUTTON = 2,
-	LAST_BUTTON = 7
+	MOUSE_LEFT_BUTTON = 0,
+	MOUSE_RIGHT_BUTTON = 1,
+	MOUSE_MIDDLE_BUTTON = 2,
+	MOUSE_LAST_BUTTON = 7
 };
-
-///***Structs***/
 
 
 /***Class***/
-
 class InputManager
 {
 public:
@@ -57,11 +55,19 @@ public:
 	//must be called to work
 	static void init();
 
-	static void mouseButtonPressCallback(std::function<void(int, int)> mouseButton);
+	static void mouseButtonPressedCallback(std::function<void(int, int)> mouseButton);
 
-	static void mouseButtonReleaseCallback(std::function<void(int, int)> mouseButton);
+	static void mouseButtonReleasedCallback(std::function<void(int, int)> mouseButton);
 
-	static Coord2D<> getMouseCursorPosition();
+	static void mouseButtonAllCallback(std::function<void(int, int, int)> mouseButton);
+
+	static bool mouseDown(MouseButton button);
+
+	static bool mouseUp(MouseButton button);
+
+	static bool mouseStroke(MouseButton button);
+
+	static Coord2D<float> getMousePosition();
 
 	/*
 	Callback for whenever any key is pressed
@@ -78,6 +84,35 @@ public:
 	*/
 	static void setKeyAllCallback(std::function<void(int, int, int)> key);
 
+
+	/*
+	* key - The key which is pressed. You can either
+	use GLFW_KEY_'KEY' (i.e. GLFW_KEY_RIGHT) or characters
+	to be checked if key is pressed and then released.
+
+	(Note: characters must be in uppercase)
+	*/
+	static bool keyStroke(int key);
+
+	/*
+	* key - The key which is pressed. You can either
+	use GLFW_KEY_'KEY' (i.e. GLFW_KEY_RIGHT) or characters
+	to be checked if key is pressed.
+
+	Note: characters must be in uppercase
+	*/
+	static bool keyDown(int key);
+
+	/*
+	* key - The key which is pressed. You can either
+	use GLFW_KEY_'KEY' (i.e. GLFW_KEY_RIGHT) or characters
+	to be checked if key is released.
+
+	Note: characters must be in uppercase
+	*/
+	static bool keyUp(int key);
+
+
 	static int controllersConnected();
 
 	static bool isControllerConnected(unsigned int m_index);
@@ -86,24 +121,31 @@ public:
 
 	static void controllerUpdate();
 
+	static void update();
+
 private:
-	
-	static void mouseButtonUpdate(GLFWwindow *, int button, int action, int mods);
-	static void keyUpdate(GLFWwindow *, int key, int scancode, int action, int mods);
+
+	static void keyUpdate(GLFWwindow*, int key, int scancode, int action, int mods);
+	static void mouseButtonUpdate(GLFWwindow*, int button, int action, int mods);
+	static void mousePositionUpdate(GLFWwindow*, double x, double y);
+
 	//static void xinputConnectionUpdate(int controller, int connected);
 
-	static void setMouseButtonAllCallback(std::function<void(int, int, int)> mouseButton);
-	
-	//static std::function<void(int)>
-	//	m_controllerConneced,
-	//	m_controllerDisconnected;
+	static std::unordered_map<int, bool> m_keyState, m_keyStroke;
+	static std::unordered_map<MouseButton, bool> m_mouseState, m_mouseStroke;
+
+	static Coord2D<float> m_mousePos;
+
 	static std::function<void(int, int)>
 		m_keyUp,
 		m_keyInitDown,
 		m_keyHeldDown,
 		m_mouseButtonPress,
 		m_mouseButtonRelease;
-	//	m_controllerConnection;
+
+	static std::function<void(double x, double y)>
+		m_mousePosition;
+
 	static std::function<void(int, int, int)>
 		m_keyAll,
 		m_mouseButtonAll;

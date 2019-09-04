@@ -221,7 +221,7 @@ void Text::toFramebufferTexture(unsigned int width)
 	setScale(tmpSize);
 }
 
-FrameBuffer* Text::getFramebuffer() { return m_texture; }
+GLuint Text::getTexture() { return m_texture->getColorHandle(0); }
 
 bool Text::isTransparent()
 {

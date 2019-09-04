@@ -1,12 +1,13 @@
 #pragma once
 #include <GameEmGine.h>
-class Difficulty:public Scene
+
+class MainMenu:	public Scene
 {
 	void init()
-	{
-	}
+	{}
 
 	void update(double dt)
-	{
-	}
+	{}
+	
 };
+

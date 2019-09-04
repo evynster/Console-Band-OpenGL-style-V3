@@ -52,9 +52,6 @@
     <ClInclude Include="Shader.h">
       <Filter>EmGine\Shader Stuff</Filter>
     </ClInclude>
-    <ClInclude Include="LightSource.h">
-      <Filter>EmGine</Filter>
-    </ClInclude>
     <ClInclude Include="Physics3D.h">
       <Filter>EmGine</Filter>
     </ClInclude>
@@ -84,6 +81,9 @@
     </ClInclude>
     <ClInclude Include="Character.h">
       <Filter>EmGine\Text Render</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSource.h">
+      <Filter>EmGine\Game Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -135,9 +135,6 @@
     <ClCompile Include="Shader.cpp">
       <Filter>EmGine\Shader Stuff</Filter>
     </ClCompile>
-    <ClCompile Include="LightSource.cpp">
-      <Filter>EmGine</Filter>
-    </ClCompile>
     <ClCompile Include="Physics3D.cpp">
       <Filter>EmGine</Filter>
     </ClCompile>
@@ -155,6 +152,9 @@
     </ClCompile>
     <ClCompile Include="Character.cpp">
       <Filter>EmGine\Text Render</Filter>
+    </ClCompile>
+    <ClCompile Include="LightSource.cpp">
+      <Filter>EmGine\Game Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
