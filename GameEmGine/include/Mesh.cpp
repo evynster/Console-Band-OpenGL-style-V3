@@ -192,7 +192,7 @@ bool Mesh::loadMesh(std::string path)
 	std::vector<Coord3D<>> norms;
 
 	std::vector < std::pair<std::string, std::vector<Vertex3D>>> faces;
-	//FILE* bin;
+	FILE* bin;
 	cDir((char*)path.c_str());
 
 
@@ -355,26 +355,27 @@ bool Mesh::loadMesh(std::string path)
 		fclose(f);
 
 
-		//unpacked data
-
-		//fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "wb");
+		//UNPACKED DATA//
+		
+		//open bin file
+		fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "wb");
 
 		unsigned meshSize = 0, dataSize = 0, faceSize = 0;
-		//fwrite(&meshSize, sizeof(char), sizeof(int), bin);
-		//
-		//fpos_t;
-		//fpos_t fpos, fend;
+		
+		fwrite(&meshSize, sizeof(char), sizeof(int), bin);
+		fpos_t fpos, fend;
+		
 		for(unsigned int a = 0; a < faces.size(); a++)
 		{
 			dataSize = 0, faceSize = 0;
 			meshSize++;
-			//int chars = (int)faces[a].first.size();
-			//fwrite(&chars, sizeof(char), sizeof(int), bin);
-			//fwrite(faces[a].first.c_str(), sizeof(char), sizeof(char) * chars, bin);
-			//
-			//fgetpos(bin, &fpos);
-			//fwrite(&dataSize, sizeof(char), sizeof(unsigned), bin);
-			//fwrite(&faceSize, sizeof(char), sizeof(unsigned), bin);
+			int chars = (int)faces[a].first.size();
+			fwrite(&chars, sizeof(char), sizeof(int), bin);
+			fwrite(faces[a].first.c_str(), sizeof(char), sizeof(char) * chars, bin);
+			
+			fgetpos(bin, &fpos);
+			fwrite(&dataSize, sizeof(char), sizeof(unsigned int), bin);
+			fwrite(&faceSize, sizeof(char), sizeof(unsigned int), bin);
 
 			m_unpackedData.push_back({faces[a].first,std::vector<Vertex3D>()});
 
@@ -408,86 +409,87 @@ bool Mesh::loadMesh(std::string path)
 
 					}
 
-					//fwrite(&tmp.coord, sizeof(char), sizeof(float) * 3, bin);
-					//fwrite(&tmp.uv, sizeof(char), sizeof(float) * 2, bin);
-					//fwrite(&tmp.norm, sizeof(char), sizeof(float) * 3, bin);
+					fwrite(&tmp.coord, sizeof(char), sizeof(float) * 3, bin);
+					fwrite(&tmp.uv, sizeof(char), sizeof(float) * 3, bin);
+					fwrite(&tmp.norm, sizeof(char), sizeof(float) * 3, bin);
 
 					m_unpackedData.back().second.push_back(tmp);
 				}
-
-			//fgetpos(bin, &fend);
-			//fsetpos(bin, &fpos);
-			//fwrite(&dataSize, sizeof(char), sizeof(unsigned), bin);
-			//faceSize = faces[a].second.size();
-			//fwrite(&faceSize, sizeof(char), sizeof(unsigned), bin);
-			//fseek(bin, fend, SEEK_SET);//goes to the end of the file
+			fgetpos(bin, &fend);
+			
+			fsetpos(bin, &fpos);
+			fwrite(&dataSize, sizeof(char), sizeof(unsigned), bin);
+			faceSize = faces[a].second.size();
+			fwrite(&faceSize, sizeof(char), sizeof(unsigned), bin);
+			
+			fsetpos(bin, &fend);//goes to the end of the file
 
 			m_numFaces.push_back((unsigned)faces[a].second.size());
 			m_numVerts.push_back((unsigned)m_numFaces[a] * 3);
 		}
 
-		//fseek(bin, 0, SEEK_SET);
-		//fwrite(&meshSize, sizeof(char), sizeof(int), bin);
+		fseek(bin, 0, SEEK_SET);
+		fwrite(&meshSize, sizeof(char), sizeof(int), bin);
 	}
-	//else
-	//{
-	//	loadMaterials(path.c_str());
-	//	unsigned meshes, dataSize = 0, faceSize = 0;;
-	//
-	//	fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "rb");
-	//	fread(&meshes, sizeof(int), 1, bin);
-	//	bool initFace = true;
-	//	for(unsigned a = 0; a < meshes; a++)
-	//	{
-	//		int chars = 0;
-	//		fread(&chars, sizeof(int), 1, bin);
-	//		char* str = new char[chars + 1];
-	//		fread(str, sizeof(char), chars, bin);
-	//		str[chars] = '\0';
-	//		fread(&dataSize, sizeof(int), 1, bin);
-	//		fread(&faceSize, sizeof(int), 1, bin);
-	//
-	//		m_unpackedData.push_back({str,std::vector<Vertex3D>()});
-	//		delete[]str;
-	//		for(unsigned int c = 0; c < dataSize; c++)
-	//			for(unsigned int b = 0; b < 3; b++)
-	//			{
-	//				Vertex3D tmp;
-	//				fread(&tmp.coord, sizeof(float), 3, bin);
-	//
-	//				//if(uvSize)
-	//				fread(&tmp.uv, sizeof(float), 2, bin);
-	//
-	//				//if(normSize)
-	//				fread(&tmp.norm, sizeof(float), 3, bin);
-	//
-	//
-	//
-	//				if(initFace)
-	//				{
-	//					front = back = left = right = top = bottom = tmp.coord;
-	//					initFace = false;
-	//				}
-	//				else
-	//				{
-	//					front = tmp.coord.z > front.z ? tmp.coord : front;
-	//					back = tmp.coord.z < back.z ? tmp.coord : back;
-	//					left = tmp.coord.x < left.x ? tmp.coord : left;
-	//					right = tmp.coord.x > right.x ? tmp.coord : right;
-	//					top = tmp.coord.y > top.y ? tmp.coord : top;
-	//					bottom = tmp.coord.y < bottom.y ? tmp.coord : bottom;
-	//				}
-	//				m_unpackedData.back().second.push_back(tmp);
-	//			}
-	//
-	//		m_numFaces.push_back(faceSize);
-	//		m_numVerts.push_back(faceSize * 3);
-	//	}
-	//
-	//}
-	//
-	//if(bin)
-	//	fclose(bin);
+	else
+	{
+		loadMaterials(path.c_str());
+		unsigned meshes, dataSize = 0, faceSize = 0;;
+	
+		fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "rb");
+		fread(&meshes, sizeof(int), 1, bin);
+		bool initFace = true;
+		for(unsigned a = 0; a < meshes; a++)
+		{
+			int chars = 0;
+			fread(&chars, sizeof(int), 1, bin);
+			char* str = new char[chars + 1];
+			fread(str, sizeof(char), chars, bin);
+			str[chars] = '\0';
+			fread(&dataSize, sizeof(unsigned int), 1, bin);
+			fread(&faceSize, sizeof(unsigned int), 1, bin);
+	
+			m_unpackedData.push_back({str,std::vector<Vertex3D>()});
+			delete[] str;
+			for(unsigned int c = 0; c < dataSize; c++)
+				for(unsigned int b = 0; b < 3; b++)
+				{
+					Vertex3D tmp;
+					fread(&tmp.coord, sizeof(float), 3, bin);
+	
+					//if(uvSize)
+					fread(&tmp.uv, sizeof(float), 3, bin);
+	
+					//if(normSize)
+					fread(&tmp.norm, sizeof(float), 3, bin);
+	
+	
+	
+					if(initFace)
+					{
+						front = back = left = right = top = bottom = tmp.coord;
+						initFace = false;
+					}
+					else
+					{
+						front = tmp.coord.z > front.z ? tmp.coord : front;
+						back = tmp.coord.z < back.z ? tmp.coord : back;
+						left = tmp.coord.x < left.x ? tmp.coord : left;
+						right = tmp.coord.x > right.x ? tmp.coord : right;
+						top = tmp.coord.y > top.y ? tmp.coord : top;
+						bottom = tmp.coord.y < bottom.y ? tmp.coord : bottom;
+					}
+					m_unpackedData.back().second.push_back(tmp);
+				}
+	
+			m_numFaces.push_back(faceSize);
+			m_numVerts.push_back(faceSize * 3);
+		}
+	
+	}
+	
+	if(bin)
+		fclose(bin);
 
 
 	init();

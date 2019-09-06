@@ -196,22 +196,17 @@ public:
 	void update(double dt)
 	{
 
-
 		if(tab)
 			objectMovement();
 		else
 			cameraMovement();
 
+
 		if(Game::mouseCollision(model[0]))
 			model[0]->setColour(0, 0, 1);
 		else
 			model[0]->setColour(1, 0, 0);
-
-		//model[0]->print();
-		//puts("");
-		//
-		//printf(model[0]->collision2D(model[1], {0,1,0}) ? "collision\n" : "no collision\n");
-		//puts("\n");
+puts("\n");
 
 	}
 private:
@@ -229,7 +224,7 @@ int main()
 
 	Test test;
 	Song song;
-	Game::setScene(&test);
+	Game::setScene(&song);
 	Game::run();
 
 	return 0;
