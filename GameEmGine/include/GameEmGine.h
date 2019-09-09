@@ -9,7 +9,6 @@
 #include <functional>
 #include <utility>
 #include "Scene.h"
-//#include "ShaderCombiner.h"
 #include "Shader.h"
 #include "WindowCreator.h"
 #include "Camera.h"
@@ -23,6 +22,7 @@
 
 
 #define Game GameEmGine
+//#define sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
 class GameEmGine
 {
@@ -30,19 +30,19 @@ public:
 	GameEmGine()=delete;
 	static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * message, const void * userParam);
 	static void init(std::string name, int width, int height, int x = 0, int y = 0, int monitor = 0, bool fullScreen = false, bool visable = true);
-	//~GameEmGine();
-//#define sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
 
 	/*
 	Creates a new window
 	*/
 	static void createNewWindow(std::string name, int width, int height, int x = 0, int y = 0, int monitor = 0, bool fullScreen = false, bool visable = true);
+	
 	/*
 	Runs the engine.
-	does not exit loop until window is exited
+	does not exit loop until window is exited or void exit(); is called
 	*/
 	static void run();
+	
 	/*
 	Exists the game
 	*/
@@ -52,9 +52,11 @@ public:
 	static void setScene(Scene* scene);
 
 	/*
-	Set background colour
+	Set background colour in sigle bite (255 per colour) format
 	*/
 	static void setBackgroundColour(GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1);
+
+
 	/*
 	Gets window width in pixels
 	*/
@@ -66,7 +68,7 @@ public:
 
 	
 	/*
-	Gets window height in pixels
+	Gets window size in pixels
 	*/
 	static Coord3D<int> getWindowSize();
 
@@ -91,9 +93,9 @@ public:
 	static void rotateCameraBy( Coord3D<> direction);
 
 	/*
-		moves the camera angle
+		sets the camera angle
 	*/
-	static void rotateCamera(Coord3D<> direction);
+	static void setCameraRotation(Coord3D<> direction);
 
 	static void addModel(Model* model);
 
@@ -128,9 +130,7 @@ public:
 
 	static Texture2D* m_LUT;
 
-	static bool lutActive;
-
-	static bool toonActive;
+	static bool lutActive, toonActive;
 
 private:
 	static void shaderInit();

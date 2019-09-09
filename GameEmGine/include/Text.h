@@ -12,7 +12,7 @@
 
 class Camera;
 
-class Text:public Transformer, public Character
+class Text:public Transformer
 {
 public:
 	Text();
@@ -24,15 +24,19 @@ public:
 
 	void textSize(short s);
 
-	void setColour(float r, float g, float b);
+	void setColour(float r, float g, float b, float a = 1);
 
 	void setColour(ColourRGBA colour);
 
 	unsigned int size();
 
+	float getWidth();
+
+	float getHeight();
+
 	void render(Shader& s, Camera* cam, bool texture = false);
 
-	void toFramebufferTexture(unsigned int width = 720);
+	void toTexture(unsigned int width = 720);
 
 	GLuint getTexture();
 
@@ -40,7 +44,7 @@ public:
 	//static Character loadCharacter(const char c, const char* font);
 
 private:
-
+	void testSize();
 
 	/*SET SCALE*/
 
@@ -57,7 +61,8 @@ private:
 	std::string m_font, m_text;
 	unsigned int m_length;
 	GLuint m_vaoID, m_vboID;
+	Coord2D<float> m_size;
 
-	static float m_initY;
+	float m_initY;
 };
 

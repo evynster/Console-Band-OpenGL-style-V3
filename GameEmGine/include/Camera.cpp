@@ -26,7 +26,7 @@ void Camera::setType(CAMERA_TYPE type, ProjectionPeramiters* peram)
 	{
 	case ORTHOGRAPHIC:
 		if(!peram)
-			m_projMat = glm::ortho(-m_size.width * 100, m_size.width * 100, -m_size.height * 100, m_size.height * 100, -m_size.depth, m_size.depth);
+			m_projMat = glm::ortho(-m_size.width , m_size.width , -m_size.height , m_size.height , -m_size.depth, m_size.depth);
 		else
 			m_projMat = glm::ortho(peram1->left, peram1->right, peram1->bottom, peram1->top, peram1->zNear, peram1->zFar);
 
@@ -68,7 +68,7 @@ bool Camera::update()
 
 
 		Transformer::setScale(m_scale);
-		m_objMat = glm::inverse(Transformer::getTranslationMatrix() * Transformer::getRotationMatrix()) * Transformer::getScaleMatrix();
+		m_objMat = glm::inverse(Transformer::getTranslationMatrix() * Transformer::getRotationMatrix())/* * Transformer::getScaleMatrix()*/;
 
 		m_cameraMat = m_projMat * m_viewMat * m_objMat;
 

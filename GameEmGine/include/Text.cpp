@@ -1,9 +1,8 @@
 #include "Text.h"
 
-float Text::m_initY;
-
 Text::Text():Transformer(), m_vaoID(0), m_vboID(0)
 {
+	setScale(1);
 
 	m_type = TEXT;
 	m_font = "fonts/arial.ttf";
@@ -21,6 +20,7 @@ Text::Text():Transformer(), m_vaoID(0), m_vboID(0)
 
 Text::Text(const char* font):Transformer(), m_vaoID(0), m_vboID(0)
 {
+	setScale(1);
 
 	m_type = TEXT;
 	m_font = font;
@@ -34,21 +34,24 @@ Text::~Text()
 {
 	if(m_texture)
 		delete m_texture;
+	m_texture = 0;
 }
 
 void Text::setText(std::string text)
 {
 	m_text = text;
+	testSize();
 }
 
 void Text::textSize(short s)
 {
-	setScale(s * .01f);
+	setScale(s * 0.020834f);// s / 48 = s * 0.020834f 
+	testSize();
 }
 
-void Text::setColour(float r, float g, float b)
+void Text::setColour(float r, float g, float b, float a)
 {
-	m_colour = {GLubyte(r * 255),GLubyte(g * 255),GLubyte(b * 255)};
+	m_colour = {GLubyte(r * 255),GLubyte(g * 255),GLubyte(b * 255),GLubyte(a * 255)};
 }
 
 void Text::setColour(ColourRGBA colour)
@@ -61,17 +64,30 @@ unsigned int Text::size()
 	return m_length;
 }
 
+float Text::getWidth()
+{
+	return m_size.width;
+}
+
+float Text::getHeight()
+{
+	return m_size.height;
+}
+
 
 
 void Text::renderInit()
 {
 	glGenVertexArrays(1, &m_vaoID);
 	glGenBuffers(1, &m_vboID);
+
 	glBindVertexArray(m_vaoID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
+
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -84,6 +100,9 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	if(!texture)
+		getScale();
+
 	if(!m_vaoID || !m_vboID)
 		renderInit();
 
@@ -91,14 +110,13 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 	s.enable();
 
 	glUniformMatrix4fv(s.getUniformLocation("uModel"), 1, GL_FALSE, &((texture ? glm::mat4(1) : getTransformation())[0][0]));
-	glUniformMatrix4fv(s.getUniformLocation("uView"), 1, GL_FALSE, &((cam->getObjectMatrix() * cam->getViewMatrix())[0][0]));
+	glUniformMatrix4fv(s.getUniformLocation("uView"), 1, GL_FALSE, &((cam->getViewMatrix() * cam->getObjectMatrix())[0][0]));
 	glUniformMatrix4fv(s.getUniformLocation("uProj"), 1, GL_FALSE, &(cam->getProjectionMatrix()[0][0]));
+
 	s.sendUniform("flip", texture);
-
 	float colour[4]{(float)m_colour.r / 255,(float)m_colour.g / 255,(float)m_colour.b / 255,(float)m_colour.a / 255};
-
 	s.sendUniform("textColor", colour[0], colour[1], colour[2], colour[3]);
-	//glUniform3f(glGetUniformLocation(s.Program, "textColor"), color.x, color.y, color.z);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(m_vaoID);
 
@@ -108,14 +126,11 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 
 		w,
 		h,
-		x = texture ? 0 : getPosition().x,
-		y = texture ? 0 : getPosition().y,
-		aspect;
-	Character ch;
+		x = 0,
+		y = 0;
 
-	int winW, winH;
-	glfwGetFramebufferSize(glfwGetCurrentContext(), &winW, &winH);
-	aspect = (float)winH;
+	static Character ch;
+
 
 	// Iterate through all characters
 	for(auto& c : m_text)
@@ -172,11 +187,9 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 			}
 }
 
-void Text::toFramebufferTexture(unsigned int width)
+void Text::toTexture(unsigned int width)
 {
-	width;
-	static Coord3D<> tmpSize;
-	tmpSize = getScale();
+	Coord3D<> tmpSize = getScale();
 
 	float
 		ypos = 0,
@@ -210,6 +223,9 @@ void Text::toFramebufferTexture(unsigned int width)
 	m_texture->clear();
 	m_texture->resizeColour(0, (int)x, int(h - ypos), GL_RGBA8);
 
+	int view[4];
+	glGetIntegerv(GL_VIEWPORT, view);
+
 	glViewport(0, 0, (int)x, int(h - ypos));
 
 	m_texture->enable();
@@ -219,6 +235,7 @@ void Text::toFramebufferTexture(unsigned int width)
 
 	m_texture->disable();
 	setScale(tmpSize);
+	glViewport(view[0], view[1], view[2], view[3]);
 }
 
 GLuint Text::getTexture() { return m_texture->getColorHandle(0); }
@@ -226,6 +243,30 @@ GLuint Text::getTexture() { return m_texture->getColorHandle(0); }
 bool Text::isTransparent()
 {
 	return true;
+}
+
+void Text::testSize()
+{
+	float
+		ypos = 0,
+		h = 0,
+		x = 0;
+
+	Character ch;
+	for(auto& c : m_text)
+	{
+		ch = ResourceManager::getCharacter(c, m_font.c_str());
+
+		ypos = std::min(-float(ch.size.y - ch.bearing.y), ypos);
+
+		h = std::max((float)ch.size.y, h);
+
+
+		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += (ch.advance >> 6); // Bitshift by 6 to get value in pixels (2^6 = 64)
+	}
+
+	m_size = {(x * getScale().x), ((h - ypos) * getScale().x)};
 }
 
 

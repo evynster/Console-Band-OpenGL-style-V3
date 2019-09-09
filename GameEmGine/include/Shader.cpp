@@ -191,6 +191,7 @@ bool Shader::linkShaders()
 		// Use the infoLog as you see fit.
 		printf(infoLog);
 		puts("\n");
+		delete[] infoLog;
 		//system("pause");
 		// In this simple program, we'll just leave
 		return false;
@@ -325,6 +326,7 @@ bool Shader::compileShader(Shaders shadType, const std::string filePath, GLuint 
 		printf("error in file: %s\n", filePath.c_str());
 		printf("%s\n\n", errorLog);
 
+		delete[] errorLog;
 		createDefault();
 		return false;
 	}

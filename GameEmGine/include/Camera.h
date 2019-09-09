@@ -93,6 +93,9 @@ public:
 	//render objects
 	void render(Shader* shader, std::map<void*, Model*>& models, bool transparent = false);
 
+	
+	bool isUpdated() { return m_cameraUpdate; }
+	
 	/*GETTERS*/
 	Coord3D<> getRotation();
 
@@ -130,7 +133,6 @@ private:
 	void setScale(Coord3D<> scale) { scale; }
 	void setScale(float x, float y, float z) { x, y, z; }
 
-	void resetUpdated() {}
 	bool isScaleUpdated() { return false; }
 	bool isRotationUpdated() { return false; }
 	bool isTranslatinUpdated() { return false; }

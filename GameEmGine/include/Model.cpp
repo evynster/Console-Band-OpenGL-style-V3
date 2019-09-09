@@ -13,17 +13,18 @@ Model::Model(Model& model, const char* tag) :
 	m_colour(model.m_colour),
 	m_transBB(glm::mat4(1)),
 	m_render(model.m_render),
-	m_tag(tag)
+	m_tag(tag),
+	m_copy(true)
 {
 	m_type = MODEL;
 	m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
-	float top = m_mesh.top.y,
-		bottom = m_mesh.bottom.y,
-		left = m_mesh.left.x,
-		right = m_mesh.right.x,
-		front = m_mesh.front.z,
-		back = m_mesh.back.z;
+	float top = m_mesh->top.y,
+		bottom = m_mesh->bottom.y,
+		left = m_mesh->left.x,
+		right = m_mesh->right.x,
+		front = m_mesh->front.z,
+		back = m_mesh->back.z;
 
 	(m_topLeftBack = {left,top,back}),
 		(m_topRightBack = {right,top,back}),
@@ -41,22 +42,22 @@ Model::Model(Model& model, const char* tag) :
 }
 
 Model::Model(primitiveMesh* model, const char* tag):
-Transformer(),
-m_transBB(glm::mat4(1)), m_tag(tag)
+	Transformer(),
+	m_transBB(glm::mat4(1)), m_tag(tag)
 {
 	m_type = MODEL;
-
-	if(m_mesh.loadPrimitive(model))
+	m_mesh = new Mesh;
+	if(m_mesh->loadPrimitive(model))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
 
-		float top = m_mesh.top.y,
-			bottom = m_mesh.bottom.y,
-			left = m_mesh.left.x,
-			right = m_mesh.right.x,
-			front = m_mesh.front.z,
-			back = m_mesh.back.z;
+		float top = m_mesh->top.y,
+			bottom = m_mesh->bottom.y,
+			left = m_mesh->left.x,
+			right = m_mesh->right.x,
+			front = m_mesh->front.z,
+			back = m_mesh->back.z;
 
 		(m_topLeftBack = {left,top,back}),
 			(m_topRightBack = {right,top,back}),
@@ -79,17 +80,18 @@ Model::Model(const char* path, const char* tag):
 {
 	m_type = MODEL;
 
+	m_mesh = new Mesh;
 	if(loadModel(path))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
 
-		float top = m_mesh.top.y,
-			bottom = m_mesh.bottom.y,
-			left = m_mesh.left.x,
-			right = m_mesh.right.x,
-			front = m_mesh.front.z,
-			back = m_mesh.back.z;
+		float top = m_mesh->top.y,
+			bottom = m_mesh->bottom.y,
+			left = m_mesh->left.x,
+			right = m_mesh->right.x,
+			front = m_mesh->front.z,
+			back = m_mesh->back.z;
 
 		(m_topLeftBack = {left,top,back}),
 			(m_topRightBack = {right,top,back}),
@@ -108,7 +110,10 @@ Model::Model(const char* path, const char* tag):
 
 
 Model::~Model()
-{}
+{
+	if(!m_copy)
+		delete m_mesh;
+}
 
 /// - Collision Function - ///
 
@@ -119,11 +124,10 @@ bool Model::collision2D(Model* box2, Coord3D<>ignore)
 
 bool Model::collision2D(Model* box1, Model* box2, Coord3D<>RPos)
 {
-	
-	 
+
 	RPos.normalize();
 	RPos = (Coord3D<>{1, 1, 1}-RPos);
-	
+
 	RPos = (box1->m_center - box2->m_center) * RPos;
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
@@ -295,7 +299,7 @@ void Model::render(Shader& shader, Camera* cam)
 	shader.disable();
 
 	if(m_animations[m_animation])
-		m_animations[m_animation]->update(&shader, &m_mesh);
+		m_animations[m_animation]->update(&shader, m_mesh);
 
 	// update the position of the object
 	m_transBB = getTransformation();
@@ -304,7 +308,7 @@ void Model::render(Shader& shader, Camera* cam)
 	if(m_render)
 	{
 		//render the mesh
-		m_mesh.render(shader);
+		m_mesh->render(shader);
 
 		if(m_enableBB)
 			drawBoundingBox();
@@ -363,7 +367,7 @@ ColourRGBA Model::getColour()
 
 bool Model::loadModel(const char* path)
 {
-	return m_mesh.loadMesh(path);
+	return m_mesh->loadMesh(path);
 }
 
 void Model::enableBoundingBox(bool enable)
@@ -417,12 +421,12 @@ void Model::boundingBoxUpdate()
 
 	std::vector<glm::vec4> bounds =
 	{
-	{*(glm::vec3*) & m_mesh.right,1},
-	{*(glm::vec3*) & m_mesh.left,1},
-	{*(glm::vec3*) & m_mesh.top,1},
-	{*(glm::vec3*) & m_mesh.bottom,1},
-	{*(glm::vec3*) & m_mesh.front,1},
-	{*(glm::vec3*) & m_mesh.back,1}
+	{*(glm::vec3*) & m_mesh->right,1},
+	{*(glm::vec3*) & m_mesh->left,1},
+	{*(glm::vec3*) & m_mesh->top,1},
+	{*(glm::vec3*) & m_mesh->bottom,1},
+	{*(glm::vec3*) & m_mesh->front,1},
+	{*(glm::vec3*) & m_mesh->back,1}
 	};
 
 
@@ -437,12 +441,12 @@ void Model::boundingBoxUpdate()
 
 	bounds =
 	{
-	{*(glm::vec3*) & m_mesh.right,1},
-	{*(glm::vec3*) & m_mesh.left,1},
-	{*(glm::vec3*) & m_mesh.top,1},
-	{*(glm::vec3*) & m_mesh.bottom,1},
-	{*(glm::vec3*) & m_mesh.front,1},
-	{*(glm::vec3*) & m_mesh.back,1}
+	{*(glm::vec3*) & m_mesh->right,1},
+	{*(glm::vec3*) & m_mesh->left,1},
+	{*(glm::vec3*) & m_mesh->top,1},
+	{*(glm::vec3*) & m_mesh->bottom,1},
+	{*(glm::vec3*) & m_mesh->front,1},
+	{*(glm::vec3*) & m_mesh->back,1}
 	};
 
 
@@ -473,7 +477,7 @@ void Model::setAnimation(const char* tag)
 
 Mesh* Model::getMesh()
 {
-	return &m_mesh;
+	return m_mesh;
 }
 
 Shader* Model::getShader()
@@ -483,7 +487,7 @@ Shader* Model::getShader()
 
 void Model::replaceTexture(int mesh, int index, GLuint tex)
 {
-	m_mesh.replaceTexture(mesh, index, tex);
+	m_mesh->replaceTexture(mesh, index, tex);
 }
 
 void Model::setToRender(bool render)

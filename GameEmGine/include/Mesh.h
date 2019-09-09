@@ -17,7 +17,6 @@ enum PRIMITIVE_TYPE
 	NONE,
 	PLANE,
 	CUBE
-
 };
 
 struct primitiveMesh
@@ -190,7 +189,7 @@ public:
 
 	bool loadPrimitive(primitiveMesh* mesh);
 
-	std::vector< std::pair<std::string, std::vector<Vertex3D>>> loadAni(std::string);
+	std::vector< std::pair<std::string, std::vector<Vertex3D>>>& loadAni(std::string);
 
 	void editVerts(std::vector< std::pair<std::string, std::vector<Vertex3D>>> verts1, std::vector< std::pair<std::string, std::vector<Vertex3D>>> verts2);
 
@@ -206,6 +205,8 @@ public:
 
 private:
 	void loadMaterials(const char* path);
+
+	bool load(std::string path);
 
 	void init();
 

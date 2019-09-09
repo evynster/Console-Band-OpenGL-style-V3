@@ -60,6 +60,7 @@ void FrameBuffer::resizeColour(unsigned index, unsigned width, unsigned height, 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
 
 		static GLuint tmpAttachment; tmpAttachment = m_colorAttachments[index];
+
 		glGenTextures(1, &m_colorAttachments[index]);
 
 		m_internalFormat = internalFormat;
@@ -76,8 +77,8 @@ void FrameBuffer::resizeColour(unsigned index, unsigned width, unsigned height, 
 		//Bind texture to the fbo
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, m_colorAttachments[index], 0);
 
-		glDeleteTextures(1, &tmpAttachment);
 		glBindTexture(GL_TEXTURE_2D,0);
+		glDeleteTextures(1, &tmpAttachment);
 	}
 }
 

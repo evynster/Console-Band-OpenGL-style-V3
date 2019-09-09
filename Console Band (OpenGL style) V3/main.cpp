@@ -1,5 +1,11 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include <GameEmGine.h>
 #include "Song.h"
+
+
 class Test: public Scene
 {
 public:
@@ -15,23 +21,25 @@ public:
 
 
 		//model[0] = new Model("Models/controls/controller.obj", "Box1");
-		model[0] = new Model(new primitiveCube({5,5,5}), "Box1");
+		model[0] = new Model("Models/boss/missileshoot/bms1.obj", "Box1");
+		model[0]->setScale(1);
 
-		model[0]->setScale(.01);
 		testText.setText("Maybe this Works?");
-		testText.setColour(1, .5, 0);
-		testText.textSize(1);
-
+		testText.setColour(1, 1, 1);
+		testText.textSize(10);
+		testText.toTexture();
 
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");
 
-		Game::addText(&testText);
+		//Game::addText(&testText);
 
 		Game::getMainCamera()->enableFPSMode();
 
 		Game::addModel(model[0]);
 
+	//	model[0]->replaceTexture(0, 0, testText.getTexture());
+	
 		keyPressed =
 			[&](int key, int mod)->void
 		{
@@ -130,9 +138,6 @@ public:
 			if(key == GLFW_KEY_DOWN)
 				rotDown = false;
 		};
-
-		testText.toFramebufferTexture(200);
-		model[0]->replaceTexture(0, 0, testText.getTexture());
 	}
 
 	void cameraMovement()
@@ -195,22 +200,21 @@ public:
 
 	void update(double dt)
 	{
-
+		testText.toTexture(200);
 		if(tab)
 			objectMovement();
 		else
 			cameraMovement();
 
 
-		if(Game::mouseCollision(model[0]))
-			model[0]->setColour(0, 0, 1);
-		else
-			model[0]->setColour(1, 0, 0);
-puts("\n");
-
+		//if(Game::mouseCollision(model[0]))
+		//	model[0]->setColour(0, 0, 1);
+		//else
+		//	model[0]->setColour(1, 0, 0);
+	
 	}
 private:
-	float speed = 0.01, angle = 1;
+	float speed = 0.01f, angle = 1;
 
 	Model* model[3];
 	Text testText;
@@ -220,11 +224,16 @@ private:
 
 int main()
 {
+	
 	Game::init("Window Band (Previously Console Band) V3", 800, 400);
 
+	void* thing = new Model;
+	thing = new Model;
+	delete thing;
+	
 	Test test;
 	Song song;
-	Game::setScene(&song);
+	Game::setScene(&test);
 	Game::run();
 
 	return 0;

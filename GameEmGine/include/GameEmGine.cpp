@@ -89,7 +89,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	printf("Creating The Window...\n");
 
-	m_window = new WindowCreator(name, {width,height}, Coord2D<int>{x, y}, monitor, fullScreen, visable);
+	m_window = new WindowCreator(name, {width,height,500}, Coord2D<int>{x, y}, monitor, fullScreen, visable);
 
 	if(m_window)
 		puts("Window Creation Successful\n");
@@ -116,7 +116,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 	m_buffer2 = new FrameBuffer(1, "Test2");
 
 	m_mainFrameBuffer->initDepthTexture(getWindowWidth(), getWindowHeight());
-	m_mainFrameBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	m_mainFrameBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	m_mainFrameBuffer->initColourTexture(1, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	m_mainFrameBuffer->initColourTexture(2, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	if(!m_mainFrameBuffer->checkFBO())
@@ -183,11 +183,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 void GameEmGine::run()
 {
-
-	//#ifdef _DEBUG
-	//	InitOpenGlCallback ();
-	//#endif
-
+	
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
@@ -212,7 +208,27 @@ void GameEmGine::run()
 			calculateFPS();
 			char str[20];
 			sprintf_s(str, "fps: %.2f", m_fps);
-			glfwSetWindowTitle(m_window->getWindow(), (m_window->getTitle() + "--> " + str).c_str());
+
+			glClear(GL_DEPTH_BUFFER_BIT);
+
+			static Text fps;
+			OrthoPeramiters ortho{0,(float)getWindowWidth(),(float)getWindowHeight(),0,0,(float)getWindowSize().depth};
+			static Camera cam({(float)getWindowSize().width,(float)getWindowSize().height,(float)getWindowSize().depth}
+			, ORTHOGRAPHIC, &ortho);
+			cam.update();
+
+			fps.setColour(1, 0, 0, .7f);
+			fps.setText(str);
+			fps.textSize(30);
+			fps.translate(0, fps.getHeight(), 0);
+			fps.rotate(180, 0, 0);
+
+			static std::map<void*, Model*> tmp;
+
+			tmp[&fps] = (Model*)& fps;
+			cam.render(m_forwardRender, tmp, true);
+
+			//glfwSetWindowTitle(m_window->getWindow(), (m_window->getTitle() + "--> " + str).c_str());
 		}
 
 		glfwSwapBuffers(m_window->getWindow());
@@ -418,7 +434,7 @@ void GameEmGine::rotateCameraBy(Coord3D<> direction)
 	m_mainCamera->rotateBy(direction);
 }
 
-void GameEmGine::rotateCamera(Coord3D<> direction)
+void GameEmGine::setCameraRotation(Coord3D<> direction)
 {
 	m_mainCamera->rotate(direction);
 }
@@ -465,18 +481,16 @@ void GameEmGine::update()
 
 	m_mainCamera->update();
 
-	if(m_mainCamera->isUpdated())
-	{
-		m_modelShader->enable();
-		glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
-		glUniformMatrix4fv(m_modelShader->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
-		m_modelShader->disable();
+	m_modelShader->enable();
+	glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
+	glUniformMatrix4fv(m_modelShader->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
+	m_modelShader->disable();
 
-		m_forwardRender->enable();
-		glUniformMatrix4fv(m_forwardRender->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
-		glUniformMatrix4fv(m_forwardRender->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
-		m_forwardRender->disable();
-	}
+	m_forwardRender->enable();
+	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
+	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
+	m_forwardRender->disable();
+
 
 	LightSource::setCamera(m_mainCamera);
 	LightSource::setShader(m_postProcess);
@@ -487,9 +501,9 @@ void GameEmGine::update()
 
 	m_mainFrameBuffer->enable();
 	m_mainCamera->render(m_modelShader, m_models, false);
-
-
 	m_mainFrameBuffer->disable();
+
+
 
 	//store data for post process
 	m_postBuffer->enable();

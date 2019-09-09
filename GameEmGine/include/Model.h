@@ -26,13 +26,13 @@ public:
 
 	bool collision2D(Model* k, Coord3D<float> ignore);
 
-	bool collision2D(Model* l, Model* k, Coord3D<float> ignore);
+	static bool collision2D(Model* l, Model* k, Coord3D<float> ignore);
 
 	bool collision3D(Model* k);
 
-	bool collision3D(Model* l, Model* k);
+	static bool collision3D(Model* l, Model* k);
 
-	bool getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& Plane, Model& box1, Model& box2);
+	static bool getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& Plane, Model& box1, Model& box2);
 	
 	virtual void render(Shader& shader, Camera* cam);
 
@@ -93,7 +93,7 @@ private:
 
 	std::unordered_map< std::string, Animation*>m_animations;
 	std::string m_animation;
-	Mesh m_mesh;
+	Mesh* m_mesh;
 
 	Camera* m_camera;
 
@@ -113,9 +113,9 @@ private:
 
 	float m_width, m_height, m_depth;
 	Shader* m_shader, * m_shaderBB;
-	Vertex3D* m_vertBBDat = new Vertex3D[12 * 3];
+	Vertex3D m_vertBBDat[12 * 3];
 	glm::mat4 m_transBB;
-	bool m_enableBB = false;
+	bool m_enableBB = false,m_copy=false;
 
 	//std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
 	//std::vector<Model*> m_children;

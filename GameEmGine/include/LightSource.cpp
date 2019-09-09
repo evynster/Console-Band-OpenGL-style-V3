@@ -19,17 +19,17 @@ void LightSource::setLightType(LIGHT_TYPE type, unsigned index)
 
 	if(type == LIGHT_TYPE::POINT)
 	{
-		m_shadows[index].resize(6, new FrameBuffer(0, "Shadow"));
+		//m_shadows[index].resize(6, new FrameBuffer(0, "Shadow"));
 		for(int a = 0; a < 6; a++)
 		{
 
-			m_shadows[index][a]->initDepthTexture(500, 500);
-
-			if(!m_shadows[index][a]->checkFBO())
-			{
-				printf("%s FBO failed Creation", m_shadows[index][a]->getTag().c_str());
-				system("pause");
-			}
+		//	m_shadows[index][a]->initDepthTexture(500, 500);
+		//
+		//	if(!m_shadows[index][a]->checkFBO())
+		//	{
+		//		printf("%s FBO failed Creation", m_shadows[index][a]->getTag().c_str());
+		//		system("pause");
+		//	}
 		}
 	}
 	else
@@ -102,7 +102,7 @@ void LightSource::setLightAmount(unsigned size)
 {
 	m_size = size > 0 ? size : 0;
 	m_lights.resize(m_size);
-	m_shadows.resize(m_size, std::vector<FrameBuffer*>(0, new FrameBuffer(0, "shadow")));
+	//m_shadows.resize(m_size, std::vector<FrameBuffer*>(0, new FrameBuffer(0, "shadow")));
 }
 
 void LightSource::enableLight(int index, bool enable)

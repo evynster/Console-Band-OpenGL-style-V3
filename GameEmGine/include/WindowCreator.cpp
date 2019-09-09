@@ -22,13 +22,13 @@ int WindowCreator::createWindow(std::string name, Coord3D<int> size, Coord2D<int
 	GLFWmonitor** mons = glfwGetMonitors(&monCount);
 
 
-	if(monCount > monitor)
+	if(monitor < monCount)
 		m_monitor = mons[m_info->monitor = monitor];
 	else
 		m_monitor = glfwGetPrimaryMonitor();
 
-	int tmp;
-	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetMonitors(&tmp)[m_info->monitor]);
+	//int tmp;
+	const GLFWvidmode* mode = glfwGetVideoMode(m_monitor);
 
 	size.width = ((int)size.width < mode->width ? size.width : mode->width);
 	size.height = ((int)size.height < mode->height ? size.height : mode->height);
@@ -108,19 +108,16 @@ std::string& WindowCreator::getTitle()
 
 Coord3D<int>& WindowCreator::getScreenSize()
 {
+	glfwGetFramebufferSize(m_window, &m_info->size.width, &m_info->size.height);
 	return m_info->size;
 }
 
 int WindowCreator::getScreenWidth()
 {
-	int w, h;
-	glfwGetFramebufferSize(m_window, &w, &h);
-	return w;
+	return getScreenSize().width;
 }
 
 int WindowCreator::getScreenHeight()
 {
-	int w, h;
-	glfwGetFramebufferSize(m_window, &w, &h);
-	return h;
+	return getScreenSize().height;
 }

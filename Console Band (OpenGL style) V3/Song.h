@@ -499,7 +499,7 @@ class Song:public Scene
 		Game::setBackgroundColour(1.f, 0.5f, 0);
 
 		for(int a = 0; a < 5; a++)
-			Game::addModel((fretBoard)[a] = new Model("models/note/note.obj")),
+			Game::addModel((fretBoard)[a] = new Model(*note)),
 			(fretBoard)[a]->setColour((*fretColour)[a] / 2),
 			(fretBoard)[a]->enableFPSMode(),
 			(fretBoard)[a]->rotate({45,0,0}),
@@ -664,7 +664,8 @@ class Song:public Scene
 						if((*guitarTrackTmp)[a][b - 1].pos + noteOffset < 0)
 							countAmountGuitar[a]++,
 							Game::removeModel((*guitarTrackTmp)[a][b - 1].note),
-							delete (*guitarTrackTmp)[a][b - 1].note;
+							delete (*guitarTrackTmp)[a][b - 1].note,
+							(*guitarTrackTmp)[a][b - 1].note = nullptr;
 
 						if(((*guitarTrackTmp)[a][b - 1].pos >= (abs((*guitarTrackTmp)[a][b - 1].pos) - abs((*guitarTrackTmp)[a][b].pos))))//if the note below is off screen? (actually idk)
 							if((*disiNotes)[a].size() > 0)
@@ -1231,8 +1232,8 @@ private:
 
 
 	int songChoice;
-	string* songName = new string, songDir, instrument = "guitar";
-	string* percentstr = new string;
+	string songName , songDir, instrument = "guitar";
+	string percentstr ;
 	unsigned short difficulty = 8, notePadding = 2;
 	thread* t1 = new thread;
 

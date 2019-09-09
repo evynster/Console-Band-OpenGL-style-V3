@@ -17,12 +17,16 @@ void EmGineAudioPlayer::init(int channels)
 	m_controle = new std::vector<AudioControle*>;
 
 	if(FMOD::System_Create(&m_system))
+	{
+		delete m_controle;
 		return;
-
+	}
 	int driverCount;
 	if(m_system->getNumDrivers(&driverCount))
+	{
+		delete m_controle;
 		return;
-
+	}
 	printError(m_system->init(channels, FMOD_INIT_NORMAL, nullptr), "Line 28");
 }
 

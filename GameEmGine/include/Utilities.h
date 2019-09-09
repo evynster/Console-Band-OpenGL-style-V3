@@ -130,7 +130,13 @@ struct Coord3D
 		z = 0;
 	}
 
-	Coord3D(Coord2D<T> coord,T last)
+	void operator=(Coord2D<T> coord)
+	{
+		x = coord.x;
+		y = coord.y;
+	}
+
+	Coord3D(Coord2D<T> coord, T last)
 	{
 		x = coord.x;
 		y = coord.y;
@@ -155,6 +161,7 @@ struct Coord3D
 	{
 		this->x = m_x;
 		this->y = m_y;
+		this->z = 0;
 	}
 
 	glm::vec3 toVec3()
