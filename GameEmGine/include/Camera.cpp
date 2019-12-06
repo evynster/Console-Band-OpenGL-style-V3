@@ -1,7 +1,7 @@
 #include "Camera.h"
 
 Camera::Camera(Coord3D<> size, CAMERA_TYPE type, ProjectionPeramiters* peram)
-	:Transformer(), m_scale(1), m_projMat(1), m_objMat(1), m_cameraUpdate(true)
+	:Transformer(), m_scale(1), m_projMat(1), m_viewMat(1), m_cameraUpdate(true)
 {
 	//m_position = new Coord3D{-.25,-.5,0};
 	init(size, type, peram);
@@ -14,7 +14,6 @@ void Camera::init(Coord3D<> size, CAMERA_TYPE type, ProjectionPeramiters* peram)
 {
 	m_size = size;
 
-	m_viewMat = glm::lookAt(glm::vec3(0, 0, .1f), glm::vec3{0,0,0}, glm::vec3{0.0f,1.0f,0.0f});
 	setType(type, peram);
 }
 
@@ -26,14 +25,14 @@ void Camera::setType(CAMERA_TYPE type, ProjectionPeramiters* peram)
 	{
 	case ORTHOGRAPHIC:
 		if(!peram)
-			m_projMat = glm::ortho(-m_size.width , m_size.width , -m_size.height , m_size.height , -m_size.depth, m_size.depth);
+			m_projMat = glm::ortho(-m_size.width, m_size.width, -m_size.height, m_size.height, -m_size.depth, m_size.depth);
 		else
 			m_projMat = glm::ortho(peram1->left, peram1->right, peram1->bottom, peram1->top, peram1->zNear, peram1->zFar);
 
 		break;
 	case FRUSTUM:
 		if(!peram)
-			m_projMat = glm::perspective(glm::radians(75.f), m_size.width / m_size.height, .1f, m_size.depth);
+			m_projMat = glm::perspective(glm::radians(45.f), m_size.width / m_size.height, .1f, m_size.depth);
 		else
 			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->zNear, peram2->zFar);
 		break;
@@ -68,9 +67,9 @@ bool Camera::update()
 
 
 		Transformer::setScale(m_scale);
-		m_objMat = glm::inverse(Transformer::getTranslationMatrix() * Transformer::getRotationMatrix())/* * Transformer::getScaleMatrix()*/;
+		m_viewMat = glm::inverse(Transformer::getLocalTranslationMatrix() * Transformer::getLocalRotationMatrix())/* * Transformer::getScaleMatrix()*/;
 
-		m_cameraMat = m_projMat * m_viewMat * m_objMat;
+		m_cameraMat = m_projMat * m_viewMat;
 
 		m_position += m_positionBy;
 		m_rotate += m_isRotateBy;
@@ -163,12 +162,7 @@ void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 
 Coord3D<> Camera::getRotation()
 {
-	return Transformer::getRotation() * Coord3D<>{1,-1,1};
-}
-
-glm::mat4 Camera::getObjectMatrix()
-{
-	return m_objMat;
+	return Transformer::getRotation() * Coord3D<>{1, -1, 1};
 }
 
 glm::mat4 Camera::getProjectionMatrix()

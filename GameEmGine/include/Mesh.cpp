@@ -2,7 +2,7 @@
 #include <functional>
 #include <filesystem>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 Mesh::Mesh()
 {
@@ -13,7 +13,6 @@ Mesh::Mesh()
 Mesh::Mesh(Mesh& mesh):
 	m_vaoID(mesh.m_vaoID),
 	m_vboID(mesh.m_vboID),
-	m_numVerts(mesh.m_numVerts),
 	m_textures(mesh.m_textures),
 	m_replaceTex(mesh.m_replaceTex),
 	top(mesh.top),
@@ -23,6 +22,9 @@ Mesh::Mesh(Mesh& mesh):
 	front(mesh.front),
 	back(mesh.back)
 {
+
+
+
 	if(!fs::exists("Models/BIN"))
 		system("mkdir \"Models/BIN\"");
 }
@@ -58,6 +60,11 @@ void Mesh::loadMaterials(const char* path)
 	FILE* f;
 	cDir((char*)path);
 	fopen_s(&f, path, "r");
+	if(!f)
+	{
+		printf("unknown material\n");
+		return;
+	}
 	char str[CHAR_BUFF_SIZE];
 	char* MeshCheck;
 	std::string tmpDir;
@@ -185,37 +192,40 @@ bool Mesh::load(std::string path)
 	if(!strstr(path.c_str(), ".obj"))return false;
 	unload();
 
-	std::vector<Coord3D<>> verts;
-	std::vector<UV> uvs;
-	std::vector<Coord3D<>> norms;
 
-	std::vector < std::pair<std::string, std::vector<Vertex3D>>> faces;
+	//std::vector < std::pair<std::string, std::vector<Coord3D<unsigned>[3]>>> faces;
 	FILE* bin;
 	cDir((char*)path.c_str());
-
 
 	//path.insert(path.begin(), '\"');
 	//path.insert(path.end(), '\"');
 
+	std::vector<Coord3D<>>verts;
+	std::vector<UV>uvs;
+	std::vector<Coord3D<>>norms;
+
+	std::map<Indicie, GLuint> indicieMap;
+	unsigned indicieCount = 0;
+
+	bool initFace = true;
 	if(!fs::exists((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin"))
 	{
 		FILE* f;
 
 		fopen_s(&f, path.c_str(), "r");
-
-		loadMaterials(path.c_str());
-
 		if(!f)
 		{
 			printf("unknown file\n");
 			return false;
 		}
 
+		loadMaterials(path.c_str());
+
+
 		char inputBuff[CHAR_BUFF_SIZE];
 
 
 		char* MeshCheck = nullptr;
-		bool initFace = true;
 		while(MeshCheck = fgets(inputBuff, CHAR_BUFF_SIZE, f),
 			//this part takes out the '\n' from the string
 			(inputBuff == nullptr ? "" : (inputBuff[strlen(inputBuff) - 1] = (inputBuff[strlen(inputBuff) - 1] == '\n' ? ' ' : inputBuff[strlen(inputBuff) - 1]), inputBuff)),
@@ -233,14 +243,17 @@ bool Mesh::load(std::string path)
 
 				char str[CHAR_BUFF_SIZE];
 				sscanf_s(inputBuff, "usemtl %s", str, CHAR_BUFF_SIZE);
-				faces.push_back({std::string(str),std::vector< Vertex3D>()});
+				m_indicieData.push_back({std::string(str),std::vector<unsigned>()});
+				m_unpackedData.push_back(std::vector<Vertex3D>());
+				indicieMap.clear();
+				indicieCount = 0;
 			}
 			else if(strstr(inputBuff, "vt"))
 			{
 				//UV data
 
 				UV tmp;
-				sscanf_s(inputBuff, "vt %f %f", &tmp.uv_u, &tmp.uv_v);
+				sscanf_s(inputBuff, "vt %f %f", &tmp.u, &tmp.v);
 				uvs.push_back(tmp);
 			}
 			else if(strstr(inputBuff, "vn"))
@@ -258,24 +271,24 @@ bool Mesh::load(std::string path)
 			{
 				//Face data
 
-				Vertex3D tmp;
+				Indicie tmp[3];
 
 				char check = 0;
 				unsigned counter = 0, count = 0;
 				while(bool(check = inputBuff[counter++]))
 					count += (check == '/');
 
-				count /= 2;
+				count = unsigned((float)count * .5f);
 				std::string	faceTmp[2][2]
-				{{ " %f/%f/%f"," %*f/%*f/%*f" },
-					{ " %f//%f"," %*f//%*f" }};
+				{{ " %d/%d/%d"," %*d/%*d/%*d" },
+					{ " %d//%d"," %*d//%*d" }};
 
 				std::vector<std::string > format = std::vector<std::string>(count);
 				std::string formatStr;
 				std::function<void(int)> reformat = [&](int type)
 				{
 					for(unsigned a = 0; a < count; a++)
-						if(a < 3)
+						if(a < 3)//read 3 indicies
 							format[a] = faceTmp[type][0];
 						else
 							format[a] = faceTmp[type][1];
@@ -287,42 +300,93 @@ bool Mesh::load(std::string path)
 				for(unsigned a = 0; a < count; a++)
 					formatStr += format[a];
 
-				sscanf_s(inputBuff, formatStr.c_str(),
-					&tmp.coord[0], &tmp.uv[0], &tmp.norm[0],
-					&tmp.coord[1], &tmp.uv[1], &tmp.norm[1],
-					&tmp.coord[2], &tmp.uv[2], &tmp.norm[2]);
 
-				if(!tmp.coord[1])
+
+				if(9 != sscanf_s(inputBuff, formatStr.c_str(),
+					//Coord         UV        Normal
+					&tmp[0][0], &tmp[0][1], &tmp[0][2],
+					&tmp[1][0], &tmp[1][1], &tmp[1][2],
+					&tmp[2][0], &tmp[2][1], &tmp[2][2]))
 				{
 					reformat(++type);
 					formatStr = "f";
 					for(unsigned a = 0; a < count; a++)
 						formatStr += format[a];
+
 					sscanf_s(inputBuff, formatStr.c_str(),
-						&tmp.coord[0], &tmp.norm[0],
-						&tmp.coord[1], &tmp.norm[1],
-						&tmp.coord[2], &tmp.norm[2]);
+						//Coord        Normal
+						&tmp[0][0], &tmp[0][2],
+						&tmp[1][0], &tmp[1][2],
+						&tmp[2][0], &tmp[2][2]);
 				}
-				faces.back().second.push_back(tmp);
+
+
+				for(unsigned b = 0; b < 3; ++b)
+				{
+					tmp[b].correct();
+					auto thing = indicieMap.find(tmp[b]);
+
+					if(thing == indicieMap.end())//new indicie
+					{
+						indicieMap[tmp[b]] = indicieCount;
+						Vertex3D tmp2;
+						tmp2.coord = verts[tmp[b].coord];
+						tmp2.norm = norms[tmp[b].norm];
+						if(tmp[b].uv != -1)
+							tmp2.uv = uvs[tmp[b].uv];
+
+						m_unpackedData.back().push_back(tmp2);
+						m_indicieData.back().second.push_back(indicieCount++);
+					}
+					else//reacouring indicie
+						m_indicieData.back().second.push_back(indicieMap[tmp[b]]);
+				}
+
+				//tmp.correct();
+				//m_unpackedData.push_back(Vertex3D());
+				//m_unpackedData.back().coord = verts[tmp[0][0]];
+				//m_indicieData.back().second.push_back(tmp);
 
 				for(unsigned a = 1; a < count - 2; a++)
 				{
 					formatStr = "f";
-					swap(format[a], format[a + 2]);
+					swap(format[a], format[(a + 2)]);
 					for(unsigned i = 0; i < count; i++)
 						formatStr += format[i];
 					if(type == 0)
 						sscanf_s(inputBuff, formatStr.c_str(),
-							&tmp.coord[0], &tmp.uv[0], &tmp.norm[0],
-							&tmp.coord[1], &tmp.uv[1], &tmp.norm[1],
-							&tmp.coord[2], &tmp.uv[2], &tmp.norm[2]);
+							//Coord         UV        Normal
+							&tmp[0][0], &tmp[0][1], &tmp[0][2],
+							&tmp[1][0], &tmp[1][1], &tmp[1][2],
+							&tmp[2][0], &tmp[2][1], &tmp[2][2]);
 					else
 						sscanf_s(inputBuff, formatStr.c_str(),
-							&tmp.coord[0], &tmp.norm[0],
-							&tmp.coord[1], &tmp.norm[1],
-							&tmp.coord[2], &tmp.norm[2]);
+							//Coord       Normal
+							&tmp[0][0], &tmp[0][2],
+							&tmp[1][0], &tmp[1][2],
+							&tmp[2][0], &tmp[2][2]);
+					for(unsigned b = 0; b < 3; ++b)
+					{
+						tmp[b].correct();
+						auto thing = indicieMap.find(tmp[b]);
 
-					faces.back().second.push_back(tmp);
+						if(thing == indicieMap.end())//new indicie
+						{
+							indicieMap[tmp[b]] = indicieCount;
+							Vertex3D tmp2;
+							tmp2.coord = verts[tmp[b].coord];
+							tmp2.norm = norms[tmp[b].norm];
+							if(tmp[b].uv != -1)
+								tmp2.uv = uvs[tmp[b].uv];
+
+							m_unpackedData.back().push_back(tmp2);
+							m_indicieData.back().second.push_back(indicieCount++);
+						}
+						else//reacouring indicie
+							m_indicieData.back().second.push_back(indicieMap[tmp[b]]);
+					}
+
+
 				}
 
 			}
@@ -353,138 +417,109 @@ bool Mesh::load(std::string path)
 		fclose(f);
 
 
+
+
 		//UNPACKED DATA//
 		{
 
 			//open bin file
 			fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "wb");
 
-			unsigned meshSize = (int)faces.size(), dataSize = 0, faceSize = 0;
+			unsigned unpackedSize, meshSize = m_indicieData.size(), dataSize = 0;
 
+			//ammount of meshes
 			fwrite(&meshSize, sizeof(char), sizeof(int), bin);
-			//fpos_t fpos, fend;
 
-			for(unsigned int a = 0; a < faces.size(); a++)
+			for(unsigned int a = 0; a < meshSize; a++)
 			{
-				dataSize = 0, faceSize = 0;
-				int chars = (int)faces[a].first.size() + 1;
+				unpackedSize = m_unpackedData[a].size();
+				//store vertex Data
+				fwrite(&unpackedSize, 1, sizeof(unsigned), bin);
+				fwrite(m_unpackedData[a].data(), 1, sizeof(Vertex3D) * unpackedSize, bin);
+
+
+				dataSize = m_indicieData[a].second.size();
+				int chars = (int)m_indicieData[a].first.size();
+				//Length of string
 				fwrite(&chars, sizeof(char), sizeof(int), bin);
-				fwrite(faces[a].first.c_str(), sizeof(char), sizeof(char) * chars, bin);
-
-				//fgetpos(bin, &fpos);
-				faceSize = (unsigned int)faces[a].second.size();
-				dataSize = faceSize * 3;
+				//Name of mesh
+				fwrite(m_indicieData[a].first.c_str(), sizeof(char), sizeof(char) * chars, bin);
+				//Amount of indicies 
 				fwrite(&dataSize, sizeof(char), sizeof(unsigned int), bin);
-				fwrite(&faceSize, sizeof(char), sizeof(unsigned int), bin);
-
-				m_unpackedData.push_back({faces[a].first,std::vector<Vertex3D>()});
-
-				for(unsigned int c = 0; c < faces[a].second.size(); c++)
-					for(unsigned int b = 0; b < 3; b++)
-					{
-						Vertex3D tmp;
-						
-						//set Vertices
-						tmp.setCoord(
-							verts[(unsigned int)(faces[a].second[c].coord[b] - 1)].x,
-							verts[(unsigned int)(faces[a].second[c].coord[b] - 1)].y,
-							verts[(unsigned int)(faces[a].second[c].coord[b] - 1)].z);
-
-
-						//set UV's
-						if(faces[a].second[c].uv[0])//check if there's data
-						{
-							//uvSize++;
-							tmp.setUV(uvs[(unsigned int)(faces[a].second[c].uv[b] - 1)].uv_u, uvs[(unsigned int)(faces[a].second[c].uv[b] - 1)].uv_v);
-						}
-
-						//set Normals
-						if(faces[a].second[c].norm[0])//check if there's data
-						{
-							//normSize++;
-							tmp.setNorm(
-								norms[(unsigned int)(faces[a].second[c].norm[b] - 1)].x,
-								norms[(unsigned int)(faces[a].second[c].norm[b] - 1)].y,
-								norms[(unsigned int)(faces[a].second[c].norm[b] - 1)].z);
-
-						}
-
-						fwrite(&tmp, sizeof(char), sizeof(Vertex3D), bin);
-
-						m_unpackedData.back().second.push_back(tmp);
-					}
-				//fgetpos(bin, &fend);
-				//
-				//fsetpos(bin, &fpos);
-				//fwrite(&dataSize, sizeof(char), sizeof(unsigned), bin);
-				//fwrite(&faceSize, sizeof(char), sizeof(unsigned), bin);
-				//
-				//fsetpos(bin, &fend);//goes to the end of the file
-
-				m_numFaces.push_back((unsigned)faces[a].second.size());
-				m_numVerts.push_back((unsigned)m_numFaces[a] * 3);
+				//Indicie data
+				fwrite(m_indicieData[a].second.data(), 1, sizeof(unsigned) * dataSize, bin);
 			}
 		}
-
-
 	}
 	else
 	{
 		loadMaterials(path.c_str());
-		unsigned meshes, dataSize = 0, faceSize = 0;;
 
-		fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "rb");
-
-		fread(&meshes, sizeof(int), 1, bin);
-		bool initFace = true;
-
-		std::vector<char> str;
-		for(unsigned a = 0; a < meshes; a++)
+		//UNPACKED DATA//
 		{
-			int chars = 0;
-			fread(&chars, sizeof(int), 1, bin);
-			str.resize(chars, 0);
-			fread(str.data(), sizeof(char), chars, bin);
+			//open bin file
+			fopen_s(&bin, ((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin").c_str(), "rb");
 
-			fread(&dataSize, sizeof(unsigned int), 1, bin);
-			fread(&faceSize, sizeof(unsigned int), 1, bin);
+			unsigned unpackedSize = 0, meshSize = 0, dataSize = 0;
 
-			m_unpackedData.push_back({str.data(),std::vector<Vertex3D>(dataSize)});
-			fread(m_unpackedData.back().second.data(), sizeof(Vertex3D), dataSize, bin);
+			//ammount of meshes
+			fread(&meshSize, sizeof(char), sizeof(int), bin);
 
-			for(unsigned int b = 0; b < dataSize; b++)
+			for(unsigned int a = 0; a < meshSize; a++)
 			{
-				Vertex3D tmp = m_unpackedData[a].second[b];
 
-				if(initFace)
-				{
-					front = back = left = right = top = bottom = tmp.coord;
-					initFace = false;
-				}
-				else
-				{
-					front = tmp.coord.z > front.z ? tmp.coord : front;
-					back = tmp.coord.z < back.z ? tmp.coord : back;
-					left = tmp.coord.x < left.x ? tmp.coord : left;
-					right = tmp.coord.x > right.x ? tmp.coord : right;
-					top = tmp.coord.y > top.y ? tmp.coord : top;
-					bottom = tmp.coord.y < bottom.y ? tmp.coord : bottom;
-				}
-				
+				//store vertex Data
+				fread(&unpackedSize, 1, sizeof(unsigned), bin);
+				m_unpackedData.push_back(std::vector<Vertex3D>());
+				m_unpackedData.back().resize(unpackedSize);
+				fread(m_unpackedData[a].data(), 1, sizeof(Vertex3D) * unpackedSize, bin);
+
+
+				dataSize = 0;
+				int chars = 0;
+
+				//Length of string
+				fread(&chars, sizeof(char), sizeof(int), bin);
+
+				m_indicieData.push_back({std::string(),std::vector<GLuint>()});
+				m_indicieData.back().first.resize(chars);
+
+				//Name of mesh
+				fread(m_indicieData.back().first.data(), sizeof(char), sizeof(char) * chars, bin);
+
+				//Amount of indicies 
+				fread(&dataSize, sizeof(char), sizeof(unsigned int), bin);
+				m_indicieData.back().second.resize(dataSize);
+
+				//Indicie data
+				fread(m_indicieData[a].second.data(), 1, sizeof(unsigned) * dataSize, bin);
 			}
 
-			m_numFaces.push_back(faceSize);
-			m_numVerts.push_back(faceSize * 3);
+			for(auto& vec : m_unpackedData)
+				for(auto& bound : vec)
+					if(initFace)
+					{
+						front = back = left = right = top = bottom = bound.coord;
+						initFace = false;
+					}
+					else
+					{
+						front = bound.coord.z > front.z ? bound.coord : front;
+						back = bound.coord.z < back.z ? bound.coord : back;
+						left = bound.coord.x < left.x ? bound.coord : left;
+						right = bound.coord.x > right.x ? bound.coord : right;
+						top = bound.coord.y > top.y ? bound.coord : top;
+						bottom = bound.coord.y < bottom.y ? bound.coord : bottom;
+					}
 		}
+
+
+
 
 	}
 
 	if(bin)
 		fclose(bin);
-
-	verts.clear();
-	uvs.clear();
-	faces.clear();
 
 	return true;
 }
@@ -496,21 +531,23 @@ bool Mesh::loadMesh(std::string path)
 	init();
 
 
-	//for(auto& a : m_unpackedData)
+	//for(auto& a : m_indicieData)
 	//	a.second.clear();
-	m_unpackedData.clear();
+	//m_indicieData.clear();
 
 	return true;
 }
 
 bool Mesh::loadPrimitive(primitiveMesh* mesh)
 {
+
 	if(!mesh)
 		return false;
+	unload();
 
 	mesh->createMesh();
-
-	m_unpackedData.push_back({"",mesh->getData()});
+	m_unpackedData.push_back(mesh->getData());
+	m_indicieData.push_back({"",mesh->getIndices()});
 	m_textures.resize(1, {"", {Texture2D(),Texture2D()}});
 	m_replaceTex.resize(1, {{0,0}});
 
@@ -524,49 +561,46 @@ bool Mesh::loadPrimitive(primitiveMesh* mesh)
 	front = mesh->m_front;
 	back = mesh->m_back;
 
-	m_numVerts.push_back((int)mesh->getData().size());
-
+	
 	init();
-
-	m_unpackedData.clear();
 
 	return true;
 }
 
-std::vector< std::pair<std::string, std::vector<Vertex3D>>>& Mesh::loadAni(std::string path)
+std::vector<std::vector<Vertex3D>>& Mesh::loadAni(std::string path)
 {
 	ani = true;
-	static std::vector< std::pair<std::string, std::vector<Vertex3D>>> empty;
+	static std::vector<std::vector<Vertex3D>> empty;
 
 	if(!load(path))return empty;
 
 	return m_unpackedData;
+
 }
 
 void Mesh::render(Shader& shader)
 {
 	shader.enable();
-	for(unsigned a = 0; a < m_vaoID.size(); a++)
+	for(unsigned a = 0; a < m_elemID.size(); a++)
 	{
 		bool textured = false;
 		int c = 0;
 
 		for(unsigned b = 0; b < m_textures.size(); b++)
 		{
-			if(m_textures[b].first == m_vaoID[a].first)
+			if(m_textures[b].first == m_elemID[a].first)
 			{
 				glActiveTexture(GL_TEXTURE0 + c);
 				int e = 0;
 				for(auto& d : m_textures[b].second)
 					if(d.type == TEXTURE_TYPE::DIFFUSE)
-						if(d.id|| m_replaceTex[b][e])
+						if(d.id || m_replaceTex[b][e])
 						{
 							textured = true;
 							glUniform1i(shader.getUniformLocation("uTex"), c);
 							glBindTexture(GL_TEXTURE_2D, m_replaceTex[b][e] ? m_replaceTex[b][e] : d.id);
 							e++;
 						}
-
 				c++;
 			}
 		}
@@ -574,8 +608,18 @@ void Mesh::render(Shader& shader)
 		glUniform1i(shader.getUniformLocation("textured"), textured);
 
 
-		glBindVertexArray(m_vaoID[a].second);
-		glDrawArrays(GL_TRIANGLES, 0, m_numVerts[a]);
+		glBindVertexArray(m_vaoID[a]);
+		// Index buffer
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elemID[a].second);
+
+		//Draw indicies
+		glDrawElements(
+			GL_TRIANGLES,      // mode
+			m_indicieData[a].second.size(),    // count
+			GL_UNSIGNED_INT,   // type
+			(void*)0           // element array buffer offset
+		);
+		//glDrawArrays(GL_TRIANGLES, 0, m_numVerts[a]);
 		glBindVertexArray(0);
 
 		for(; c >= 0; c--)
@@ -589,32 +633,17 @@ void Mesh::render(Shader& shader)
 	shader.disable();
 }
 
-GLuint Mesh::getNumFaces(int m_index) const
-{
-	return m_numFaces[m_index];
-}
-
-GLuint Mesh::getNumVerticies(int m_index) const
-{
-	return m_numVerts[m_index];
-}
-
 void Mesh::init()
 {
-	for(unsigned a = 0; a < m_unpackedData.size(); a++)
+	for(unsigned a = 0; a < m_indicieData.size(); a++)
 	{
-		m_vaoID.push_back({m_unpackedData[a].first ,0});
-		m_vboID.push_back({0 ,0});
+		m_vaoID.push_back(0);
+		m_vboID.push_back({0,0});
 
-		glGenVertexArrays(1, &m_vaoID[a].second);
-		glGenBuffers(1, &m_vboID[a].first);
-		glGenBuffers(1, &m_vboID[a].second);
+		glGenVertexArrays(1, &m_vaoID.back());
+		glGenBuffers(2, &m_vboID.back().first);
 
-		glBindVertexArray(m_vaoID[a].second);
-
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboID[a].first);
-		glBufferData(GL_ARRAY_BUFFER, m_unpackedData[a].second.size() * sizeof(Vertex3D), m_unpackedData[a].second.data(), GL_STATIC_DRAW);
+		glBindVertexArray(m_vaoID.back());
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -622,26 +651,35 @@ void Mesh::init()
 		glEnableVertexAttribArray(3);
 		glEnableVertexAttribArray(4);
 
+		//UnpackedData 1
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboID.back().first);
+		glBufferData(GL_ARRAY_BUFFER, m_unpackedData[a].size() * sizeof(Vertex3D), m_unpackedData[a].data(), GL_STATIC_DRAW);
+
 		//vertex 1   attributes
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, coord));
-
 		//UV         attributes
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, uv));
-
 		//normal 1   attributes
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, norm));
 
-
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboID[a].second);
-		glBufferData(GL_ARRAY_BUFFER, m_unpackedData[a].second.size() * sizeof(Vertex3D), m_unpackedData[a].second.data(), GL_STATIC_DRAW);
+		//UnpackedData 2 
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboID.back().second);
+		glBufferData(GL_ARRAY_BUFFER, m_unpackedData[a].size() * sizeof(Vertex3D), m_unpackedData[a].data(), GL_STATIC_DRAW);
 
 		//vertex 2   attributes
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, coord));
-
-		//normal 2   attributes
+		//normals 2   attributes
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, norm));
 
+		//create indicies
+		m_elemID.push_back({m_indicieData[a].first,0});
+		glGenBuffers(1, &m_elemID[a].second);
+
+		//indicies 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elemID[a].second);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indicieData[a].second.size() * sizeof(unsigned), m_indicieData[a].second.data(), GL_STATIC_DRAW);
 	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
@@ -651,12 +689,18 @@ void Mesh::replaceTexture(int mesh, int index, GLuint tex)
 	m_replaceTex[mesh][index] = tex;
 }
 
-void Mesh::editVerts(std::vector< std::pair<std::string, std::vector<Vertex3D>>> verts1, std::vector< std::pair<std::string, std::vector<Vertex3D>>> verts2)
+void Mesh::editVerts(std::vector<  std::vector<Vertex3D>> verts1, std::vector<  std::vector<Vertex3D>> verts2)
 {
-	for(unsigned a = 0; a < verts1.size(); a++)
+	for(unsigned a = 0; a < m_indicieData.size(); a++)
 	{
 
-		glBindVertexArray(m_vaoID[a].second);
+		//m_vaoID.push_back(0);
+		//m_vboID.push_back({0,0});
+		//
+		//glGenVertexArrays(1, &m_vaoID.back());
+		//glGenBuffers(2, &m_vboID.back().first);
+
+		glBindVertexArray(m_vaoID[a]);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -664,30 +708,33 @@ void Mesh::editVerts(std::vector< std::pair<std::string, std::vector<Vertex3D>>>
 		glEnableVertexAttribArray(3);
 		glEnableVertexAttribArray(4);
 
+		//UnpackedData 1
 		glBindBuffer(GL_ARRAY_BUFFER, m_vboID[a].first);
-
-		glBufferData(GL_ARRAY_BUFFER, verts1[a].second.size() * sizeof(Vertex3D), verts1[a].second.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, verts1[a].size() * sizeof(Vertex3D), verts1[a].data(), GL_STATIC_DRAW);
 
 		//vertex 1   attributes
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, coord));
-
 		//UV         attributes
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, uv));
-
 		//normal 1   attributes
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, norm));
 
-
+		//UnpackedData 2 
 		glBindBuffer(GL_ARRAY_BUFFER, m_vboID[a].second);
-
-		glBufferData(GL_ARRAY_BUFFER, verts2[a].second.size() * sizeof(Vertex3D), verts2[a].second.data(), GL_STATIC_DRAW);
-
+		glBufferData(GL_ARRAY_BUFFER, verts2[a].size() * sizeof(Vertex3D), verts2[a].data(), GL_STATIC_DRAW);
 
 		//vertex 2   attributes
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)(offsetof(Vertex3D, coord)));
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, coord));
+		//normals 2   attributes
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, norm));
 
-		//normal 2   attributes
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)(offsetof(Vertex3D, norm)));
+		////create indicies
+		//m_elemID.push_back({m_indicieData[a].first,0});
+		//glGenBuffers(1, &m_elemID[a].second);
+
+		//indicies 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elemID[a].second);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indicieData[a].second.size() * sizeof(Indicie), m_indicieData[a].second.data(), GL_STATIC_DRAW);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -696,20 +743,23 @@ void Mesh::editVerts(std::vector< std::pair<std::string, std::vector<Vertex3D>>>
 
 void Mesh::unload()
 {
-	for(unsigned a = 0; a < m_unpackedData.size(); a++)
+	for(unsigned a = 0; a < m_vaoID.size(); ++a)
 	{
-		if(a < m_vboID.size())
-			if(m_vboID[a].first)
-			{
-				glDeleteBuffers(1, &m_vboID[a].first);
-				glDeleteBuffers(1, &m_vboID[a].second);
-			}
-		if(a < m_vaoID.size())
-			if(m_vaoID[a].second)
-				glDeleteVertexArrays(1, &m_vaoID[a].second);
+		if(m_vaoID[a])
+			glDeleteVertexArrays(1, &m_vaoID[a]);
+
+		if(m_vboID[a].first)
+			glDeleteBuffers(2, &m_vboID[a].first);
+
+
+		if(m_elemID[a].second)
+			glDeleteBuffers(1, &m_elemID[a].second);
 	}
-	m_vboID.clear();
+
 	m_vaoID.clear();
-	m_numVerts.clear();
-	m_numFaces.clear();
+	m_vboID.clear();
+	m_elemID.clear();
+	
+	m_indicieData.clear();
+	m_unpackedData.clear();
 }

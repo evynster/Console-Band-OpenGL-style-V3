@@ -102,8 +102,7 @@ public:
 	glm::mat4 getProjectionMatrix();
 	glm::mat4 getViewMatrix();
 	glm::mat4 getCameraMatrix();
-	glm::mat4 getObjectMatrix();
-
+	
 	CAMERA_TYPE getType();
 
 protected:
@@ -123,7 +122,6 @@ protected:
 	glm::mat4 m_cameraMat;
 	glm::mat4 m_projMat;
 	glm::mat4 m_viewMat;
-	glm::mat4 m_objMat;
 
 private:
 	/*REMOVED FROM TRANSFORMER*/

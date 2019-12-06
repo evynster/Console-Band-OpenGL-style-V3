@@ -101,7 +101,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	glfwSetFramebufferSizeCallback(m_window->getWindow(), changeViewport);
 
-	m_mainCamera = new Camera({(float)getWindowWidth(), (float)getWindowHeight(),500});
+	m_mainCamera = new Camera({(float)getWindowWidth(), (float)getWindowHeight(),60});
 
 	shaderInit();
 
@@ -199,6 +199,7 @@ void GameEmGine::run()
 	while(!glfwWindowShouldClose(m_window->getWindow()) && !exitGame)//update loop
 	{
 		glClearColor((float)m_colour.r / 255, (float)m_colour.g / 255, (float)m_colour.b / 255, (float)m_colour.a / 255);//BG colour
+		//glClearColor(0.f, 0.f, 0.f, 0.f);
 
 		InputManager::update();
 		update();
@@ -402,7 +403,7 @@ bool GameEmGine::mouseCollision(Model* model)
 	direction = {direction.x,-direction.y,1,1};
 
 
-	direction = glm::inverse((cam->getViewMatrix() * cam->getObjectMatrix()) * cam->getProjectionMatrix()) * direction;
+	direction = glm::inverse(cam->getViewMatrix() * cam->getProjectionMatrix()) * direction;
 	direction = glm::normalize(direction);
 
 	//position = position * 2 - 1;
@@ -473,29 +474,28 @@ void GameEmGine::update()
 
 	glClearDepth(1.f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	m_mainFrameBuffer->clear();
 	m_greyscaleBuffer->clear();
 	m_postBuffer->clear();
 	m_buffer1->clear();
 	m_buffer2->clear();
+	m_mainFrameBuffer->clear();//buffer must be black
+	//glClearColor((float)m_colour.r / 255, (float)m_colour.g / 255, (float)m_colour.b / 255, (float)m_colour.a / 255);//BG colour
 
 	m_mainCamera->update();
 
 	m_modelShader->enable();
-	glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
+	glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &( m_mainCamera->getViewMatrix()[0][0]));
 	glUniformMatrix4fv(m_modelShader->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
 	m_modelShader->disable();
 
 	m_forwardRender->enable();
-	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uView"), 1, GL_FALSE, &((m_mainCamera->getObjectMatrix() * m_mainCamera->getViewMatrix())[0][0]));
+	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uView"), 1, GL_FALSE, &( m_mainCamera->getViewMatrix()[0][0]));
 	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
 	m_forwardRender->disable();
 
 
 	LightSource::setCamera(m_mainCamera);
-	LightSource::setShader(m_postProcess);
-	LightSource::update();
-
+	
 
 	glViewport(0, 0, getWindowWidth(), getWindowHeight());
 
@@ -503,11 +503,11 @@ void GameEmGine::update()
 	m_mainCamera->render(m_modelShader, m_models, false);
 	m_mainFrameBuffer->disable();
 
-
-
+	
 	//store data for post process
 	m_postBuffer->enable();
 	m_postProcess->enable();
+
 
 	//bind textures
 	glActiveTexture(GL_TEXTURE0);
@@ -527,6 +527,10 @@ void GameEmGine::update()
 
 	FrameBuffer::drawFullScreenQuad();
 
+	LightSource::setShader(m_postProcess);
+	LightSource::setFramebuffer(m_postBuffer);
+	LightSource::update();
+	
 	//un-bind textures
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
@@ -537,19 +541,18 @@ void GameEmGine::update()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
-
 	m_postProcess->disable();
 	m_postBuffer->disable();
 
+	
 
 	m_mainFrameBuffer->moveDepthToBuffer(getWindowWidth(), getWindowHeight(), m_postBuffer->getFrameBufferID());
 	m_postBuffer->enable();
-
-	LightSource::setShader(m_forwardRender);
-	LightSource::update();
 	m_mainCamera->render(m_forwardRender, m_models, true);
-
 	m_postBuffer->disable();
+	
+	//LightSource::setShader(m_forwardRender);
+	//LightSource::update();
 
 	glViewport(0, 0, getWindowWidth() / SCREEN_RATIO, getWindowHeight() / SCREEN_RATIO);
 
@@ -657,12 +660,7 @@ void GameEmGine::update()
 
 void GameEmGine::changeViewport(GLFWwindow*, int w, int h)
 {
-	w, h;
-	//printf("Width : %d\n"
-	//	   "Height: %d\n\n", w, h);
-
-
-
+	
 	//Framebuffer Resizing 
 	m_mainFrameBuffer->resizeDepth(w, h);
 	m_mainFrameBuffer->resizeColour(0, w, h);
@@ -675,7 +673,4 @@ void GameEmGine::changeViewport(GLFWwindow*, int w, int h)
 	m_buffer1->resizeColour(0, unsigned((float)w / SCREEN_RATIO), unsigned((float)h / SCREEN_RATIO));
 	m_buffer2->resizeColour(0, unsigned((float)w / SCREEN_RATIO), unsigned((float)h / SCREEN_RATIO));
 
-
-	//glFrustum(0, w, 0, h, 0, h);//eye view
-	//glOrtho(0, 1, 0, 1, 0, 1);//box view
 }

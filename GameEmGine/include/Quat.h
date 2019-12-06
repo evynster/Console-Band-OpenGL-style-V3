@@ -7,21 +7,23 @@
 #include "Utilities.h"
 //#include "Matrix.h"
 
-#define degtorad(deg) (deg*M_PI/180)
+#define degtorad(deg) (deg * M_PI / 180)
 
 //complete
 struct Quat
 {
 	float  x, y, z;
+
 	Quat();
 	Quat(float x, float y, float z);
 	Quat(float w, float x, float y, float z);
+	Quat(Coord3D<> rot);
 
 	Quat normal();
 	void normalize();
 
-	 Quat& rotation(float a_ang, float a_dirX, float a_dirY, float a_dirZ);
-	 Quat& rotation(float a_ang, Coord3D<> a_dir);
+	Quat& rotation(float a_ang, float a_dirX, float a_dirY, float a_dirZ);
+	Quat& rotation(float a_ang, Coord3D<> a_dir);
 
 	Quat& rotation(Quat p, Quat q, Quat qc);
 
@@ -41,6 +43,6 @@ struct Quat
 	Quat operator-(Quat a_quat)const;
 	Quat operator-() const;
 	void operator-=(Quat a_quat)const;
-private:
+protected:
 	float w;
 };

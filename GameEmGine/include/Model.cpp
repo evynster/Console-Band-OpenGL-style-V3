@@ -11,7 +11,6 @@ Model::Model(Model& model, const char* tag) :
 	Transformer(model),
 	m_mesh(model.m_mesh),
 	m_colour(model.m_colour),
-	m_transBB(glm::mat4(1)),
 	m_render(model.m_render),
 	m_tag(tag),
 	m_copy(true)
@@ -43,7 +42,7 @@ Model::Model(Model& model, const char* tag) :
 
 Model::Model(primitiveMesh* model, const char* tag):
 	Transformer(),
-	m_transBB(glm::mat4(1)), m_tag(tag)
+	m_tag(tag)
 {
 	m_type = MODEL;
 	m_mesh = new Mesh;
@@ -76,7 +75,7 @@ Model::Model(primitiveMesh* model, const char* tag):
 
 Model::Model(const char* path, const char* tag):
 	Transformer(),
-	m_transBB(glm::mat4(1)), m_tag(tag)
+	m_tag(tag)
 {
 	m_type = MODEL;
 
@@ -108,12 +107,13 @@ Model::Model(const char* path, const char* tag):
 	}
 }
 
-
 Model::~Model()
 {
 	if(!m_copy)
 		delete m_mesh;
 }
+
+
 
 /// - Collision Function - ///
 
@@ -132,17 +132,20 @@ bool Model::collision2D(Model* box1, Model* box2, Coord3D<>RPos)
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* rot1 = &box1->getRotationMatrix(),
-		* rot2 = &box2->getRotationMatrix();
+		* rotLocal1 = &box1->getLocalRotationMatrix(),
+		* rotLocal2 = &box2->getLocalRotationMatrix(),
+
+		* rotWorld1 = &box1->getWorldRotationMatrix(),
+		* rotWorld2 = &box2->getWorldRotationMatrix();
 
 	static Coord3D<> AxisX1, AxisY1, AxisZ1, AxisX2, AxisY2, AxisZ2;
-	AxisX1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisX, 1));
-	AxisY1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisY, 1));
-	AxisZ1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
+	AxisX1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
+	AxisY1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
+	AxisZ1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
 
-	AxisX2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisX, 1));
-	AxisY2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisY, 1));
-	AxisZ2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
+	AxisX2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
+	AxisY2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
+	AxisZ2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
 
 	return !(
 		getSeparatingPlane(RPos, AxisX1, *box1, *box2) ||
@@ -178,17 +181,20 @@ bool Model::collision3D(Model* box1, Model* box2)
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* rot1 = &box1->getRotationMatrix(),
-		* rot2 = &box2->getRotationMatrix();
+		* rotLocal1 = &box1->getLocalRotationMatrix(),
+		* rotLocal2 = &box2->getLocalRotationMatrix(),
+
+		* rotWorld1 = &box1->getWorldRotationMatrix(),
+		* rotWorld2 = &box2->getWorldRotationMatrix();
 
 	static Coord3D<> AxisX1, AxisY1, AxisZ1, AxisX2, AxisY2, AxisZ2;
-	AxisX1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisX, 1));
-	AxisY1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisY, 1));
-	AxisZ1 = *(Coord3D<>*) & (*rot1 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
+	AxisX1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
+	AxisY1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
+	AxisZ1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
 
-	AxisX2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisX, 1));
-	AxisY2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisY, 1));
-	AxisZ2 = *(Coord3D<>*) & (*rot2 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
+	AxisX2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
+	AxisY2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
+	AxisZ2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
 
 	return !(
 		getSeparatingPlane(RPos, AxisX1, *box1, *box2) ||
@@ -215,8 +221,8 @@ bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Mo
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* trans1 = &box1.getRotationMatrix(),
-		* trans2 = &box2.getRotationMatrix();
+		* trans1 = &box1.getLocalRotationMatrix(),
+		* trans2 = &box2.getLocalRotationMatrix();
 
 	Coord3D<> AxisX1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisX, 1));
 	Coord3D<> AxisY1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisY, 1));
@@ -239,52 +245,7 @@ bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Mo
 			fabs(Coord3D<>::dotProduct((AxisY2 * (box2.m_height / 2)), plane)) +
 			fabs(Coord3D<>::dotProduct((AxisZ2 * (box2.m_depth / 2)), plane))
 			));
-
-
-	//std::vector<Coord3D> boxVert1
-	//{
-	//	box1.m_topLeftBack,
-	//	box1.m_topRightBack,
-	//	box1.m_topLeftFront,
-	//	box1.m_topRightFront,
-	//	box1.m_bottomLeftBack,
-	//	box1.m_bottomRightBack,
-	//	box1.m_bottomLeftFront,
-	//	box1.m_bottomRightFront
-	//};
-	//
-	//std::vector<Coord3D> boxVert2
-	//{
-	//	box2.m_topLeftBack,
-	//	box2.m_topRightBack,
-	//	box2.m_topLeftFront,
-	//	box2.m_topRightFront,
-	//	box2.m_bottomLeftBack,
-	//	box2.m_bottomRightBack,
-	//	box2.m_bottomLeftFront,
-	//	box2.m_bottomRightFront
-	//};
-	//
-	//float min1, max1, min2, max2;
-	//min1 = max1 = dotProduct(boxVert1[0], plane);
-	//for(int i = 1; i < 8; i++)
-	//{
-	//	float value = dotProduct(boxVert1[i], plane);
-	//	min1 = std::min(min1, value);
-	//	max1 = std::max(max1, value);
-	//}
-	//
-	//min2 = max2 = dotProduct(boxVert2[0], plane);
-	//for(int i = 1; i < 8; i++)
-	//{
-	//	float value = dotProduct(boxVert2[i], plane);
-	//	min2 = std::min(min2, value);
-	//	max2 = std::max(max2, value);
-	//}
-	//
-	//return (max1 < min2 || max2 < min1);
 }
-
 
 void Model::render(Shader& shader, Camera* cam)
 {
@@ -293,7 +254,9 @@ void Model::render(Shader& shader, Camera* cam)
 	m_shader = &shader;
 	//glm::mat4 transformationMat(1);
 	shader.enable();
-	glUniformMatrix4fv(shader.getUniformLocation("uModel"), 1, GL_FALSE, &(getTransformation()[0][0]));
+
+	shader.sendUniform("uLocalModel", getLocalTransformation());
+	shader.sendUniform("uWorldModel", getWorldTransformation());
 
 	glUniform4fv(shader.getUniformLocation("colourMod"), 1, colour);
 	shader.disable();
@@ -302,7 +265,6 @@ void Model::render(Shader& shader, Camera* cam)
 		m_animations[m_animation]->update(&shader, m_mesh);
 
 	// update the position of the object
-	m_transBB = getTransformation();
 	boundingBoxUpdate();
 
 	if(m_render)
@@ -413,8 +375,9 @@ void Model::boundingBoxUpdate()
 	if(m_enableBB && m_shaderBB)
 	{
 		m_shaderBB->enable();
-		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uModel"), 1, GL_FALSE, &(m_transBB[0][0]));
-		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uView"), 1, GL_FALSE, &((m_camera->getObjectMatrix() * m_camera->getViewMatrix())[0][0]));
+		m_shaderBB->sendUniform("uLocalModel", getLocalTransformation());
+		m_shaderBB->sendUniform("uWorldModel", getWorldTransformation());
+		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uView"), 1, GL_FALSE, &( m_camera->getViewMatrix()[0][0]));
 		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uProj"), 1, GL_FALSE, &(m_camera->getProjectionMatrix()[0][0]));
 		m_shaderBB->disable();
 	}
@@ -431,7 +394,7 @@ void Model::boundingBoxUpdate()
 
 
 	for(auto& a : bounds)
-		a = getScaleMatrix() * a;
+		a = getWorldScaleMatrix() * (getLocalScaleMatrix() * a);
 
 
 	m_width = abs(bounds[0].x - bounds[1].x);
@@ -451,7 +414,7 @@ void Model::boundingBoxUpdate()
 
 
 	for(auto& a : bounds)
-		a = getTransformation() * a;
+		a = getWorldTranslationMatrix() * (getLocalTransformation() * a);
 
 	m_center =
 		(Coord3D<>(

@@ -8,7 +8,7 @@
 //#define unsigned int unsigned int
 //#define ushort unsigned short
 
-inline char* cDir(char* dir)
+static const char* cDir(char* dir)
 {
 	char* tmp;
 	if(strlen(dir) > 0)
@@ -273,6 +273,11 @@ struct Coord3D
 		return {T(x - coord.x), T(y - coord.y), T(z - coord.z)};
 	}
 
+	friend Coord3D<T> operator-(T val,Coord3D<T> coord)
+	{
+		return {T(val - coord.x), T(val - coord.y), T(val - coord.z)};
+	}
+
 	friend Coord3D<T> operator*(T scaler, Coord3D<T> coord)
 	{
 		return {scaler * coord.x, scaler * coord.y, scaler * coord.z};
@@ -362,11 +367,6 @@ struct Coord3D
 	{
 		return !(*this < coord);
 	}
-};
-
-struct vboInfo3D
-{
-	Coord3D<> pos, size;
 };
 
 struct ColourRGBA
@@ -509,18 +509,12 @@ struct ColourRGBA
 
 struct UV
 {
-	float uv_u = 0, uv_v = 0, uv_w = 0;
-	void set(float u, float v, float w)
-	{
-		this->uv_u = u;
-		this->uv_v = v;
-		this->uv_w = w;
-	}
+	float u = 0, v = 0;
 
-	void set(float u, float v)
+	void set(float a_u, float a_v)
 	{
-		this->uv_u = u;
-		this->uv_v = v;
+		this->u = a_u;
+		this->v = a_v;
 	}
 
 	float& operator[](int m_index)
@@ -528,28 +522,18 @@ struct UV
 		switch(m_index)
 		{
 		case 0:
-			return static_cast<float&>(uv_u);
+			return static_cast<float&>(u);
 		case 1:
-			return static_cast<float&>(uv_v);
-		case 2:
-			return static_cast<float&>(uv_w);
+			return static_cast<float&>(v);
 		}
 		float* error = nullptr;
 		return *error;
 	}
-};
 
-struct VboInfo2D
-{
-	VboInfo2D(Coord2D<> c = {0,0}, Coord2D<> s = {0,0})
+	bool operator==(UV uv)
 	{
-		position = c;
-		size = s;
+		return u == uv.u && v == uv.v;
 	}
-
-	Coord2D<> position, size;
-protected:
-	float _angle;
 };
 
 struct Vertex2D
@@ -574,21 +558,21 @@ struct Vertex2D
 	//sets uv
 	void setUV(float u, float v)
 	{
-		uv.uv_u = u;
-		uv.uv_v = v;
+		uv.u = u;
+		uv.v = v;
 	}
 
 	void print()
 	{
 		printf("Coord2D: (%f, %f)\n", coord.x, coord.y);
 		printf("Colour : (%d, %d, %d, %d)\n", colour.r, colour.g, colour.b, colour.a);
-		printf("UV     : (%f, %f)\n\n", uv.uv_u, uv.uv_v);
+		printf("UV     : (%f, %f)\n\n", uv.u, uv.v);
 	}
 };
 
 struct Vertex3D
 {
-	Coord3D<> coord, norm;
+	Coord3D<float> coord, norm;
 	ColourRGBA	colour;
 	UV uv;
 
@@ -609,8 +593,8 @@ struct Vertex3D
 	//sets uv
 	void setUV(float u, float v)
 	{
-		uv.uv_u = u;
-		uv.uv_v = v;
+		uv.u = u;
+		uv.v = v;
 	}
 
 	void setNorm(float x, float y, float z)
@@ -620,11 +604,60 @@ struct Vertex3D
 		norm.z = z;
 	}
 
+	bool operator==(Vertex3D vert)
+	{
+		return coord == vert.coord && norm == vert.norm && uv == vert.uv;
+	}
+
 	void print()
 	{
 		printf("Coord3D: (%f, %f, %f)\n", coord.x, coord.y, coord.z);
 		printf("Colour : (%d, %d, %d, %d)\n", colour.r, colour.g, colour.b, colour.a);
-		printf("UV     : (%f, %f)\n\n", uv.uv_u, uv.uv_v);
+		printf("UV     : (%f, %f)\n\n", uv.u, uv.v);
+	}
+};
+
+struct Indicie {
+
+	unsigned coord = 0;
+	unsigned uv = 0;
+	unsigned norm = 0;
+
+	unsigned& operator[](int m_index)
+	{
+		switch(m_index)
+		{
+		case 0:
+			return static_cast<unsigned&>(coord);
+		case 1:
+			return static_cast<unsigned&>(uv);
+		case 2:
+			return static_cast<unsigned&>(norm);
+		}
+		unsigned* error = nullptr;
+		return *error;
+	}
+
+	friend bool operator<(const Indicie& in1, const Indicie& in2)
+	{
+		return in1.coord < in2.coord;
+	}
+
+	inline bool operator==(Indicie in)
+	{
+		//for(short i = 0; i < 3; ++i)
+		//	if((*this)[i] != in[i])
+		//		return false;
+		//return true;
+
+		return (*this)[0] != in[0];
+	}
+
+	void correct()
+	{
+		coord -= 1;
+		norm -= 1;
+		uv -= 1;
 	}
 };
 

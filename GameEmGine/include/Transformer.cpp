@@ -1,7 +1,7 @@
 #include "Transformer.h"
 
 
-Transformer::Transformer():m_translate(1), m_rotate(1), m_scale(1), m_scaleDat(1)
+Transformer::Transformer():m_localTranslate(1), m_localRotate(1), m_localScale(1), m_scaleDat(1)
 {}
 
 Transformer::~Transformer()
@@ -9,7 +9,7 @@ Transformer::~Transformer()
 
 void Transformer::reset()
 {
-	m_translate = m_rotate = m_scale = glm::mat4(1);
+	m_localTranslate = m_localRotate = m_localScale = glm::mat4(1);
 	m_posDat = m_rotDat = m_scaleDat = {0,0,0};
 }
 
@@ -27,7 +27,7 @@ void Transformer::enableFPSMode(bool enable)
 void Transformer::rotate(Coord3D<> angles)
 {
 	m_updatedRot = true;
-	m_rotate = glm::mat4(1);
+	m_localRotate = glm::mat4(1);
 
 
 	m_rotDat.z = fmodf(angles.z, 360.f);
@@ -35,13 +35,13 @@ void Transformer::rotate(Coord3D<> angles)
 	m_rotDat.x = fmodf(angles.x, 360.f);
 
 	if(angles.z)
-		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.z), Coord3D<>{0, 0, 1});
+		m_localRotate *= Quat::quatRotationMat(m_rotDat.z, Coord3D<>{0, 0, 1});
 
 	if(angles.y)
-		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.y), Coord3D<>{0, 1, 0});
+		m_localRotate *= Quat::quatRotationMat(m_rotDat.y, Coord3D<>{0, 1, 0});
 
 	if(angles.x)
-		m_rotate *= Quat::quatRotationMat(glm::radians(m_rotDat.x), Coord3D<>{1, 0, 0});
+		m_localRotate *= Quat::quatRotationMat(m_rotDat.x, Coord3D<>{1, 0, 0});
 
 
 
@@ -73,15 +73,15 @@ void Transformer::translateBy(Coord3D<> pos)
 
 	if(m_fps)
 	{
-		m_forward = reclass(Coord3D<>, m_rotate * glm::vec4(0, 0, 1, 1));
-		m_up = reclass(Coord3D<>, m_rotate * glm::vec4(0, 1, 0, 1));
-		m_right = reclass(Coord3D<>, m_rotate * glm::vec4(1, 0, 0, 1));
+		m_forward = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 0, 1, 1));
+		m_up = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 1, 0, 1));
+		m_right = reclass(Coord3D<>, m_localRotate * glm::vec4(1, 0, 0, 1));
 
 		m_forward.normalize();
 		m_up.normalize();
 		m_right.normalize();
 	}
-	m_translate = glm::translate(m_translate, reclass(glm::vec3, ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x))));
+	m_localTranslate = glm::translate(m_localTranslate, reclass(glm::vec3, ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x))));
 	m_posDat += ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x));
 
 
@@ -99,9 +99,9 @@ void Transformer::translate(Coord3D<> pos)
 
 	if(m_fps)
 	{
-		m_forward = reclass(Coord3D<>, m_rotate * glm::vec4(0, 0, 1, 1));
-		m_up = reclass(Coord3D<>, m_rotate * glm::vec4(0, 1, 0, 1));
-		m_right = reclass(Coord3D<>, m_rotate * glm::vec4(1, 0, 0, 1));
+		m_forward = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 0, 1, 1));
+		m_up = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 1, 0, 1));
+		m_right = reclass(Coord3D<>, m_localRotate * glm::vec4(1, 0, 0, 1));
 
 		m_forward.normalize();
 		m_up.normalize();
@@ -109,7 +109,7 @@ void Transformer::translate(Coord3D<> pos)
 	}
 
 	m_posDat = pos;
-	m_translate = glm::translate(glm::mat4(1), reclass(glm::vec3, ((m_forward * -m_posDat.z) + (m_up * m_posDat.y) + (m_right * m_posDat.x))));
+	m_localTranslate = glm::translate(glm::mat4(1), reclass(glm::vec3, ((m_forward * -m_posDat.z) + (m_up * m_posDat.y) + (m_right * m_posDat.x))));
 
 
 }
@@ -138,7 +138,7 @@ void Transformer::setScale(float x, float y, float z)
 {
 	m_updatedScale = true;
 	m_scaleDat = Coord3D<>(x, y, z);
-	m_scale = glm::scale(glm::mat4(1), reclass(glm::vec3, m_scaleDat));
+	m_localScale = glm::scale(glm::mat4(1), reclass(glm::vec3, m_scaleDat));
 }
 
 Coord3D<> Transformer::getPosition()
@@ -171,59 +171,90 @@ Coord3D<> Transformer::getRight()
 	return m_right;
 }
 
-glm::mat4 Transformer::getRotationMatrix()
+glm::mat4& Transformer::getLocalRotationMatrix()
+{
+	return m_localRotate;
+}
+
+glm::mat4& Transformer::getLocalScaleMatrix()
+{
+	return m_localScale;
+}
+
+glm::mat4& Transformer::getLocalTranslationMatrix()
+{
+	return m_localTranslate;
+}
+
+glm::mat4& Transformer::getWorldRotationMatrix()
+{
+	calculateWorldRotationMatrix();
+	return m_worldRotate;
+}
+
+glm::mat4& Transformer::getWorldScaleMatrix()
+{
+	calculateWorldScaleMatrix();
+	return m_worldScale;
+}
+
+glm::mat4& Transformer::getWorldTranslationMatrix()
+{
+	calculateWorldTranslationMatrix();
+	return m_worldTranslate;
+}
+
+void Transformer::calculateWorldRotationMatrix()
 {
 	for(auto& a : m_children)
 		a->m_updatedRot = true;
 
-	static glm::mat4 tmp; tmp = m_rotate;
+	m_worldRotate = glm::mat4(1);
 	static Transformer* parent; parent = m_parent;
 
 	if(m_parent)
 		while(parent)
-			tmp = parent->m_rotate * tmp,
+			m_worldRotate = parent->m_localRotate * m_worldRotate,
 			parent = parent->m_parent;
 
-
-	return tmp;
 }
 
-glm::mat4 Transformer::getScaleMatrix()
+void Transformer::calculateWorldScaleMatrix()
 {
 	for(auto& a : m_children)
 		a->m_updatedScale = true;
 
-	static glm::mat4 tmp; tmp = m_scale;
+	m_worldScale = glm::mat4(1);
 	static Transformer* parent; parent = m_parent;
 	if(m_parent)
 		while(parent)
-			tmp = parent->m_scale * tmp,
+			m_worldScale = parent->m_localScale * m_worldScale,
 			parent = parent->m_parent;
-
-
-	return tmp;
 }
 
-glm::mat4 Transformer::getTranslationMatrix()
+void Transformer::calculateWorldTranslationMatrix()
 {
 	for(auto& a : m_children)
 		a->m_updatedTrans = true;
 
-	static glm::mat4 tmp; tmp = m_translate;
+	m_worldTranslate = glm::mat4(1);
 	static Transformer* parent; parent = m_parent;
 
 	if(m_parent)
 		while(parent)
-			tmp = parent->m_translate * tmp,
+			m_worldTranslate = parent->m_localTranslate * m_worldTranslate,
 			parent = parent->m_parent;
 
-	return tmp;
 }
 
-glm::mat4 Transformer::getTransformation()
+glm::mat4 Transformer::getLocalTransformation()
 {
+	return getLocalTranslationMatrix() * getLocalRotationMatrix() * getLocalScaleMatrix();
+}
 
-	return   getTranslationMatrix() * getRotationMatrix() * getScaleMatrix();
+glm::mat4 Transformer::getWorldTransformation()
+{
+	return getWorldTranslationMatrix() * getWorldRotationMatrix() * getWorldScaleMatrix();
 }
 
 void Transformer::resetUpdated()

@@ -34,7 +34,7 @@ private:
 	GLFWwindow * m_window;
 	GLFWmonitor* m_monitor;
 	WindowInfo *m_info=new WindowInfo;
-	bool _full;		
+	bool m_full;		
 
 };
 

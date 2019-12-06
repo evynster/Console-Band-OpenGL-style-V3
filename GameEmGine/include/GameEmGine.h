@@ -21,7 +21,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-#define Game GameEmGine
 //#define sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
 
 class GameEmGine

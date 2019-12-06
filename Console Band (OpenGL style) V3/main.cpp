@@ -15,31 +15,44 @@ public:
 
 	void init()
 	{
+		Game::setBackgroundColour(1, 1, 0);
 		Game::setCameraPosition({0,0,-2});
-		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0,100};
+		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,50};
 		Game::setCameraType(FRUSTUM, &frustum);
+		//Game::setBackgroundColour(.2, .2, 0);
 
 
-		//model[0] = new Model("Models/controls/controller.obj", "Box1");
-		model[0] = new Model("Models/boss/missileshoot/bms1.obj", "Box1");
+
+		model[0] = new Model(new primitiveCube(2, 2, 2), "Box1");
 		model[0]->setScale(1);
+		model[0]->setColour(.6f, 0, 0);
+		model[0]->setTransparent(true);
+		
+		//LightSource::setLightAmount(1);
+		//LightSource::setParent(model[0], 0);
+		//LightSource::translate({0,0,0}, 0);
 
-		testText.setText("Maybe this Works?");
+		testText.setText("?Maybe this Works?");
 		testText.setColour(1, 1, 1);
-		testText.textSize(10);
-		testText.toTexture();
+		testText.textSize(20);
+		testText.toTexture(1800);
 
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");
 
+		Game::addModel(model[1]);
+		Game::addModel(model[2]);
+
+		model[1]->translate(5, 0, 0);
+		model[2]->translate(-10, 0, 0);
+
 		//Game::addText(&testText);
 
 		Game::getMainCamera()->enableFPSMode();
-
 		Game::addModel(model[0]);
 
-	//	model[0]->replaceTexture(0, 0, testText.getTexture());
-	
+		//	model[0]->replaceTexture(0, 0, testText.getTexture());
+
 		keyPressed =
 			[&](int key, int mod)->void
 		{
@@ -206,30 +219,25 @@ public:
 		else
 			cameraMovement();
 
-
+		model[0]->replaceTexture(0, 0, testText.getTexture());
 		//if(Game::mouseCollision(model[0]))
 		//	model[0]->setColour(0, 0, 1);
 		//else
 		//	model[0]->setColour(1, 0, 0);
-	
+
 	}
 private:
-	float speed = 0.01f, angle = 1;
+	float speed = 0.1f, angle = 1;
 
 	Model* model[3];
 	Text testText;
 };
 
-
-
 int main()
 {
-	
+
 	Game::init("Window Band (Previously Console Band) V3", 800, 400);
 
-	void* thing = new Model;
-	thing = new Model;
-	delete thing;
 	
 	Test test;
 	Song song;

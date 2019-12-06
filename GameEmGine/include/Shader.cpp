@@ -238,10 +238,10 @@ GLint Shader::getUniformLocation(const char* uniform)
 	return uni;
 }
 
-void Shader::sendUniform(const char* uniform, glm::mat4 val)
+void Shader::sendUniform(const char* uniform, glm::mat4 val,bool transpose)
 {
 	GLint uni = getUniformLocation(uniform);
-	glUniformMatrix4fv(uni, 1, false, &val[0][0]);
+	glUniformMatrix4fv(uni, 1, transpose, &val[0][0]);
 }
 
 void Shader::sendUniform(const char* uniform, glm::vec4 val)

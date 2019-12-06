@@ -53,12 +53,18 @@ public:
 	Coord3D<> getUp();
 	Coord3D<> getRight();
 
-	glm::mat4 getRotationMatrix();
-	glm::mat4 getScaleMatrix();
-	glm::mat4 getTranslationMatrix();
-
+	glm::mat4& getLocalRotationMatrix();
+	glm::mat4& getLocalScaleMatrix();
+	glm::mat4& getLocalTranslationMatrix();
+	
+	glm::mat4& getWorldRotationMatrix();
+	glm::mat4& getWorldScaleMatrix();
+	glm::mat4& getWorldTranslationMatrix();
+	
 	/*Gets a combination of the rotation, scale, and translation matricies*/
-	glm::mat4 getTransformation();
+	glm::mat4 getLocalTransformation();
+
+	glm::mat4 getWorldTransformation();
 
 	virtual void resetUpdated();
 	virtual bool isUpdated();
@@ -74,12 +80,21 @@ public:
 	CLASS_TYPE getType();
 private:
 
+	void calculateWorldRotationMatrix();
+	void calculateWorldScaleMatrix();
+	void calculateWorldTranslationMatrix();
+
+
 	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
 	Coord3D<> m_forward = {0,0,1}, m_up = {0,1,0}, m_right = {1,0,0};
 	glm::mat4
-		m_translate,
-		m_rotate,
-		m_scale;
+		m_localTranslate,
+		m_localRotate,
+		m_localScale,
+
+		m_worldTranslate,
+		m_worldRotate,
+		m_worldScale;
 
 	std::vector<Transformer* >m_children;
 	Transformer* m_parent;

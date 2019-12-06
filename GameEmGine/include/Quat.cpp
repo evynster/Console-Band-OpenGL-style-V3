@@ -11,6 +11,9 @@ Quat::Quat(float x, float y, float z):w(0), x(x), y(y), z(z)
 Quat::Quat(float w, float x, float y, float z) : w(w), x(x), y(y), z(z)
 {}
 
+Quat::Quat(Coord3D<> rot) : w(0), x(rot.x), y(rot.y), z(rot.z)
+{}
+
 Quat Quat::normal()
 {
 	Quat q = *this;
@@ -67,6 +70,10 @@ void Quat::rotate(float a_ang, Coord3D<> a_dir)
 
 glm::mat4 Quat::quatRotationMat(float a_ang, float a_dirX, float a_dirY, float a_dirZ)
 {
+	if(!a_ang)
+		return glm::mat4(1);
+
+	a_ang = glm::radians(a_ang);
 	float
 		unit(sqrt(a_dirX * a_dirX + a_dirY * a_dirY + a_dirZ * a_dirZ));
 

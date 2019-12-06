@@ -114,7 +114,7 @@ private:
 	float m_width, m_height, m_depth;
 	Shader* m_shader, * m_shaderBB;
 	Vertex3D m_vertBBDat[12 * 3];
-	glm::mat4 m_transBB;
+	
 	bool m_enableBB = false,m_copy=false;
 
 	//std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;

@@ -55,12 +55,12 @@ void WindowCreator::setVisable(bool viz)
 
 void WindowCreator::setFullScreen(bool full)
 {
-	if(_full == full)
+	if(m_full == full)
 		return;//Return if the window is fullscreen
 
 
-	int w, h;
-	double x, y;
+	static int w, h;
+	static double x, y;
 	if(full)
 	{
 
@@ -93,7 +93,7 @@ void WindowCreator::setFullScreen(bool full)
 		//	m_monitor = nullptr;
 	}
 
-	_full = full;
+	m_full = full;
 }
 
 GLFWwindow* WindowCreator::getWindow()
@@ -108,7 +108,8 @@ std::string& WindowCreator::getTitle()
 
 Coord3D<int>& WindowCreator::getScreenSize()
 {
-	glfwGetFramebufferSize(m_window, &m_info->size.width, &m_info->size.height);
+	if(!m_full)
+		glfwGetFramebufferSize(m_window, &m_info->size.width, &m_info->size.height);
 	return m_info->size;
 }
 

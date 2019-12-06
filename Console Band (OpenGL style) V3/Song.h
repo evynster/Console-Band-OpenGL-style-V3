@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 #include <thread>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <cwchar>
 #include <cmath>
 #include <midifile/MidiFile.h>
@@ -16,8 +16,10 @@ using std::pair;
 using std::function;
 using std::thread;
 using std::stoi;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 #pragma endregion
+
+typedef GameEmGine Game;
 
 wstring cDir(wstring dir)
 {
@@ -496,7 +498,8 @@ class Song:public Scene
 		//Game::getMainCamera()->rotate(-45, {1,0,0});
 		Game::getMainCamera()->translate({note->getWidth() * 2,0,-4});
 
-		Game::setBackgroundColour(1.f, 0.5f, 0);
+		Game::getMainCamera()->enableFPSMode(true);
+		Game::setBackgroundColour(0, 0, 0);
 
 		for(int a = 0; a < 5; a++)
 			Game::addModel((fretBoard)[a] = new Model(*note)),
@@ -518,14 +521,10 @@ class Song:public Scene
 				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-5});
 			}
-
-
-
+					   
 			if(key == GLFW_KEY_F5)
 				Shader::refresh();
-
-
-
+					   
 			if(key == 'A')
 				moveLeft = true;
 
@@ -847,23 +846,27 @@ class Song:public Scene
 			if(instrument == "guitar" || instrument == "rhythm")
 			{
 				LightSource::setLightAmount(5);
+
 				//Note lights
 				for(short a = 0; a < 5; a++)
 				{
+					LightSource::enableLight(a, true);
+
 					LightSource::setParent(fretBoard[a], a);
+					LightSource::translate({0,.5,0}, a);
 					LightSource::setDiffuse({255,100,0,100}, a);
-					LightSource::setAttenuationQuadratic(0.06f, a);
+					LightSource::setAttenuationQuadratic(0.6f, a);
 
 					if(/*KeyInput::release(keyfrets[a]) && */InputManager::getController(0)->isButtonReleased(guitarfrets[a]))
 					{
 						pressed[a] = false;
-						LightSource::enableLight(a, false);
+					//	LightSource::enableLight(a, false);
 						fretBoard[a]->setColour(fretColour[0][a] * .5f);
 					}
 					else if(/*KeyInput::press(keyfrets[a]) ||*/ InputManager::getController(0)->isButtonPressed(guitarfrets[a]))
 					{
 						pressed[a] = true;
-						LightSource::enableLight(a, true);
+					//	LightSource::enableLight(a, true);
 						fretBoard[a]->setColour(fretColour[0][a]);
 
 					}

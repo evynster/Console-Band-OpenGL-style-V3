@@ -44,3 +44,9 @@ Console Band \(OpenGL style\) V3/x64/
 *.pdb
 
 Console Band (OpenGL style) V3/Models/BIN/
+
+GameEmGine/lib/
+
+*.TMP
+
+*.ilk

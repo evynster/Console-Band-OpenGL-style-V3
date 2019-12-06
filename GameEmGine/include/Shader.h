@@ -33,7 +33,7 @@ public:
 	GLint getAttribLocation(const std::string attributeName);
 	GLint getUniformLocation(const char* uniform);
 
-	void sendUniform(const char* uniform, glm::mat4 val);
+	void sendUniform(const char* uniform, glm::mat4 val, bool transpose = false);
 	void sendUniform(const char* uniform, glm::vec4 val);
 	void sendUniform(const char* uniform, Coord3D<> val);
 	void sendUniform(const char* uniform, float x, float y, float z);

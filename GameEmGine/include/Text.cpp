@@ -109,8 +109,10 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 	// Activate corresponding render state	
 	s.enable();
 
-	glUniformMatrix4fv(s.getUniformLocation("uModel"), 1, GL_FALSE, &((texture ? glm::mat4(1) : getTransformation())[0][0]));
-	glUniformMatrix4fv(s.getUniformLocation("uView"), 1, GL_FALSE, &((cam->getViewMatrix() * cam->getObjectMatrix())[0][0]));
+	s.sendUniform("uLocalModel", texture ? glm::mat4(1) : getLocalTransformation());
+	s.sendUniform("uWorldModel", texture ? glm::mat4(1) : getWorldTransformation());
+		
+	glUniformMatrix4fv(s.getUniformLocation("uView"), 1, GL_FALSE, &(cam->getViewMatrix()[0][0]));
 	glUniformMatrix4fv(s.getUniformLocation("uProj"), 1, GL_FALSE, &(cam->getProjectionMatrix()[0][0]));
 
 	s.sendUniform("flip", texture);
