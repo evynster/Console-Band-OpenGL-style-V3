@@ -12,7 +12,7 @@
 //public:
 //	Sprite();
 //	Sprite(VboInfo2D);
-//	Sprite(VboInfo2D, const char* path);
+//	Sprite(VboInfo2D, cstring path);
 //	~Sprite();
 //	void draw();
 //	void translate(float, float);
@@ -24,7 +24,7 @@
 //
 //private:
 //	void init();
-//	void init(const char* path);
+//	void init(cstring path);
 //	GLuint _vboID,_bound;
 //	Texture2D _texture;
 //	Vertex2D _vertData[6];

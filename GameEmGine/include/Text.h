@@ -16,7 +16,7 @@ class Text:public Transformer
 {
 public:
 	Text();
-	Text(const char* font);
+	Text(cstring font);
 
 	~Text();
 
@@ -41,7 +41,7 @@ public:
 	GLuint getTexture();
 
 	bool isTransparent();
-	//static Character loadCharacter(const char c, const char* font);
+	//static Character loadCharacter(cstring c, cstring font);
 
 private:
 	void testSize();

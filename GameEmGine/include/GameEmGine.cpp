@@ -70,7 +70,7 @@ void GameEmGine::init(std::string name, int width, int height, int x, int y, int
 	//LUTpath = "Texture/IWLTBAP_Aspen_-_Standard.cube";
 	///////////////////////////////////////Bind Custom 3D Texture////////////////////////////////////////////
 	//
-	//tmpLUT = ResourceManager::getTexture3D(LUTpath.c_str());
+	//tmpLUT = ResourceManager::getTextureLUT(LUTpath.c_str());
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -101,7 +101,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	glfwSetFramebufferSizeCallback(m_window->getWindow(), changeViewport);
 
-	m_mainCamera = new Camera({(float)getWindowWidth(), (float)getWindowHeight(),60});
+	m_mainCamera = new Camera({(float)getWindowWidth(), (float)getWindowHeight(),(float)getWindowWidth()});
 
 	shaderInit();
 
@@ -143,6 +143,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 		return;
 	}
 
+	m_postBuffer->initDepthTexture(getWindowWidth(), getWindowHeight());
 	m_postBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGBA8, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	if(!m_postBuffer->checkFBO())
 	{
@@ -495,6 +496,7 @@ void GameEmGine::update()
 
 
 	LightSource::setCamera(m_mainCamera);
+	m_mainScene->skybox.setCamera(m_mainCamera);
 	
 
 	glViewport(0, 0, getWindowWidth(), getWindowHeight());
@@ -507,6 +509,7 @@ void GameEmGine::update()
 	//store data for post process
 	m_postBuffer->enable();
 	m_postProcess->enable();
+	
 
 
 	//bind textures
@@ -547,7 +550,10 @@ void GameEmGine::update()
 	
 
 	m_mainFrameBuffer->moveDepthToBuffer(getWindowWidth(), getWindowHeight(), m_postBuffer->getFrameBufferID());
-	m_postBuffer->enable();
+	m_postBuffer->enable();	
+	//sky box
+	if(m_mainScene->skyBoxEnabled)
+		m_mainScene->skybox.render();
 	m_mainCamera->render(m_forwardRender, m_models, true);
 	m_postBuffer->disable();
 	
@@ -639,7 +645,7 @@ void GameEmGine::update()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_greyscaleBuffer->getColorHandle(0));
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_3D, ResourceManager::getTexture3D(LUTpath.c_str()).id);
+	glBindTexture(GL_TEXTURE_3D, ResourceManager::getTextureLUT(LUTpath.c_str()).id);
 
 	FrameBuffer::drawFullScreenQuad();
 

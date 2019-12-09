@@ -5,10 +5,12 @@
 #include <string>
 
 #define reclass(a_class,a_val) (*(a_class*)&(a_val))
+typedef const char* cstring;
 //#define unsigned int unsigned int
 //#define ushort unsigned short
 
-static const char* cDir(char* dir)
+
+static cstring cDir(char* dir)
 {
 	char* tmp;
 	if(strlen(dir) > 0)
@@ -25,6 +27,16 @@ static const char* cDir(char* dir)
 		}
 
 	return dir;
+}
+
+static std::string tolower(char* dir)
+{
+	std::string tmp;
+	for(unsigned i = 0; i<strlen(dir); i++)
+	{
+		tmp += (char)tolower(*(dir + i));
+	}
+	return tmp;
 }
 
 template<class T = float>
@@ -273,7 +285,7 @@ struct Coord3D
 		return {T(x - coord.x), T(y - coord.y), T(z - coord.z)};
 	}
 
-	friend Coord3D<T> operator-(T val,Coord3D<T> coord)
+	friend Coord3D<T> operator-(T val, Coord3D<T> coord)
 	{
 		return {T(val - coord.x), T(val - coord.y), T(val - coord.z)};
 	}
@@ -330,12 +342,20 @@ struct Coord3D
 		z *= coord.z;
 	}
 
-	void operator*=(T coord)
+	void operator*=(T val)
 	{
-		x *= coord;
-		y *= coord;
-		z *= coord;
+		x *= val;
+		y *= val;
+		z *= val;
 	}
+
+	void operator/=(T val)
+	{
+		x /= val;
+		y /= val;
+		z /= val;
+	}
+
 
 	bool operator==(Coord3D<T> coord)const
 	{
@@ -643,14 +663,14 @@ struct Indicie {
 		return in1.coord < in2.coord;
 	}
 
-	inline bool operator==(Indicie in)
+	bool operator==(Indicie in)
 	{
-		//for(short i = 0; i < 3; ++i)
-		//	if((*this)[i] != in[i])
-		//		return false;
-		//return true;
+		for(short i = 0; i < 3; ++i)
+			if((*this)[i] != in[i])
+				return false;
+		return true;
 
-		return (*this)[0] != in[0];
+		//return (*this)[0] != in[0];
 	}
 
 	void correct()

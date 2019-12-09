@@ -19,7 +19,7 @@ void Animation::setAnimationSpeed(float speed)
 	m_speed = speed;
 }
 
-void Animation::addDir(const char* dir)
+void Animation::addDir(cstring dir)
 {
 	std::string path(dir);
 	//path += fileName;

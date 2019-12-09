@@ -138,6 +138,21 @@ void Camera::rotateBy(float x, float y, float z)
 	rotateBy({x,y,z});
 }
 
+bool Camera::cull(Model* mod)
+{
+	mod;
+	//auto a = mod->getCenter();
+	//
+	//glm::vec4 tmp = m_projMat * m_viewMat * mod->getWorldTransformation() * (mod->getLocalTransformation() * glm::vec4(a.toVec3(), 1));
+	//tmp /= tmp.w;
+	//a = reclass(Coord3D<>, tmp);
+	//if(a.distance() > .5f)
+	//	return true;
+
+
+	return false;
+}
+
 void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 {
 	Shader* shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh");
@@ -146,8 +161,9 @@ void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 		{
 		case MODEL:
 
-			if(trans == a.second->isTransparent())
-				a.second->render(*shader, this);
+			if(!cull(a.second))
+				if(trans == a.second->isTransparent())
+					a.second->render(*shader, this);
 			break;
 
 		case TEXT:
@@ -165,17 +181,17 @@ Coord3D<> Camera::getRotation()
 	return Transformer::getRotation() * Coord3D<>{1, -1, 1};
 }
 
-glm::mat4 Camera::getProjectionMatrix()
+glm::mat4& Camera::getProjectionMatrix()
 {
 	return m_projMat;
 }
 
-glm::mat4 Camera::getViewMatrix()
+glm::mat4& Camera::getViewMatrix()
 {
 	return m_viewMat;
 }
 
-glm::mat4 Camera::getCameraMatrix()
+glm::mat4& Camera::getCameraMatrix()
 {
 	return m_cameraMat;
 }

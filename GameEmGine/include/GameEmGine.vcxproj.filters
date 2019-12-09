@@ -85,6 +85,7 @@
     <ClInclude Include="LightSource.h">
       <Filter>EmGine\Game Engine</Filter>
     </ClInclude>
+    <ClInclude Include="SkyBox.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fileIO.cpp">
@@ -156,6 +157,7 @@
     <ClCompile Include="LightSource.cpp">
       <Filter>EmGine\Game Engine</Filter>
     </ClCompile>
+    <ClCompile Include="SkyBox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="EmGine">

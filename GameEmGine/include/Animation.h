@@ -13,7 +13,7 @@ public:
 
 
 	void addFrame(Mesh* frame, float speed = 1);
-	void addDir(const char* dir);
+	void addDir(cstring dir);
 
 	//setts the delay between the animations
 	void setAnimationSpeed(float speed);

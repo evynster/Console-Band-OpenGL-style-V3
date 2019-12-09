@@ -15,7 +15,7 @@ using std::pair;
 using std::function;
 using std::thread;
 using std::stoi;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 #pragma endregion
 
 #define select (InputManager::keyStroke('A') || XinputManager::getController(0)->isButtonStroked(GUITAR_INPUT_BUTTONS::GUITAR_FRET_GREEN))

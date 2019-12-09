@@ -13,7 +13,7 @@
 //	init();
 //}
 //
-//Sprite::Sprite(VboInfo2D info, const char * path) :VboInfo2D(info)
+//Sprite::Sprite(VboInfo2D info, cstring * path) :VboInfo2D(info)
 //{
 //	_vboID = 0;
 //	init(path);
@@ -68,7 +68,7 @@
 //	glBindBuffer(GL_ARRAY_BUFFER, 0);
 //}
 //
-//void Sprite::init(const char * path)
+//void Sprite::init(cstring * path)
 //{
 //	static bool initial;
 //

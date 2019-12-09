@@ -1,13 +1,19 @@
 #pragma once
 #include <GL\glew.h>
-#include <string>
 #include "Utilities.h"
 
-enum class TEXTURE_TYPE
+enum class TEXTURE_TYPE2D:unsigned
 {
 	NONE,
 	DIFFUSE,
 	SPECULAR
+};
+
+enum class TEXTURE_TYPE3D:unsigned
+{
+	NONE,
+	LUT,
+	CUBE
 };
 
 struct Texture2D
@@ -15,11 +21,11 @@ struct Texture2D
 	GLuint id;
 	ColourRGBA colour;
 	int width, height;
-	TEXTURE_TYPE type;
+	TEXTURE_TYPE2D type = TEXTURE_TYPE2D::NONE;
 
 	void deleteTexture()
 	{
-		if (id)
+		if(id)
 		{
 			glDeleteTextures(1, &id);
 			id = 0;
@@ -29,7 +35,7 @@ struct Texture2D
 	void bindTexture()
 	{
 		glBindTexture(GL_TEXTURE_2D, id);
-	}	  
+	}
 
 	static void unbindTexture()
 	{
@@ -45,8 +51,11 @@ struct Texture2D
 struct Texture3D
 {
 	GLuint id;
+	int width, height, depth;
 	int lutSize;
-	Texture3D() = default;
+	TEXTURE_TYPE3D type;
+	Texture3D(TEXTURE_TYPE3D aType = TEXTURE_TYPE3D::NONE):type(aType) { };
+
 	void deleteTexture()
 	{
 		if(id)
@@ -58,17 +67,41 @@ struct Texture3D
 
 	void bindTexture()
 	{
-		glBindTexture(GL_TEXTURE_3D, id);
+		switch(type)
+		{
+		case TEXTURE_TYPE3D::LUT:
+			glBindTexture(GL_TEXTURE_3D, id);
+			break;
+		case TEXTURE_TYPE3D::CUBE:
+			glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+			break;
+		default:
+			puts("undefined type\n");
+		}
 	}
 
-	static void unbindTexture()
+
+
+	void unbindTexture()
 	{
-		glBindTexture(GL_TEXTURE_3D, GL_NONE);
+		switch(type)
+		{
+		case TEXTURE_TYPE3D::LUT:
+			glBindTexture(GL_TEXTURE_3D, 0);
+			break;
+		case TEXTURE_TYPE3D::CUBE:
+			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+			break;
+		default:
+			puts("undefined type\n");
+		}
 	}
 
 	bool operator==(Texture3D arg)
 	{
 		return id == arg.id;
 	}
+private:
 };
+	
 

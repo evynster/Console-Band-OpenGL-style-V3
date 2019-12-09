@@ -18,7 +18,7 @@ Text::Text():Transformer(), m_vaoID(0), m_vboID(0)
 	}
 }
 
-Text::Text(const char* font):Transformer(), m_vaoID(0), m_vboID(0)
+Text::Text(cstring font):Transformer(), m_vaoID(0), m_vboID(0)
 {
 	setScale(1);
 
@@ -220,7 +220,8 @@ void Text::toTexture(unsigned int width)
 	ypos *= getScale().x;
 	h *= getScale().x;
 
-	static Camera cam; cam.setType(ORTHOGRAPHIC, &OrthoPeramiters{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f});
+	static Camera cam; 
+	cam.setType(ORTHOGRAPHIC, &OrthoPeramiters{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f});
 
 	m_texture->clear();
 	m_texture->resizeColour(0, (int)x, int(h - ypos), GL_RGBA8);
@@ -233,8 +234,10 @@ void Text::toTexture(unsigned int width)
 	m_texture->enable();
 
 	m_initY = h;
+	auto a=m_colour;
+	setColour(1, 1, 1);
 	render(*ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh"), &cam, true);
-
+	setColour(a);
 	m_texture->disable();
 	setScale(tmpSize);
 	glViewport(view[0], view[1], view[2], view[3]);

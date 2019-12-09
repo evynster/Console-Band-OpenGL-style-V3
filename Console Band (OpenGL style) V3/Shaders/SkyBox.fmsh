@@ -1,0 +1,14 @@
+#version 420
+
+in vec3 texCoord;
+
+uniform samplerCube sky;
+
+out vec4 frag;
+
+
+void main()
+{
+    frag = texture(sky, texCoord);
+   // frag.a = 1;
+}

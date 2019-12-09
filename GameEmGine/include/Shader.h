@@ -31,15 +31,16 @@ public:
 	void addAtribute(const std::string attributeName, short m_index = 1);
 
 	GLint getAttribLocation(const std::string attributeName);
-	GLint getUniformLocation(const char* uniform);
+	GLint getUniformLocation(cstring uniform);
 
-	void sendUniform(const char* uniform, glm::mat4 val, bool transpose = false);
-	void sendUniform(const char* uniform, glm::vec4 val);
-	void sendUniform(const char* uniform, Coord3D<> val);
-	void sendUniform(const char* uniform, float x, float y, float z);
-	void sendUniform(const char* uniform, float x, float y, float z,float w);
-	void sendUniform(const char* uniform, float val);
-	void sendUniform(const char* uniform, int val);
+	void sendUniform(cstring uniform, glm::mat4 val, bool transpose = false);
+	void sendUniform(cstring uniform, glm::vec4 val);
+	void sendUniform(cstring uniform, Coord3D<> val);
+	void sendUniform(cstring uniform, float x, float y, float z);
+	void sendUniform(cstring uniform, float x, float y, float z,float w);
+	void sendUniform(cstring uniform, float val);
+	void sendUniform(cstring uniform, unsigned val);
+	void sendUniform(cstring uniform, int val);
 
 	//enables shader program for use
 	void enable();

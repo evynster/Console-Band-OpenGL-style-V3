@@ -21,20 +21,19 @@ out vec4 pos;
 
 void main()
 {
-     
+
     texcoord = in_uv;
     texcoord.y = 1 - texcoord.y;
 
-   vec3 normal = mix(in_normal1, in_normal2, uTime);
-   vec3 vert = mix(in_vert1, in_vert2, uTime);
-
+    vec3 normal = mix(in_normal1, in_normal2, uTime);
+    vec3 vert = mix(in_vert1, in_vert2, uTime);
 
     norm = mat3(uWorldModel) * (mat3(uLocalModel) * mat3(uView) * normal);
-   
+
     vec4 viewSpace =  uWorldModel * (uLocalModel * vec4(vert, 1.0f));
-    viewSpace =  uProj * uView * viewSpace; 
- 
+    viewSpace = uProj * uView * viewSpace; 
+
     gl_Position = viewSpace;
     
-    pos = viewSpace;
+    pos = viewSpace/viewSpace.w;
 }

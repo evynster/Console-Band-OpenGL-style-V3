@@ -494,6 +494,8 @@ class Song:public Scene
 
 	void init()
 	{
+		setSkyBox("Skyboxes/skybox/");
+
 		//note = new Model("Models/Note/note.obj", "Note");
 		//Game::getMainCamera()->rotate(-45, {1,0,0});
 		Game::getMainCamera()->translate({note->getWidth() * 2,0,-4});
@@ -850,10 +852,10 @@ class Song:public Scene
 				//Note lights
 				for(short a = 0; a < 5; a++)
 				{
-					LightSource::enableLight(a, true);
+					LightSource::enableLight(a, false);
 
 					LightSource::setParent(fretBoard[a], a);
-					LightSource::translate({0,.5,0}, a);
+					LightSource::translate({0,.1,0}, a);
 					LightSource::setDiffuse({255,100,0,100}, a);
 					LightSource::setAttenuationQuadratic(0.6f, a);
 
@@ -866,7 +868,7 @@ class Song:public Scene
 					else if(/*KeyInput::press(keyfrets[a]) ||*/ InputManager::getController(0)->isButtonPressed(guitarfrets[a]))
 					{
 						pressed[a] = true;
-					//	LightSource::enableLight(a, true);
+						LightSource::enableLight(a, true);
 						fretBoard[a]->setColour(fretColour[0][a]);
 
 					}

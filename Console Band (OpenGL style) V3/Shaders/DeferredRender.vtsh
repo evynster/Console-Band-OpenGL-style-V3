@@ -36,5 +36,5 @@ void main()
 
     gl_Position = viewSpace;
   
-    pos = viewSpace;
+    pos = viewSpace/viewSpace.w;
 }

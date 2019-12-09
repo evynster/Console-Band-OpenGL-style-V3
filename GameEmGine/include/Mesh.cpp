@@ -42,7 +42,7 @@ Mesh::~Mesh()
 	m_replaceTex.clear();
 }
 
-std::string substr(const char* str, const char* find)
+std::string substr(cstring str, cstring find)
 {
 	char tmp[CHAR_BUFF_SIZE];
 	unsigned count = (unsigned)strlen(str);
@@ -55,7 +55,7 @@ std::string substr(const char* str, const char* find)
 	return std::string(tmp);
 }
 
-void Mesh::loadMaterials(const char* path)
+void Mesh::loadMaterials(cstring path)
 {
 	FILE* f;
 	cDir((char*)path);
@@ -129,7 +129,7 @@ void Mesh::loadMaterials(const char* path)
 				cDir(str2);
 				std::string tmpStr(substr(path, "/") + str2);
 				m_textures.back().second.push_back(ResourceManager::getTexture2D(tmpStr.c_str()));
-				m_textures.back().second.back().type = TEXTURE_TYPE::DIFFUSE;
+				m_textures.back().second.back().type = TEXTURE_TYPE2D::DIFFUSE;
 				m_replaceTex.back().push_back(0);
 
 			}
@@ -142,7 +142,7 @@ void Mesh::loadMaterials(const char* path)
 				cDir(str2);
 				std::string tmpStr(substr(path, "/") + str2);
 				m_textures.back().second.push_back(ResourceManager::getTexture2D(tmpStr.c_str()));
-				m_textures.back().second.back().type = TEXTURE_TYPE::SPECULAR;
+				m_textures.back().second.back().type = TEXTURE_TYPE2D::SPECULAR;
 				m_replaceTex.back().push_back(0);
 
 			}
@@ -162,7 +162,7 @@ void Mesh::loadMaterials(const char* path)
 				float r, g, b;
 				sscanf_s(str, "Kd %f %f %f", &r, &g, &b);
 				for(auto& a : m_textures.back().second)
-					if(a.type == TEXTURE_TYPE::DIFFUSE)
+					if(a.type == TEXTURE_TYPE2D::DIFFUSE)
 						a.colour.set(r, g, b);
 			}
 			else if(strstr(str, "Ks"))
@@ -223,8 +223,7 @@ bool Mesh::load(std::string path)
 
 
 		char inputBuff[CHAR_BUFF_SIZE];
-
-
+		
 		char* MeshCheck = nullptr;
 		while(MeshCheck = fgets(inputBuff, CHAR_BUFF_SIZE, f),
 			//this part takes out the '\n' from the string
@@ -323,6 +322,7 @@ bool Mesh::load(std::string path)
 
 				for(unsigned b = 0; b < 3; ++b)
 				{
+					bool inuv = (bool)tmp[b].uv;
 					tmp[b].correct();
 					auto thing = indicieMap.find(tmp[b]);
 
@@ -332,7 +332,7 @@ bool Mesh::load(std::string path)
 						Vertex3D tmp2;
 						tmp2.coord = verts[tmp[b].coord];
 						tmp2.norm = norms[tmp[b].norm];
-						if(tmp[b].uv != -1)
+						if(inuv)
 							tmp2.uv = uvs[tmp[b].uv];
 
 						m_unpackedData.back().push_back(tmp2);
@@ -367,6 +367,8 @@ bool Mesh::load(std::string path)
 							&tmp[2][0], &tmp[2][2]);
 					for(unsigned b = 0; b < 3; ++b)
 					{
+						bool inuv = (bool)tmp[b].uv;
+
 						tmp[b].correct();
 						auto thing = indicieMap.find(tmp[b]);
 
@@ -376,7 +378,7 @@ bool Mesh::load(std::string path)
 							Vertex3D tmp2;
 							tmp2.coord = verts[tmp[b].coord];
 							tmp2.norm = norms[tmp[b].norm];
-							if(tmp[b].uv != -1)
+							if(inuv)
 								tmp2.uv = uvs[tmp[b].uv];
 
 							m_unpackedData.back().push_back(tmp2);
@@ -551,8 +553,8 @@ bool Mesh::loadPrimitive(primitiveMesh* mesh)
 	m_textures.resize(1, {"", {Texture2D(),Texture2D()}});
 	m_replaceTex.resize(1, {{0,0}});
 
-	m_textures[0].second[0].type = TEXTURE_TYPE::DIFFUSE;
-	m_textures[0].second[1].type = TEXTURE_TYPE::SPECULAR;
+	m_textures[0].second[0].type = TEXTURE_TYPE2D::DIFFUSE;
+	m_textures[0].second[1].type = TEXTURE_TYPE2D::SPECULAR;
 
 	top = mesh->m_top;
 	bottom = mesh->m_bottom;
@@ -593,7 +595,7 @@ void Mesh::render(Shader& shader)
 				glActiveTexture(GL_TEXTURE0 + c);
 				int e = 0;
 				for(auto& d : m_textures[b].second)
-					if(d.type == TEXTURE_TYPE::DIFFUSE)
+					if(d.type == TEXTURE_TYPE2D::DIFFUSE)
 						if(d.id || m_replaceTex[b][e])
 						{
 							textured = true;
@@ -616,7 +618,7 @@ void Mesh::render(Shader& shader)
 		glDrawElements(
 			GL_TRIANGLES,      // mode
 			m_indicieData[a].second.size(),    // count
-			GL_UNSIGNED_INT,   // type
+			GL_UNSIGNED_INT,   // data type
 			(void*)0           // element array buffer offset
 		);
 		//glDrawArrays(GL_TRIANGLES, 0, m_numVerts[a]);
@@ -681,6 +683,7 @@ void Mesh::init()
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 
@@ -734,7 +737,7 @@ void Mesh::editVerts(std::vector<  std::vector<Vertex3D>> verts1, std::vector<  
 
 		//indicies 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elemID[a].second);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indicieData[a].second.size() * sizeof(Indicie), m_indicieData[a].second.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indicieData[a].second.size() * sizeof(unsigned), m_indicieData[a].second.data(), GL_STATIC_DRAW);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

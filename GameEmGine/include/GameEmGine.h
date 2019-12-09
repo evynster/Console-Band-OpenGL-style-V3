@@ -17,8 +17,7 @@
 #include "FrameBuffer.h"
 #include "LightSource.h"
 #include "Text.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "SkyBox.h"
 
 
 //#define sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
@@ -26,8 +25,8 @@
 class GameEmGine
 {
 public:
-	GameEmGine()=delete;
-	static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * message, const void * userParam);
+	GameEmGine() = delete;
+	static void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 	static void init(std::string name, int width, int height, int x = 0, int y = 0, int monitor = 0, bool fullScreen = false, bool visable = true);
 
 
@@ -35,18 +34,18 @@ public:
 	Creates a new window
 	*/
 	static void createNewWindow(std::string name, int width, int height, int x = 0, int y = 0, int monitor = 0, bool fullScreen = false, bool visable = true);
-	
+
 	/*
 	Runs the engine.
 	does not exit loop until window is exited or void exit(); is called
 	*/
 	static void run();
-	
+
 	/*
 	Exists the game
 	*/
 	static void exit();
-	
+
 
 	static void setScene(Scene* scene);
 
@@ -65,17 +64,17 @@ public:
 	*/
 	static int getWindowHeight();
 
-	
+
 	/*
 	Gets window size in pixels
 	*/
 	static Coord3D<int> getWindowSize();
 
-	static Camera * getMainCamera();
+	static Camera* getMainCamera();
 
 	static bool mouseCollision(Model* model);
 
-	static void setCameraType(CAMERA_TYPE type,ProjectionPeramiters* proj);
+	static void setCameraType(CAMERA_TYPE type, ProjectionPeramiters* proj = nullptr);
 
 	/*
 	moves the camera position in pixels
@@ -89,7 +88,7 @@ public:
 	/*
 	moves the camera angle
 	*/
-	static void rotateCameraBy( Coord3D<> direction);
+	static void rotateCameraBy(Coord3D<> direction);
 
 	/*
 		sets the camera angle
@@ -115,7 +114,7 @@ public:
 
 	static void updateControllerConnections();
 
-	static WindowCreator * getWindow();
+	static WindowCreator* getWindow();
 
 	/*Controller input*/
 
@@ -125,7 +124,8 @@ public:
 
 	static XinputDevice* getController(int m_index);
 
-	static Shader *m_modelShader,*m_postProcess, *m_forwardRender, *m_grayScalePost, *m_bloomHighPass, *m_blurHorizontal, *m_blurVertical, *m_blurrComposite,*m_sobel,*m_shadows;
+	static Shader* m_modelShader, * m_postProcess, * m_forwardRender, * m_grayScalePost, * m_bloomHighPass, * m_blurHorizontal, * m_blurVertical, * m_blurrComposite, * m_sobel, * m_shadows;
+
 
 	static Texture2D* m_LUT;
 
@@ -135,7 +135,7 @@ private:
 	static void shaderInit();
 	static void calculateFPS();
 	static void fpsLimiter();
-	
+
 
 	/*
 	static void InitOpenGlCallback ();
@@ -143,15 +143,15 @@ private:
 	*/
 
 	static void update();
-	static void changeViewport(GLFWwindow * win, int w, int h);
+	static void changeViewport(GLFWwindow* win, int w, int h);
 	static void(*m_compileShaders)();
 	static std::function<void()>m_buffer;
 	static std::function<void(double)> m_gameLoop;
-	static WindowCreator *m_window;
+	static WindowCreator* m_window;
 	static ColourRGBA m_colour;
-	static Camera *m_mainCamera;
+	static Camera* m_mainCamera;
 	static std::vector<Camera*> m_cameras;
-	static FrameBuffer* m_mainFrameBuffer,*m_postBuffer,*m_buffer1,*m_buffer2,*m_greyscaleBuffer,*m_outline,*m_shadowBuffer;
+	static FrameBuffer* m_mainFrameBuffer, * m_postBuffer, * m_buffer1, * m_buffer2, * m_greyscaleBuffer, * m_outline, * m_shadowBuffer;
 	static std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
 	static std::map<void*, Model*> m_models;
 	static Scene* m_mainScene;

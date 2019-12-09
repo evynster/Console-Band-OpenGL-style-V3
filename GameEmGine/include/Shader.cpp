@@ -85,7 +85,7 @@ void Shader::createDefault()
 		;
 
 	m_vtsh = tmpFileContent;
-	const char* tmp = tmpFileContent.c_str();
+	cstring tmp = tmpFileContent.c_str();
 
 	glShaderSource(m_vertID, 1, &tmp, nullptr);
 	glCompileShader(m_vertID);
@@ -226,7 +226,7 @@ GLint Shader::getAttribLocation(const std::string attributeName)
 	return glGetAttribLocation(m_programID, attributeName.c_str());
 }
 
-GLint Shader::getUniformLocation(const char* uniform)
+GLint Shader::getUniformLocation(cstring uniform)
 {
 	GLint uni = glGetUniformLocation(m_programID, uniform);
 	if(uni < 0)
@@ -238,43 +238,49 @@ GLint Shader::getUniformLocation(const char* uniform)
 	return uni;
 }
 
-void Shader::sendUniform(const char* uniform, glm::mat4 val,bool transpose)
+void Shader::sendUniform(cstring uniform, glm::mat4 val,bool transpose)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniformMatrix4fv(uni, 1, transpose, &val[0][0]);
 }
 
-void Shader::sendUniform(const char* uniform, glm::vec4 val)
+void Shader::sendUniform(cstring uniform, glm::vec4 val)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform4fv(uni, 1, &val[0]);
 }
 
-void Shader::sendUniform(const char* uniform, Coord3D<> val)
+void Shader::sendUniform(cstring uniform, Coord3D<> val)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform3fv(uni, 1, &val.x);
 }
 
-void Shader::sendUniform(const char* uniform, float x, float y, float z)
+void Shader::sendUniform(cstring uniform, float x, float y, float z)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform3f(uni, x, y, z);
 }
 
-void Shader::sendUniform(const char* uniform, float x, float y, float z, float w)
+void Shader::sendUniform(cstring uniform, float x, float y, float z, float w)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform4f(uni, x, y, z, w);
 }
 
-void Shader::sendUniform(const char* uniform, float val)
+void Shader::sendUniform(cstring uniform, float val)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform1f(uni, val);
 }
 
-void Shader::sendUniform(const char* uniform, int val)
+void Shader::sendUniform(cstring uniform, unsigned val)
+{
+	GLint uni = getUniformLocation(uniform);
+	glUniform1ui(uni, val);
+}
+
+void Shader::sendUniform(cstring uniform, int val)
 {
 	GLint uni = getUniformLocation(uniform);
 	glUniform1i(uni, val);
@@ -307,7 +313,7 @@ bool Shader::compileShader(Shaders shadType, const std::string filePath, GLuint 
 	if(shadType == VERT_SHADER) //stores vtsh
 		m_vtsh = fileContent;
 
-	const char* tmpFileContent = fileContent.c_str();
+	cstring tmpFileContent = fileContent.c_str();
 	glShaderSource(id, 1, &tmpFileContent, nullptr);
 	glCompileShader(id);
 	//delete tmpFileContent;

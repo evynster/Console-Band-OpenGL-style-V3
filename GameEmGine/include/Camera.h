@@ -89,6 +89,8 @@ public:
 	void rotateBy(Coord3D<> angles);
 	void rotateBy(float x, float y, float z);
 
+	bool cull(Model*);
+
 
 	//render objects
 	void render(Shader* shader, std::map<void*, Model*>& models, bool transparent = false);
@@ -99,9 +101,9 @@ public:
 	/*GETTERS*/
 	Coord3D<> getRotation();
 
-	glm::mat4 getProjectionMatrix();
-	glm::mat4 getViewMatrix();
-	glm::mat4 getCameraMatrix();
+	glm::mat4& getProjectionMatrix();
+	glm::mat4& getViewMatrix();
+	glm::mat4& getCameraMatrix();
 	
 	CAMERA_TYPE getType();
 

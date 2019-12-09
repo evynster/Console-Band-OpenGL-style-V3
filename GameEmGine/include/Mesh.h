@@ -22,7 +22,7 @@ enum PRIMITIVE_TYPE
 struct primitiveMesh
 {
 	primitiveMesh() {}
-	primitiveMesh(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):m_dim(dim), m_offset(offset), m_rotation(rot) {}
+	primitiveMesh(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):m_dim(dim), m_offset(offset), m_rotation(rot) { }
 	primitiveMesh(float width, float height, float depth, Coord3D<> offset = {}, Coord3D<> rot = {})
 		:m_dim({width,height,depth}), m_offset(offset), m_rotation(rot) {}
 
@@ -92,12 +92,12 @@ struct PrimitivePlane:public primitiveMesh
 {
 	PrimitivePlane():primitiveMesh() { type = PLANE; }
 
-	PrimitivePlane(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):primitiveMesh(dim, offset, rot) { type = PLANE; }
+	PrimitivePlane(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):primitiveMesh(dim, offset, rot) { type = PLANE; createMesh(); }
 
 	PrimitivePlane(float w, float h, float d = 0, Coord3D<> offset = {}, Coord3D<> rot = {})
 		:primitiveMesh(w, h, d, offset, rot)
 	{
-		type = PLANE;
+		type = PLANE; createMesh();
 	}
 
 	~PrimitivePlane() {};
@@ -193,7 +193,7 @@ struct PrimitivePlane:public primitiveMesh
 		//auto valy = (norm) * (tmp[0].coord - tmp[2].coord).normal();
 
 		val = ((tmp[0].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
-		tmp[0].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//bottom left 
+		tmp[0].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//bottom left 
 		val = ((tmp[1].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
 		tmp[1].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//bottom right*
 		val = ((tmp[2].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
@@ -215,12 +215,14 @@ struct primitiveCube: public primitiveMesh
 {
 	primitiveCube():primitiveMesh() { type = CUBE; }
 
-	primitiveCube(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):primitiveMesh(dim, offset, rot) { type = CUBE; }
+	primitiveCube(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false):primitiveMesh(dim, offset, rot) {
+		type = CUBE; m_invert = invert; createMesh();
+	}
 
-	primitiveCube(float w, float h, float d = 0, Coord3D<> offset = {}, Coord3D<> rot = {})
+	primitiveCube(float w, float h, float d = 0, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false)
 		:primitiveMesh(w, h, d, offset, rot)
 	{
-		type = CUBE;
+		type = CUBE; m_invert = invert; createMesh();
 	}
 
 	~primitiveCube() {}
@@ -262,9 +264,13 @@ struct primitiveCube: public primitiveMesh
 		{
 			glm::mat4 rot = Quat::quatRotationMat(m_rotation.x, 1, 0, 0) * Quat::quatRotationMat(m_rotation.y, 0, 1, 0) * Quat::quatRotationMat(m_rotation.z, 0, 0, 1);
 
-			a.coord = reclass(Coord3D<>,rot * glm::vec4(a.coord.toVec3(), 1));
+			a.coord = reclass(Coord3D<>, rot * glm::vec4(a.coord.toVec3(), 1));
 			a.norm = reclass(Coord3D<>, rot * glm::vec4(a.norm.toVec3(), 1));
 		}
+
+		if(m_invert)
+			for(unsigned a = 0; a <unsigned(m_indices.size() * .5f); ++a)
+				std::swap(m_indices[a], m_indices[m_indices.size() - 1 - a]);
 
 
 		m_top = m_bottom = m_left = m_right = m_front = m_back = m_unpackedData[0].coord;
@@ -279,10 +285,12 @@ struct primitiveCube: public primitiveMesh
 			m_back = m_unpackedData[a].coord.z > m_back.z ? m_unpackedData[a].coord : m_back;
 		}
 
+
+
 	}
 
 private:
-
+	bool m_invert;
 };
 
 class Mesh
@@ -309,7 +317,7 @@ public:
 	Coord3D<> top, bottom, left, right, front, back;
 
 private:
-	void loadMaterials(const char* path);
+	void loadMaterials(cstring path);
 
 	bool load(std::string path);
 

@@ -19,9 +19,9 @@ class Model: public Transformer
 {
 public:
 	Model();
-	Model(Model& model, const char* tag = "");
-	Model(primitiveMesh* model, const char* tag = "");
-	Model(const char* path, const char* tag = "");
+	Model(Model& model, cstring tag = "");
+	Model(primitiveMesh* model, cstring tag = "");
+	Model(cstring path, cstring tag = "");
 	virtual ~Model();
 
 	bool collision2D(Model* k, Coord3D<float> ignore);
@@ -44,7 +44,7 @@ public:
 
 	ColourRGBA getColour();
 
-	bool loadModel(const char* path);
+	bool loadModel(cstring path);
 
 	void enableBoundingBox(bool enable);
 
@@ -66,9 +66,9 @@ public:
 
 	void boundingBoxUpdate();
 
-	Animation* getAnimation(const char* tag);
+	Animation* getAnimation(cstring tag);
 	Animation* getCurrentAnimation();
-	void  setAnimation(const char* tag);
+	void  setAnimation(cstring tag);
 
 	Mesh* getMesh();
 	Shader* getShader();
@@ -79,7 +79,7 @@ public:
 	void setTransparent(bool trans);
 	bool isTransparent();
 	void print();
-
+	std::vector<Coord3D<>> getBounds();
 protected:
 	ColourRGBA m_colour;
 
@@ -89,7 +89,7 @@ private:
 
 	bool m_render = true;
 	bool m_transparent = false;
-	const char* m_tag;
+	cstring m_tag;
 
 	std::unordered_map< std::string, Animation*>m_animations;
 	std::string m_animation;

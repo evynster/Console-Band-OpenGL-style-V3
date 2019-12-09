@@ -15,13 +15,13 @@ public:
 
 	void init()
 	{
-		Game::setBackgroundColour(1, 1, 0);
+		Game::setBackgroundColour(0, 0, 1);
 		Game::setCameraPosition({0,0,-2});
 		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,50};
 		Game::setCameraType(FRUSTUM, &frustum);
 		//Game::setBackgroundColour(.2, .2, 0);
 
-
+		setSkyBox("Skyboxes/skybox/");
 
 		model[0] = new Model(new primitiveCube(2, 2, 2), "Box1");
 		model[0]->setScale(1);
@@ -33,9 +33,10 @@ public:
 		//LightSource::translate({0,0,0}, 0);
 
 		testText.setText("?Maybe this Works?");
-		testText.setColour(1, 1, 1);
+		testText.setColour(1, 0, 0);
 		testText.textSize(20);
 		testText.toTexture(1800);
+		model[0]->replaceTexture(0, 0, testText.getTexture());
 
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");
@@ -213,13 +214,12 @@ public:
 
 	void update(double dt)
 	{
-		testText.toTexture(200);
 		if(tab)
 			objectMovement();
 		else
 			cameraMovement();
 
-		model[0]->replaceTexture(0, 0, testText.getTexture());
+		
 		//if(Game::mouseCollision(model[0]))
 		//	model[0]->setColour(0, 0, 1);
 		//else
@@ -241,7 +241,7 @@ int main()
 	
 	Test test;
 	Song song;
-	Game::setScene(&test);
+	Game::setScene(&song);
 	Game::run();
 
 	return 0;

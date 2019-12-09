@@ -212,6 +212,7 @@
     <ClInclude Include="Quat.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="ShaderCombiner.h" />
+    <ClInclude Include="SkyBox.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Utilities.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="Quat.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="ShaderCombiner.cpp" />
+    <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Transformer.cpp" />

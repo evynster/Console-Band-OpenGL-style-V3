@@ -1,5 +1,4 @@
 #include "Model.h" 
-#include "ResourceManager.h"
 #include <ctime>
 
 Model::Model():Transformer()
@@ -7,7 +6,7 @@ Model::Model():Transformer()
 	m_type = MODEL;
 }
 
-Model::Model(Model& model, const char* tag) :
+Model::Model(Model& model, cstring tag) :
 	Transformer(model),
 	m_mesh(model.m_mesh),
 	m_colour(model.m_colour),
@@ -40,7 +39,7 @@ Model::Model(Model& model, const char* tag) :
 
 }
 
-Model::Model(primitiveMesh* model, const char* tag):
+Model::Model(primitiveMesh* model, cstring tag):
 	Transformer(),
 	m_tag(tag)
 {
@@ -73,7 +72,7 @@ Model::Model(primitiveMesh* model, const char* tag):
 	}
 }
 
-Model::Model(const char* path, const char* tag):
+Model::Model(cstring path, cstring tag):
 	Transformer(),
 	m_tag(tag)
 {
@@ -327,7 +326,7 @@ ColourRGBA Model::getColour()
 	return m_colour;
 }
 
-bool Model::loadModel(const char* path)
+bool Model::loadModel(cstring path)
 {
 	return m_mesh->loadMesh(path);
 }
@@ -423,7 +422,7 @@ void Model::boundingBoxUpdate()
 			bounds[4].z + bounds[5].z) / 2);
 }
 
-Animation* Model::getAnimation(const char* tag)
+Animation* Model::getAnimation(cstring tag)
 {
 	return m_animations[tag];
 }
@@ -433,7 +432,7 @@ Animation* Model::getCurrentAnimation()
 	return m_animations[m_animation];
 }
 
-void Model::setAnimation(const char* tag)
+void Model::setAnimation(cstring tag)
 {
 	m_animation = tag;
 }
@@ -541,5 +540,17 @@ void Model::print()
 		"Depth: %f\n"
 		"Center: (%f, %f, %f)\n"
 		, m_tag, m_width, m_height, m_depth, m_center.x, m_center.y, m_center.z);
+}
+
+std::vector<Coord3D<>> Model::getBounds()
+{
+	return std::vector<Coord3D<>>{m_topLeftBack,
+		m_topRightBack,
+		m_topLeftFront,
+		m_topRightFront,
+		m_bottomLeftBack,
+		m_bottomRightBack,
+		m_bottomLeftFront,
+		m_bottomRightFront};
 }
 
