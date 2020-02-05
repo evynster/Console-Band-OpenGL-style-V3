@@ -6,22 +6,24 @@
 #include "Quat.h"
 #include "Utilities.h"
 
-enum CLASS_TYPE
-{
-	TRANSFORMER,
-	MODEL,
-	TEXT
-};
+
 
 class Transformer
 {
 public:
+	enum TYPE
+	{
+		TRANSFORMER,
+		MODEL,
+		TEXT
+	};
 
 	Transformer();
 	~Transformer();
 
 	void reset();
 	void enableFPSMode(bool enable = true);
+
 	/*SET ROTATION*/
 
 	virtual void rotate(Coord3D<> angles);
@@ -53,18 +55,19 @@ public:
 	Coord3D<> getUp();
 	Coord3D<> getRight();
 
-	glm::mat4& getLocalRotationMatrix();
-	glm::mat4& getLocalScaleMatrix();
-	glm::mat4& getLocalTranslationMatrix();
-	
-	glm::mat4& getWorldRotationMatrix();
-	glm::mat4& getWorldScaleMatrix();
-	glm::mat4& getWorldTranslationMatrix();
+	virtual glm::mat4 getLocalRotationMatrix();
+	virtual glm::mat4 getLocalScaleMatrix();
+	virtual glm::mat4 getLocalTranslationMatrix();
+	 
+	virtual glm::mat4 getWorldRotationMatrix();
+	virtual glm::mat4 getWorldScaleMatrix();
+	virtual glm::mat4 getWorldTranslationMatrix();
 	
 	/*Gets a combination of the rotation, scale, and translation matricies*/
-	glm::mat4 getLocalTransformation();
 
-	glm::mat4 getWorldTransformation();
+	virtual glm::mat4 getLocalTransformation();
+
+	virtual glm::mat4 getWorldTransformation();
 
 	virtual void resetUpdated();
 	virtual bool isUpdated();
@@ -74,10 +77,15 @@ public:
 
 	virtual void addChild(Transformer* child);
 	virtual void removeChild(Transformer* child);
+	virtual void removeChild(unsigned index);
+	virtual void setParent(Transformer* parent);
+	virtual void removeParent(Transformer* parent);
+
 	virtual Transformer* getChild(unsigned int index);
+	virtual Transformer* getParent();
 	virtual std::vector<Transformer*>& getChildren();
 
-	CLASS_TYPE getType();
+	Transformer::TYPE getType();
 private:
 
 	void calculateWorldRotationMatrix();
@@ -87,6 +95,16 @@ private:
 
 	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
 	Coord3D<> m_forward = {0,0,1}, m_up = {0,1,0}, m_right = {1,0,0};
+	std::vector<Transformer* >m_children;
+	Transformer* m_parent;
+	bool  m_updatedRot = true,
+		m_updatedTrans = true,
+		m_updatedScale = true,
+		//first person movement
+		m_fps=false;
+
+protected:
+	Transformer::TYPE m_type;
 	glm::mat4
 		m_localTranslate,
 		m_localRotate,
@@ -96,14 +114,5 @@ private:
 		m_worldRotate,
 		m_worldScale;
 
-	std::vector<Transformer* >m_children;
-	Transformer* m_parent;
-	bool  m_updatedRot = true,
-		m_updatedTrans = true,
-		m_updatedScale = true,
-		m_fps;
-
-protected:
-	CLASS_TYPE m_type;
 };
 

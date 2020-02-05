@@ -2,8 +2,10 @@
 #include <vector>
 #include <string>
 #include <ctime>
-#include "Mesh.h"
+#include "Model.h"
 #include "Shader.h"
+
+class Model;
 
 class Animation
 {
@@ -12,13 +14,13 @@ public:
 	~Animation();
 
 
-	void addFrame(Mesh* frame, float speed = 1);
+	void addFrame(Model* frame, float speed = 1);
 	void addDir(cstring dir);
 
 	//setts the delay between the animations
 	void setAnimationSpeed(float speed);
 
-	void update(Shader* shader, Mesh* mesh);
+	void update(Shader* shader, Model* mesh);
 
 	int getFrameNumber();
 
@@ -36,8 +38,8 @@ public:
 private:
 	bool m_pause = 0, m_stop = 0, m_repeat = 0;
 
-	std::vector<Mesh*> m_frames;
-	std::vector<std::vector<std::vector<Vertex3D>>> m_unpackedData;
+	std::vector<Model*> m_frames;
+	//std::vector<std::vector<std::vector<Vertex3D>>> m_unpackedData;
 
 	bool init = false;
 	float m_speed, m_lastTime, m_time;

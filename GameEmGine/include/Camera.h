@@ -13,11 +13,6 @@
 
 class Model;
 
-enum CAMERA_TYPE
-{
-	ORTHOGRAPHIC,
-	FRUSTUM
-};
 
 #pragma region Structs
 
@@ -64,11 +59,17 @@ struct FrustumPeramiters:public ProjectionPeramiters
 class Camera:public Transformer
 {
 public:
-	Camera(Coord3D<> = {1,1,1}, CAMERA_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
+enum TYPE
+{
+	ORTHOGRAPHIC,
+	FRUSTUM
+};
+
+	Camera(Coord3D<> = {1,1,1}, TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	~Camera();
 
-	void init(Coord3D<> = {}, CAMERA_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
-	void setType(CAMERA_TYPE type, ProjectionPeramiters* peram = nullptr);
+	void init(Coord3D<> = {}, TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
+	void setType(TYPE type, ProjectionPeramiters* peram = nullptr);
 	bool update();
 
 	/*SET POSITION*/
@@ -91,6 +92,20 @@ public:
 
 	bool cull(Model*);
 
+	/*Matricies*/
+	virtual glm::mat4 getLocalRotationMatrix();
+	virtual glm::mat4 getLocalScaleMatrix();
+	virtual glm::mat4 getLocalTranslationMatrix();
+
+	virtual glm::mat4 getWorldRotationMatrix();
+	virtual glm::mat4 getWorldScaleMatrix();
+	virtual glm::mat4 getWorldTranslationMatrix();
+
+	/*Gets a combination of the rotation, scale, and translation matricies*/
+
+	virtual glm::mat4 getLocalTransformation();
+
+	virtual glm::mat4 getWorldTransformation();
 
 	//render objects
 	void render(Shader* shader, std::map<void*, Model*>& models, bool transparent = false);
@@ -105,7 +120,7 @@ public:
 	glm::mat4& getViewMatrix();
 	glm::mat4& getCameraMatrix();
 	
-	CAMERA_TYPE getType();
+	TYPE getType();
 
 protected:
 
@@ -119,7 +134,7 @@ protected:
 		m_position, m_positionBy,
 		m_rotate, m_rotateBy;
 
-	CAMERA_TYPE m_type = FRUSTUM;
+	TYPE m_type = FRUSTUM;
 
 	glm::mat4 m_cameraMat;
 	glm::mat4 m_projMat;

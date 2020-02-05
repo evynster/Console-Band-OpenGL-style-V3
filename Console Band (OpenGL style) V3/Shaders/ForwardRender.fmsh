@@ -43,7 +43,7 @@ uniform bool textured;
 uniform bool darken ;
 
 in vec2 texcoord;
-in vec3 norm;
+in vec4 norm;
 in vec4 pos;
 
 out vec4 outColor;
@@ -62,7 +62,7 @@ void spotLight()
 
 void directionalLight()
 {
-    vec3 normal = normalize(norm);
+    vec3 normal = normalize(norm).xyz;
     vec3 lightVec = LightPosition.xyz - (pos.xyz / pos.w);
     float dist = length(lightVec);
     float NdotL = max(dot(normal, LightDirection),0.0);
@@ -87,7 +87,7 @@ void directionalLight()
 
 void pointLight()
 {
-    vec3 normal = normalize(norm);
+    vec3 normal = normalize(norm).xyz;
     vec3 lightVec = normalize(LightPosition.xyz - (pos.xyz / pos.w));
     float diff = max(dot(normal, lightVec), 0.0);
    // float dist = length(lightVec);
@@ -189,7 +189,7 @@ void main()
     
     
     //account for rasterizer interpolating
-    vec3 normal = normalize(norm);
+    vec3 normal = normalize(norm).xyz;
     
     if(LightEnable)
         switch(LightType)

@@ -1,10 +1,10 @@
 #include "Text.h"
-
+#include <cmath>
 Text::Text():Transformer(), m_vaoID(0), m_vboID(0)
 {
 	setScale(1);
 
-	m_type = TEXT;
+	m_type = Transformer::TYPE::TEXT;
 	m_font = "fonts/arial.ttf";
 
 	//printf("%s\n", m_face->style_name);
@@ -22,7 +22,7 @@ Text::Text(cstring font):Transformer(), m_vaoID(0), m_vboID(0)
 {
 	setScale(1);
 
-	m_type = TEXT;
+	m_type = Transformer::TYPE::TEXT;
 	m_font = font;
 
 	m_texture = new FrameBuffer(1);
@@ -180,10 +180,10 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 		for(auto& a : getChildren())
 			switch(a->getType())
 			{
-			case MODEL:
+			case Transformer::TYPE::MODEL:
 				reclass(Model*, a)->render(s, cam);
 				break;
-			case TEXT:
+			case Transformer::TYPE::TEXT:
 				reclass(Text*, a)->render(s, cam);
 				break;
 			}
@@ -203,9 +203,9 @@ void Text::toTexture(unsigned int width)
 	{
 		ch = ResourceManager::getCharacter(c, m_font.c_str());
 
-		ypos = std::min(-float(ch.size.y - ch.bearing.y), ypos);
+		ypos = fmin(-float(ch.size.y - ch.bearing.y), ypos);
 
-		h = std::max((float)ch.size.y, h);
+		h = fmax((float)ch.size.y, h);
 
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
@@ -221,7 +221,7 @@ void Text::toTexture(unsigned int width)
 	h *= getScale().x;
 
 	static Camera cam; 
-	cam.setType(ORTHOGRAPHIC, &OrthoPeramiters{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f});
+	cam.setType(Camera::ORTHOGRAPHIC, &OrthoPeramiters{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f});
 
 	m_texture->clear();
 	m_texture->resizeColour(0, (int)x, int(h - ypos), GL_RGBA8);
@@ -262,9 +262,9 @@ void Text::testSize()
 	{
 		ch = ResourceManager::getCharacter(c, m_font.c_str());
 
-		ypos = std::min(-float(ch.size.y - ch.bearing.y), ypos);
+		ypos = fmin(-float(ch.size.y - ch.bearing.y), ypos);
 
-		h = std::max((float)ch.size.y, h);
+		h = fmax((float)ch.size.y, h);
 
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)

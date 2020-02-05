@@ -3,27 +3,36 @@
 
 Model::Model():Transformer()
 {
-	m_type = MODEL;
+	m_type = Transformer::TYPE::MODEL;
 }
 
 Model::Model(Model& model, cstring tag) :
 	Transformer(model),
-	m_mesh(model.m_mesh),
+	m_meshes(model.m_meshes),
 	m_colour(model.m_colour),
 	m_render(model.m_render),
 	m_tag(tag),
 	m_copy(true)
 {
-	m_type = MODEL;
+	m_type = Transformer::TYPE::MODEL;
 	m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
-	float top = m_mesh->top.y,
-		bottom = m_mesh->bottom.y,
-		left = m_mesh->left.x,
-		right = m_mesh->right.x,
-		front = m_mesh->front.z,
-		back = m_mesh->back.z;
+	float top = m_meshes[0]->top.y,
+		bottom = m_meshes[0]->bottom.y,
+		left = m_meshes[0]->left.x,
+		right = m_meshes[0]->right.x,
+		front = m_meshes[0]->front.z,
+		back = m_meshes[0]->back.z;
 
+	for(auto& a : m_meshes)
+	{
+		top = top < a->top.y ? a->top.y : top,
+			bottom = bottom>a->bottom.y ? a->bottom.y : bottom,
+			left = left > a->left.x ? a->left.x : left,
+			right = right < a->right.x ? a->right.x : right,
+			front = front< a->front.z ? a->front.z : front,
+			back = back > a->back.z ? a->back.z : back;
+	}
 	(m_topLeftBack = {left,top,back}),
 		(m_topRightBack = {right,top,back}),
 		(m_topLeftFront = {left,top,front}),
@@ -43,19 +52,20 @@ Model::Model(primitiveMesh* model, cstring tag):
 	Transformer(),
 	m_tag(tag)
 {
-	m_type = MODEL;
-	m_mesh = new Mesh;
-	if(m_mesh->loadPrimitive(model))
+	m_type = Transformer::TYPE::MODEL;
+	m_meshes.push_back(new Mesh());
+
+	if(m_meshes[0]->loadPrimitive(model))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
 
-		float top = m_mesh->top.y,
-			bottom = m_mesh->bottom.y,
-			left = m_mesh->left.x,
-			right = m_mesh->right.x,
-			front = m_mesh->front.z,
-			back = m_mesh->back.z;
+		float top = m_meshes[0]->top.y,
+			bottom = m_meshes[0]->bottom.y,
+			left = m_meshes[0]->left.x,
+			right = m_meshes[0]->right.x,
+			front = m_meshes[0]->front.z,
+			back = m_meshes[0]->back.z;
 
 		(m_topLeftBack = {left,top,back}),
 			(m_topRightBack = {right,top,back}),
@@ -76,20 +86,30 @@ Model::Model(cstring path, cstring tag):
 	Transformer(),
 	m_tag(tag)
 {
-	m_type = MODEL;
+	m_type = Transformer::TYPE::MODEL;
 
-	m_mesh = new Mesh;
+	//m_meshes = new Mesh;
 	if(loadModel(path))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
 
-		float top = m_mesh->top.y,
-			bottom = m_mesh->bottom.y,
-			left = m_mesh->left.x,
-			right = m_mesh->right.x,
-			front = m_mesh->front.z,
-			back = m_mesh->back.z;
+		float top = m_meshes[0]->top.y,
+			bottom = m_meshes[0]->bottom.y,
+			left = m_meshes[0]->left.x,
+			right = m_meshes[0]->right.x,
+			front = m_meshes[0]->front.z,
+			back = m_meshes[0]->back.z;
+
+		for(auto& a : m_meshes)
+		{
+			top = top < a->top.y ? a->top.y : top,
+				bottom = bottom>a->bottom.y ? a->bottom.y : bottom,
+				left = left > a->left.x ? a->left.x : left,
+				right = right < a->right.x ? a->right.x : right,
+				front = front< a->front.z ? a->front.z : front,
+				back = back > a->back.z ? a->back.z : back;
+		}
 
 		(m_topLeftBack = {left,top,back}),
 			(m_topRightBack = {right,top,back}),
@@ -109,7 +129,7 @@ Model::Model(cstring path, cstring tag):
 Model::~Model()
 {
 	if(!m_copy)
-		delete m_mesh;
+		meshCleanUp();
 }
 
 
@@ -261,15 +281,16 @@ void Model::render(Shader& shader, Camera* cam)
 	shader.disable();
 
 	if(m_animations[m_animation])
-		m_animations[m_animation]->update(&shader, m_mesh);
+		m_animations[m_animation]->update(&shader, this);
 
 	// update the position of the object
 	boundingBoxUpdate();
 
 	if(m_render)
 	{
-		//render the mesh
-		m_mesh->render(shader);
+		//render the meshes
+		for(auto& a : m_meshes)
+			a->render(shader);
 
 		if(m_enableBB)
 			drawBoundingBox();
@@ -328,7 +349,8 @@ ColourRGBA Model::getColour()
 
 bool Model::loadModel(cstring path)
 {
-	return m_mesh->loadMesh(path);
+	m_meshes = MeshLoader::loadMesh(path);
+	return m_meshes.size();
 }
 
 void Model::enableBoundingBox(bool enable)
@@ -339,6 +361,13 @@ void Model::enableBoundingBox(bool enable)
 void Model::addAnimation(std::string tag, Animation* animation)
 {
 	m_animations[tag] = animation;
+}
+
+void Model::editVerts(Model* first, Model* second)
+{
+	for(unsigned a=0;a<first->m_meshes.size();a++ )
+		m_meshes[a]->editVerts(first->m_meshes[a],second->m_meshes[a]);
+
 }
 
 float Model::getWidth()
@@ -376,19 +405,37 @@ void Model::boundingBoxUpdate()
 		m_shaderBB->enable();
 		m_shaderBB->sendUniform("uLocalModel", getLocalTransformation());
 		m_shaderBB->sendUniform("uWorldModel", getWorldTransformation());
-		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uView"), 1, GL_FALSE, &( m_camera->getViewMatrix()[0][0]));
+		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uView"), 1, GL_FALSE, &(m_camera->getViewMatrix()[0][0]));
 		glUniformMatrix4fv(m_shaderBB->getUniformLocation("uProj"), 1, GL_FALSE, &(m_camera->getProjectionMatrix()[0][0]));
 		m_shaderBB->disable();
 	}
 
+	//float
+	//	right = m_meshes[0]->right.x,
+	//	left = m_meshes[0]->left.x,
+	//	top = m_meshes[0]->top.y,
+	//	bottom = m_meshes[0]->bottom.y,
+	//	front = m_meshes[0]->front.z,
+	//	back = m_meshes[0]->back.z;
+	//
+	//for(auto& a : m_meshes)
+	//	right = right < a->right.x ? a->right.x : right,
+	//	left = left > a->left.x ? a->left.x : left,
+	//	top = top < a->top.y ? a->top.y : top,
+	//	bottom = bottom>a->bottom.y ? a->bottom.y : bottom,
+	//	front = front< a->front.z ? a->front.z : front,
+	//	back = back > a->back.z ? a->back.z : back;
+
+
+
 	std::vector<glm::vec4> bounds =
 	{
-	{*(glm::vec3*) & m_mesh->right,1},
-	{*(glm::vec3*) & m_mesh->left,1},
-	{*(glm::vec3*) & m_mesh->top,1},
-	{*(glm::vec3*) & m_mesh->bottom,1},
-	{*(glm::vec3*) & m_mesh->front,1},
-	{*(glm::vec3*) & m_mesh->back,1}
+	{*(glm::vec3*) & m_bottomRightBack,1},
+	{*(glm::vec3*) & m_bottomLeftBack,1},
+	{*(glm::vec3*) & m_topLeftBack,1},
+	{*(glm::vec3*) & m_bottomLeftBack,1},
+	{*(glm::vec3*) & m_topLeftFront,1},
+	{*(glm::vec3*) & m_topLeftBack,1}
 	};
 
 
@@ -403,12 +450,12 @@ void Model::boundingBoxUpdate()
 
 	bounds =
 	{
-	{*(glm::vec3*) & m_mesh->right,1},
-	{*(glm::vec3*) & m_mesh->left,1},
-	{*(glm::vec3*) & m_mesh->top,1},
-	{*(glm::vec3*) & m_mesh->bottom,1},
-	{*(glm::vec3*) & m_mesh->front,1},
-	{*(glm::vec3*) & m_mesh->back,1}
+	{*(glm::vec3*) & m_bottomRightBack,1},
+	{*(glm::vec3*) & m_bottomLeftBack,1},
+	{*(glm::vec3*) & m_topLeftBack,1},
+	{*(glm::vec3*) & m_bottomLeftBack,1},
+	{*(glm::vec3*) & m_topLeftFront,1},
+	{*(glm::vec3*) & m_topLeftBack,1}
 	};
 
 
@@ -417,9 +464,9 @@ void Model::boundingBoxUpdate()
 
 	m_center =
 		(Coord3D<>(
-			bounds[0].x + bounds[1].x,
-			bounds[2].y + bounds[3].y,
-			bounds[4].z + bounds[5].z) / 2);
+		bounds[0].x + bounds[1].x,
+		bounds[2].y + bounds[3].y,
+		bounds[4].z + bounds[5].z) / 2);
 }
 
 Animation* Model::getAnimation(cstring tag)
@@ -437,9 +484,9 @@ void Model::setAnimation(cstring tag)
 	m_animation = tag;
 }
 
-Mesh* Model::getMesh()
+Mesh* Model::getMesh(const unsigned index)
 {
-	return m_mesh;
+	return m_meshes[index];
 }
 
 Shader* Model::getShader()
@@ -449,7 +496,7 @@ Shader* Model::getShader()
 
 void Model::replaceTexture(int mesh, int index, GLuint tex)
 {
-	m_mesh->replaceTexture(mesh, index, tex);
+	m_meshes[mesh]->replaceTexture(index, tex);
 }
 
 void Model::setToRender(bool render)
@@ -552,5 +599,13 @@ std::vector<Coord3D<>> Model::getBounds()
 		m_bottomRightBack,
 		m_bottomLeftFront,
 		m_bottomRightFront};
+}
+
+void Model::meshCleanUp()
+{
+	for(auto& a : m_meshes)
+		if(a)
+			delete a;
+	m_meshes.clear();
 }
 

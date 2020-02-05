@@ -67,6 +67,11 @@ void GameEmGine::init(std::string name, int width, int height, int x, int y, int
 	AudioPlayer::init();
 	InputManager::init();
 
+	tmpRamp= ResourceManager::getTexture2D("textures/Texture Ramp.png");
+	toonActive = true;
+
+
+
 	//LUTpath = "Texture/IWLTBAP_Aspen_-_Standard.cube";
 	///////////////////////////////////////Bind Custom 3D Texture////////////////////////////////////////////
 	//
@@ -216,7 +221,7 @@ void GameEmGine::run()
 			static Text fps;
 			OrthoPeramiters ortho{0,(float)getWindowWidth(),(float)getWindowHeight(),0,0,(float)getWindowSize().depth};
 			static Camera cam({(float)getWindowSize().width,(float)getWindowSize().height,(float)getWindowSize().depth}
-			, ORTHOGRAPHIC, &ortho);
+			, Camera::ORTHOGRAPHIC, &ortho);
 			cam.update();
 
 			fps.setColour(1, 0, 0, .7f);
@@ -303,7 +308,7 @@ void GameEmGine::shaderInit()
 	m_grayScalePost = ResourceManager::getShader("Shaders/Main Buffer.vtsh", "Shaders/GrayscalePost.fmsh");
 	m_sobel = ResourceManager::getShader("Shaders/Main Buffer.vtsh", "shaders/Sobel.fmsh");
 
-
+	Shader::enableUniformErrors(false);
 }
 
 void GameEmGine::calculateFPS()
@@ -350,6 +355,7 @@ void GameEmGine::setScene(Scene* scene)
 {
 	m_models.clear();
 	m_frameBuffers.clear();
+	LightManager::clear();
 	m_frameBuffers[m_mainFrameBuffer->getTag()] = m_mainFrameBuffer;
 	scene->parent = m_mainScene;//set the parent to the previous scene
 	m_mainScene = scene;
@@ -416,7 +422,7 @@ bool GameEmGine::mouseCollision(Model* model)
 	return mouse.collision2D(model, reclass(Coord3D<>, direction));
 }
 
-void GameEmGine::setCameraType(CAMERA_TYPE type, ProjectionPeramiters* proj)
+void GameEmGine::setCameraType(Camera::TYPE type, ProjectionPeramiters* proj)
 {
 	m_mainCamera->setType(type, proj);
 }
@@ -495,7 +501,7 @@ void GameEmGine::update()
 	m_forwardRender->disable();
 
 
-	LightSource::setCamera(m_mainCamera);
+	LightManager::setCamera(m_mainCamera);
 	m_mainScene->skybox.setCamera(m_mainCamera);
 	
 
@@ -530,10 +536,10 @@ void GameEmGine::update()
 
 	FrameBuffer::drawFullScreenQuad();
 
-	LightSource::setShader(m_postProcess);
-	LightSource::setFramebuffer(m_postBuffer);
-	LightSource::update();
-	
+	LightManager::setShader(m_postProcess);
+	LightManager::setFramebuffer(m_postBuffer);
+	LightManager::update();
+
 	//un-bind textures
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, GL_NONE);

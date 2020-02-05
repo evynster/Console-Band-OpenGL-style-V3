@@ -38,10 +38,10 @@ public:
 		//instance button is released
 		mouseReleased;
 	void enableSkyBox(bool enable) { skyBoxEnabled = enable; }
-	void setSkyBox(cstring path) { skybox.setCubeMap(path);}
+	void setSkyBox(cstring path) { skybox.setCubeMap(path); }
 	SkyBox skybox;
 	Scene* parent = nullptr;
-	bool skyBoxEnabled=true;
+	bool skyBoxEnabled = false;
 private:
 
 };

@@ -76,6 +76,8 @@
     <LibraryPath>$(SolutionDir)Externals\lib\win32\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -83,6 +85,8 @@
     <LibraryPath>$(SolutionDir)Externals\lib\win64\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -90,6 +94,8 @@
     <LibraryPath>$(SolutionDir)Externals\lib\win32\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -97,6 +103,8 @@
     <LibraryPath>$(SolutionDir)Externals\lib\win64\;$(SolutionDir)Externals\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)..\lib\</OutDir>
     <IntDir>$(ProjectDir)..\junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,13 +118,14 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4201;4505;4002;4238;4706</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -131,13 +140,14 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4201;4505;4002;4238;4706</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -152,8 +162,9 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>4201;4505;4002;4238</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4201;4505;4002;4238;4706</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -176,9 +187,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <DisableSpecificWarnings>4201;4505;4002;4238</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4201;4505;4002;4238;4706</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -187,7 +199,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;opengl32.lib;glew32.lib;glfw3.lib;fmod_vc.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -199,12 +211,13 @@
     <ClInclude Include="fileIO.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="GameEmGine.h" />
+    <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="Particles.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ImageLoader.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="LightSource.h" />
+    <ClInclude Include="LightManager.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
@@ -229,7 +242,8 @@
     <ClCompile Include="fileIO.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="GameEmGine.cpp" />
-    <ClCompile Include="LightSource.cpp" />
+    <ClCompile Include="LightManager.cpp" />
+    <ClCompile Include="MeshLoader.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ImageLoader.cpp" />
     <ClCompile Include="InputManager.cpp" />

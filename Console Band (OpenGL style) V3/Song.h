@@ -504,13 +504,15 @@ class Song:public Scene
 		Game::setBackgroundColour(0, 0, 0);
 
 		for(int a = 0; a < 5; a++)
-			Game::addModel((fretBoard)[a] = new Model(*note)),
-			(fretBoard)[a]->setColour((*fretColour)[a] / 2),
-			(fretBoard)[a]->enableFPSMode(),
-			(fretBoard)[a]->rotate({45,0,0}),
+			Game::addModel(&(fretBoard[a] = Model(*note))),
+			(fretBoard)[a].setColour((*fretColour)[a] / 2),
+			(fretBoard)[a].enableFPSMode(),
+			(fretBoard)[a].rotate({45,0,0}),
 
 			//change model location
-			(fretBoard)[a]->translate(note->getWidth() * a, 0, 0);
+			(fretBoard)[a].translate(note->getWidth() * a, 0, 0),
+			LightManager::addLight(fretLit + a),
+			fretLit[a].setParent(fretBoard + a);
 
 
 		openSong();
@@ -523,10 +525,15 @@ class Song:public Scene
 				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-5});
 			}
-					   
+
 			if(key == GLFW_KEY_F5)
 				Shader::refresh();
-					   
+
+			static bool sky = false;
+			if(key == GLFW_KEY_SPACE)
+				enableSkyBox(sky = !sky);
+
+
 			if(key == 'A')
 				moveLeft = true;
 
@@ -847,44 +854,41 @@ class Song:public Scene
 
 			if(instrument == "guitar" || instrument == "rhythm")
 			{
-				LightSource::setLightAmount(5);
+				//LightSource::setLightAmount(5);
 
 				//Note lights
 				for(short a = 0; a < 5; a++)
 				{
-					LightSource::enableLight(a, false);
-
-					LightSource::setParent(fretBoard[a], a);
-					LightSource::translate({0,.1,0}, a);
-					LightSource::setDiffuse({255,100,0,100}, a);
-					LightSource::setAttenuationQuadratic(0.6f, a);
+					fretLit[a].enableLight(false);
+					fretLit[a].translate({0,0,0});
+					fretLit[a].setDiffuse({255,100,0,100});
+					fretLit[a].setAttenuationQuadratic(0.6f);
 
 					if(/*KeyInput::release(keyfrets[a]) && */InputManager::getController(0)->isButtonReleased(guitarfrets[a]))
 					{
 						pressed[a] = false;
-					//	LightSource::enableLight(a, false);
-						fretBoard[a]->setColour(fretColour[0][a] * .5f);
-					}
-					else if(/*KeyInput::press(keyfrets[a]) ||*/ InputManager::getController(0)->isButtonPressed(guitarfrets[a]))
+						//	LightSource::enableLight(a, false);
+						fretBoard[a].setColour(fretColour[0][a] * .5f);
+					} else if(/*KeyInput::press(keyfrets[a]) ||*/ InputManager::getController(0)->isButtonPressed(guitarfrets[a]))
 					{
 						pressed[a] = true;
-						LightSource::enableLight(a, true);
-						fretBoard[a]->setColour(fretColour[0][a]);
+						fretLit[a].enableLight(true);
+						fretBoard[a].setColour(fretColour[0][a]);
 
 					}
 				}
 
 				//Strum logic (if there is any)
 				if([&]()->bool
-					{
-						up = /*KeyInput::press(VK_UP) ||*/ XinputManager::getController(0)->isButtonPressed(GUITAR_STRUM_UP);
-							down = /*KeyInput::press(VK_DOWN) ||*/ XinputManager::getController(0)->isButtonPressed(GUITAR_STRUM_DOWN);
-							currentStrum = up ? (down ? 4 : 2) : (down ? 1 : -1);
+				{
+					up = /*KeyInput::press(VK_UP) ||*/ XinputManager::getController(0)->isButtonPressed(GUITAR_STRUM_UP);
+						down = /*KeyInput::press(VK_DOWN) ||*/ XinputManager::getController(0)->isButtonPressed(GUITAR_STRUM_DOWN);
+						currentStrum = up ? (down ? 4 : 2) : (down ? 1 : -1);
 
-							if(currentStrum == -1)
-								lastStrum = -1;
-							return (lastStrum != currentStrum) && currentStrum != -1;
-					} ())
+						if(currentStrum == -1)
+							lastStrum = -1;
+						return (lastStrum != currentStrum) && currentStrum != -1;
+				} ())
 				{
 					lastStrum = currentStrum;
 
@@ -894,11 +898,9 @@ class Song:public Scene
 						{
 							currentHealth -= currentHealth > 0 ? 1 : 0;
 							//missFX(rand());
-						}
-						else
+						} else
 							currentHealth += currentHealth < HEALTH_CAP ? .5f : 0;
-					}
-					else
+					} else
 					{
 						currentHealth -= currentHealth > 0 ? 1 : 0;
 						//missFX(rand());
@@ -979,7 +981,7 @@ class Song:public Scene
 					if(pressed[a])
 						if(colliCountGuitar[a] < (*guitarTrackTmp)[a].size())
 							if((*guitarTrackTmp)[a][colliCountGuitar[a]].note)
-								if((*guitarTrackTmp)[a][colliCountGuitar[a]].note->collision3D(fretBoard[a]))
+								if((*guitarTrackTmp)[a][colliCountGuitar[a]].note->collision3D(&fretBoard[a]))
 									colli = true;
 				}
 
@@ -1058,8 +1060,7 @@ class Song:public Scene
 				if(pressed[num[0]])
 					notesHit++,
 					(*disiNotes)[num[0]].push_back(colliCountGuitar[num[0]]++);
-			}
-			else
+			} else
 			{
 				int counter = 0, sum = 0;
 				for(int a = 0; a < 5; a++)
@@ -1069,18 +1070,17 @@ class Song:public Scene
 							if(num[counter++] != a)
 								return false;
 
-						}
-						else
+						} else
 							return false;
 
 
-				if((uint)sum != num.size())
-					return false;
+						if((uint)sum != num.size())
+							return false;
 
 
-				for(auto& a : num)
-					notesHit++,
-					(*disiNotes)[a].push_back(colliCountGuitar[a]++);
+						for(auto& a : num)
+							notesHit++,
+							(*disiNotes)[a].push_back(colliCountGuitar[a]++);
 			}
 		}
 		//else if(instrument == "rhythm")
@@ -1182,7 +1182,8 @@ class Song:public Scene
 private:
 
 	Model* note = new Model("Models/Note/note.obj", "Note");
-	Model* fretBoard[5];
+	Model fretBoard[5];
+	Light fretLit[5];
 
 #pragma region Global Variables
 
@@ -1237,8 +1238,8 @@ private:
 
 
 	int songChoice;
-	string songName , songDir, instrument = "guitar";
-	string percentstr ;
+	string songName, songDir, instrument = "guitar";
+	string percentstr;
 	unsigned short difficulty = 8, notePadding = 2;
 	thread* t1 = new thread;
 

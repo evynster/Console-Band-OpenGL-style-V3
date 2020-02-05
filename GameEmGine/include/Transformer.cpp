@@ -1,7 +1,12 @@
 #include "Transformer.h"
 
 
-Transformer::Transformer():m_localTranslate(1), m_localRotate(1), m_localScale(1), m_scaleDat(1)
+Transformer::Transformer():
+	m_localTranslate(1), m_localRotate(1),
+	m_localScale(1), m_worldTranslate(1),
+	m_worldRotate(1), m_worldScale(1),
+	m_fps(false), m_parent(nullptr),
+	m_type(Transformer::TYPE::TRANSFORMER)
 {}
 
 Transformer::~Transformer()
@@ -10,18 +15,20 @@ Transformer::~Transformer()
 void Transformer::reset()
 {
 	m_localTranslate = m_localRotate = m_localScale = glm::mat4(1);
-	m_posDat = m_rotDat = m_scaleDat = {0,0,0};
+	m_posDat = m_rotDat = {0,0,0};
+	m_scaleDat = {1,1,1};
+
+	m_forward = {0,0,1};
+	m_up = {0,1,0};
+	m_right = {1,0,0};
+
+
+
 }
 
 void Transformer::enableFPSMode(bool enable)
 {
 	m_fps = enable;
-	if(!enable)
-	{
-		m_forward = {0,0,1};
-		m_up = {0,1,0};
-		m_right = {1,0,0};
-	}
 }
 
 void Transformer::rotate(Coord3D<> angles)
@@ -43,6 +50,13 @@ void Transformer::rotate(Coord3D<> angles)
 	if(angles.x)
 		m_localRotate *= Quat::quatRotationMat(m_rotDat.x, Coord3D<>{1, 0, 0});
 
+	m_forward = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 0, 1, 1));
+	m_up = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 1, 0, 1));
+	m_right = reclass(Coord3D<>, m_localRotate * glm::vec4(1, 0, 0, 1));
+
+	m_forward.normalize();
+	m_up.normalize();
+	m_right.normalize();
 
 
 }
@@ -71,18 +85,17 @@ void Transformer::translateBy(Coord3D<> pos)
 {
 	m_updatedTrans = true;
 
-	if(m_fps)
-	{
-		m_forward = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 0, 1, 1));
-		m_up = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 1, 0, 1));
-		m_right = reclass(Coord3D<>, m_localRotate * glm::vec4(1, 0, 0, 1));
+	auto forward = m_forward;
+	auto up = m_up;
+	auto right = m_right;
 
-		m_forward.normalize();
-		m_up.normalize();
-		m_right.normalize();
-	}
-	m_localTranslate = glm::translate(m_localTranslate, reclass(glm::vec3, ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x))));
-	m_posDat += ((m_forward * -pos.z) + (m_up * pos.y) + (m_right * pos.x));
+	if(!m_fps)
+		forward = {0,0,1},
+		up = {0,1,0},
+		right = {1,0,0};
+
+	m_posDat += ((forward * -pos.z) + (up * pos.y) + (right * pos.x));
+	m_localTranslate = glm::translate(glm::mat4(1), reclass(glm::vec3, m_posDat));
 
 
 
@@ -97,21 +110,17 @@ void Transformer::translate(Coord3D<> pos)
 {
 	m_updatedTrans = true;
 
-	if(m_fps)
-	{
-		m_forward = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 0, 1, 1));
-		m_up = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 1, 0, 1));
-		m_right = reclass(Coord3D<>, m_localRotate * glm::vec4(1, 0, 0, 1));
+	auto forward = m_forward;
+	auto up = m_up;
+	auto right = m_right;
 
-		m_forward.normalize();
-		m_up.normalize();
-		m_right.normalize();
-	}
+	if(!m_fps)
+		forward = {0,0,1},
+		up = {0,1,0},
+		right = {1,0,0};
 
-	m_posDat = pos;
-	m_localTranslate = glm::translate(glm::mat4(1), reclass(glm::vec3, ((m_forward * -m_posDat.z) + (m_up * m_posDat.y) + (m_right * m_posDat.x))));
-
-
+	m_posDat = pos.x * right + pos.y * up + -pos.z * forward;
+	m_localTranslate = glm::translate(glm::mat4(1), reclass(glm::vec3, m_posDat));
 }
 
 void Transformer::scaleBy(float scale)
@@ -137,7 +146,17 @@ void Transformer::setScale(Coord3D<> scale)
 void Transformer::setScale(float x, float y, float z)
 {
 	m_updatedScale = true;
-	m_scaleDat = Coord3D<>(x, y, z);
+
+	auto forward = m_forward;
+	auto up = m_up;
+	auto right = m_right;
+
+	if(!m_fps)
+		forward = {0,0,1},
+		up = {0,1,0},
+		right = {1,0,0};
+
+	m_scaleDat = x * right + y * up + z * forward;
 	m_localScale = glm::scale(glm::mat4(1), reclass(glm::vec3, m_scaleDat));
 }
 
@@ -158,47 +177,48 @@ Coord3D<> Transformer::getScale()
 
 Coord3D<> Transformer::getForward()
 {
-	return m_forward;
+
+	return m_fps ? Coord3D<>{0, 0, 1} : m_forward;
 }
 
 Coord3D<> Transformer::getUp()
 {
-	return m_up;
+	return m_fps ? Coord3D<>{0, 1, 0} : m_up;
 }
 
 Coord3D<> Transformer::getRight()
 {
-	return m_right;
+	return m_fps ? Coord3D<>{1, 0, 0} : m_right;
 }
 
-glm::mat4& Transformer::getLocalRotationMatrix()
+glm::mat4 Transformer::getLocalRotationMatrix()
 {
 	return m_localRotate;
 }
 
-glm::mat4& Transformer::getLocalScaleMatrix()
+glm::mat4 Transformer::getLocalScaleMatrix()
 {
 	return m_localScale;
 }
 
-glm::mat4& Transformer::getLocalTranslationMatrix()
+glm::mat4 Transformer::getLocalTranslationMatrix()
 {
 	return m_localTranslate;
 }
 
-glm::mat4& Transformer::getWorldRotationMatrix()
+glm::mat4 Transformer::getWorldRotationMatrix()
 {
 	calculateWorldRotationMatrix();
 	return m_worldRotate;
 }
 
-glm::mat4& Transformer::getWorldScaleMatrix()
+glm::mat4 Transformer::getWorldScaleMatrix()
 {
 	calculateWorldScaleMatrix();
 	return m_worldScale;
 }
 
-glm::mat4& Transformer::getWorldTranslationMatrix()
+glm::mat4 Transformer::getWorldTranslationMatrix()
 {
 	calculateWorldTranslationMatrix();
 	return m_worldTranslate;
@@ -285,6 +305,8 @@ bool Transformer::isTranslatinUpdated()
 
 void Transformer::addChild(Transformer* child)
 {
+	if(!child)return;
+
 	if(std::find(m_children.begin(), m_children.end(), child) == m_children.end())
 		m_children.push_back(child);
 	child->m_parent = this;
@@ -292,13 +314,39 @@ void Transformer::addChild(Transformer* child)
 
 void Transformer::removeChild(Transformer* child)
 {
-	if(child)
-	{
-		std::vector<Transformer*>::iterator ref;
-		while((ref = std::find(m_children.begin(), m_children.end(), child)) != m_children.end())
-			m_children.erase(ref);
+	if(!child)return;
 
-	}
+	child->m_parent = nullptr;
+
+	std::vector<Transformer*>::iterator ref;
+	if((ref = std::find(m_children.begin(), m_children.end(), child)) != m_children.end())
+		m_children.erase(ref);
+
+
+}
+
+void Transformer::removeChild(unsigned index)
+{
+	if(index >= m_children.size())return;
+
+	m_children[index]->m_parent = nullptr;
+	m_children.erase(m_children.begin() + index);
+
+}
+
+void Transformer::setParent(Transformer* parent)
+{
+	if(!parent)return;
+
+	parent->addChild(this);
+
+}
+
+void Transformer::removeParent(Transformer* parent)
+{
+	if(!parent)return;
+
+	parent->removeChild(this);
 }
 
 Transformer* Transformer::getChild(unsigned int index)
@@ -306,12 +354,17 @@ Transformer* Transformer::getChild(unsigned int index)
 	return m_children[index];
 }
 
+Transformer* Transformer::getParent()
+{
+	return m_parent;
+}
+
 std::vector<Transformer*>& Transformer::getChildren()
 {
 	return m_children;
 }
 
-CLASS_TYPE Transformer::getType()
+Transformer::TYPE Transformer::getType()
 {
 	return m_type;
 }

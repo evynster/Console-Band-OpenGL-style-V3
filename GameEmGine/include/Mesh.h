@@ -1,7 +1,6 @@
 #pragma once
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <assimp/mesh.h>
 #include <vector>
 #include <map>
 #include "Transformer.h"
@@ -22,9 +21,10 @@ enum PRIMITIVE_TYPE
 struct primitiveMesh
 {
 	primitiveMesh() {}
-	primitiveMesh(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):m_dim(dim), m_offset(offset), m_rotation(rot) { }
+	primitiveMesh(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):m_dim(dim), m_offset(offset), m_rotation(rot) {}
 	primitiveMesh(float width, float height, float depth, Coord3D<> offset = {}, Coord3D<> rot = {})
-		:m_dim({width,height,depth}), m_offset(offset), m_rotation(rot) {}
+		:m_dim({width,height,depth}), m_offset(offset), m_rotation(rot)
+	{}
 
 	virtual ~primitiveMesh() {}
 
@@ -59,8 +59,7 @@ protected:
 			if((tmp = std::find(m_unpackedData.begin(), m_unpackedData.end(), verts[*i])) != m_unpackedData.end())
 			{
 				m_indices.push_back(unsigned(tmp - m_unpackedData.begin()));
-			}
-			else
+			} else
 			{
 				m_unpackedData.push_back(verts[*i]);
 				m_indices.push_back(m_unpackedData.size() - 1);
@@ -78,8 +77,7 @@ protected:
 			if((tmp = std::find(m_unpackedData.begin(), m_unpackedData.end(), *i)) != m_unpackedData.end())
 			{
 				m_indices.push_back(unsigned(tmp - m_unpackedData.begin()));
-			}
-			else
+			} else
 			{
 				m_unpackedData.push_back(*i);
 				m_indices.push_back(m_unpackedData.size() - 1);
@@ -117,34 +115,34 @@ struct PrimitivePlane:public primitiveMesh
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{-halfW,-halfH, halfD}).toVec3(), 1)
 			)
-			});//bottom left
+					  });//bottom left
 		tmp.push_back({m_offset + reclass(Coord3D<>,
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{ halfW,-halfH,-halfD}).toVec3(), 1)
 			)
-			});//bottom right*
+					  });//bottom right*
 		tmp.push_back({m_offset + reclass(Coord3D<>,
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{-halfW, halfH,-halfD}).toVec3(), 1)
 			)
-			});//top left*
+					  });//top left*
 
-		//top right tri
+				  //top right tri
 		tmp.push_back({m_offset + reclass(Coord3D<>,
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{ halfW, halfH,-halfD}).toVec3(), 1)
 			)
-			});//top right
+					  });//top right
 		tmp.push_back({m_offset + reclass(Coord3D<>,
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{-halfW, halfH, halfD}).toVec3(), 1)
 			)
-			});//top left*
+					  });//top left*
 		tmp.push_back({m_offset + reclass(Coord3D<>,
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{ halfW,-halfH, halfD}).toVec3(), 1)
 			)
-			});//bottom right*
+					  });//bottom right*
 
 
 		m_top = m_bottom = m_left = m_right = m_front = m_back = tmp[0].coord;
@@ -176,13 +174,11 @@ struct PrimitivePlane:public primitiveMesh
 		{
 			x = {1,0,0};
 			y = {0,1,0};
-		}
-		else if(abs(norm) == Coord3D<>{0, 1, 0})
+		} else if(abs(norm) == Coord3D<>{0, 1, 0})
 		{
 			x = {1,0,0};
 			y = {0,0,1};
-		}
-		else if(abs(norm) == Coord3D<>{1, 0, 0})
+		} else if(abs(norm) == Coord3D<>{1, 0, 0})
 		{
 			x = {0,0,1};
 			y = {0,1,0};
@@ -215,7 +211,8 @@ struct primitiveCube: public primitiveMesh
 {
 	primitiveCube():primitiveMesh() { type = CUBE; }
 
-	primitiveCube(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false):primitiveMesh(dim, offset, rot) {
+	primitiveCube(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false):primitiveMesh(dim, offset, rot)
+	{
 		type = CUBE; m_invert = invert; createMesh();
 	}
 
@@ -300,45 +297,47 @@ public:
 	Mesh(Mesh& mesh);
 	~Mesh();
 
-	bool loadMesh(std::string);
+	void init();
 
 	bool loadPrimitive(primitiveMesh* mesh);
 
-	std::vector<std::vector<Vertex3D>>& loadAni(std::string);
-
-	void editVerts(std::vector< std::vector<Vertex3D>> verts1, std::vector< std::vector<Vertex3D>> verts2);
+	//TODO: migrate this to Model
+	//std::vector<std::vector<Vertex3D>>& loadAni(std::string);
+	
+	//TODO: Migrate this to Model
+	void editVerts(Mesh* verts1, Mesh* verts2);
 
 	void render(Shader& shader);
 
 	void unload();
 
-	void replaceTexture(int mesh, int index, GLuint tex);
+	void replaceTexture(int index, GLuint tex);
 
 	Coord3D<> top, bottom, left, right, front, back;
 
+	std::vector<Vertex3D>& getUnpackedData() { return m_unpackedData; }
+	std::vector<unsigned>& getIndicieData() { return m_indicieData; }
+	std::vector<Texture2D>& getTextures() { return m_textures; }
+
+	std::vector<GLuint>& getReplaceTex() { return m_replaceTex; }
 private:
-	void loadMaterials(cstring path);
-
-	bool load(std::string path);
-
-	void init();
 
 
-	std::vector<std::vector<GLuint>> m_replaceTex;
+	std::vector<GLuint> m_replaceTex;
 
 	bool ani;
 
-	std::vector<GLuint> m_vaoID;
-	std::vector<std::pair<GLuint, GLuint>> m_vboID;
-	std::vector<std::pair<std::string, GLuint>> m_elemID;
+	GLuint m_vaoID;
+	std::pair<GLuint, GLuint> m_vboID;
+	GLuint m_elemID;
 
 	//std::vector<Coord3D<>> m_verts;
 	//std::vector<UV> m_uvs;
 	//std::vector<Coord3D<>> m_norms;
 
-	std::vector<std::vector<Vertex3D>> m_unpackedData;
-	std::vector< std::pair<std::string, std::vector<unsigned>>> m_indicieData;
-	std::vector<std::pair<std::string, std::vector<Texture2D>>>m_textures;
+	std::vector<Vertex3D> m_unpackedData;
+	std::vector<unsigned> m_indicieData;
+	std::vector<Texture2D>m_textures;
 
 };
 

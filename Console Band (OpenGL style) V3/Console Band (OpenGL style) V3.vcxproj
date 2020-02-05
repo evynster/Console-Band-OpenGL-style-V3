@@ -74,24 +74,32 @@
     <IntDir>$(ProjectDir)Junck\</IntDir>
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)GameEmGine/lib;$(SolutionDir)Externals/lib;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)GameEmGine/lib;$(SolutionDir)Externals/lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)</OutDir>
     <IntDir>$(ProjectDir)Junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)GameEmGine/lib;$(SolutionDir)Externals/lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)</OutDir>
     <IntDir>$(ProjectDir)Junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)GameEmGine/include/;$(SolutionDir)Externals\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)GameEmGine/lib;$(SolutionDir)Externals/lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)</OutDir>
     <IntDir>$(ProjectDir)Junck\</IntDir>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,6 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,6 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +140,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +159,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -166,9 +178,6 @@
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Song.h" />
     <ClInclude Include="SongSelect.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

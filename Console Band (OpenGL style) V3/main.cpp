@@ -1,10 +1,9 @@
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 #include <GameEmGine.h>
 #include "Song.h"
-
 
 class Test: public Scene
 {
@@ -15,28 +14,26 @@ public:
 
 	void init()
 	{
-		Game::setBackgroundColour(0, 0, 1);
-		Game::setCameraPosition({0,0,-2});
-		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,50};
-		Game::setCameraType(FRUSTUM, &frustum);
+		Game::setBackgroundColour(0, 0, 0);
+		Game::setCameraPosition({0,0,-3});
+		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,500};
+		Game::setCameraType(Camera::FRUSTUM, &frustum);
 		//Game::setBackgroundColour(.2, .2, 0);
 
 		setSkyBox("Skyboxes/skybox/");
-
-		model[0] = new Model(new primitiveCube(2, 2, 2), "Box1");
+		model[0] = new Model("Models/nanosuit/nanosuit.obj"/*new primitiveCube(2, 2, 2), "Box1"*/);
 		model[0]->setScale(1);
-		model[0]->setColour(.6f, 0, 0);
-		model[0]->setTransparent(true);
+		model[0]->setColour(0, 1, 0);
+		//model[0]->setTransparent(false);
 		
-		//LightSource::setLightAmount(1);
-		//LightSource::setParent(model[0], 0);
-		//LightSource::translate({0,0,0}, 0);
-
-		testText.setText("?Maybe this Works?");
+		lit.setLightType(Light::TYPE::POINT);
+		lit.setParent(Game::getMainCamera());
+		LightManager::addLight(&lit);
+		
+		testText.setText("Maybe this Works?");
 		testText.setColour(1, 0, 0);
 		testText.textSize(20);
-		testText.toTexture(1800);
-		model[0]->replaceTexture(0, 0, testText.getTexture());
+		testText.toTexture(50);		
 
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");
@@ -52,7 +49,7 @@ public:
 		Game::getMainCamera()->enableFPSMode();
 		Game::addModel(model[0]);
 
-		//	model[0]->replaceTexture(0, 0, testText.getTexture());
+		model[0]->replaceTexture(0, 0, testText.getTexture());
 
 		keyPressed =
 			[&](int key, int mod)->void
@@ -60,8 +57,11 @@ public:
 			if(key == GLFW_KEY_R)
 			{
 				Game::getMainCamera()->reset();
-				Game::setCameraPosition({0,0,-5});
+				Game::setCameraPosition({0,0,-3});
 			}
+			static bool sky = false;
+			if(key == GLFW_KEY_SPACE)
+				enableSkyBox(sky = !sky);
 
 			if(key == GLFW_KEY_F5)
 				Shader::refresh();
@@ -219,18 +219,14 @@ public:
 		else
 			cameraMovement();
 
-		
-		//if(Game::mouseCollision(model[0]))
-		//	model[0]->setColour(0, 0, 1);
-		//else
-		//	model[0]->setColour(1, 0, 0);
-
 	}
 private:
 	float speed = 0.1f, angle = 1;
 
 	Model* model[3];
 	Text testText;
+	Light lit;
+
 };
 
 int main()
@@ -241,7 +237,8 @@ int main()
 	
 	Test test;
 	Song song;
-	Game::setScene(&song);
+
+	Game::setScene(&test);
 	Game::run();
 
 	return 0;

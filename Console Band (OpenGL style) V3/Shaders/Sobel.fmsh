@@ -5,7 +5,6 @@ uniform sampler2D uDepthMap;
 uniform vec2 uPixelSize; //x = 1 / WINDOW_WIDTH, y = 1 / WINDOW_HEIGHT
 
 in vec2 texcoord;
-
 out vec4 outEdge;
 
 float Sobel_Normal_Horizontal(sampler2D texmap, vec2 texcoord)

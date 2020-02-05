@@ -48,6 +48,9 @@ public:
 	static void disable();
 
 	static void refresh();
+
+	static void enableUniformErrors(bool err);
+
 private:
 	enum Shaders
 	{
@@ -62,6 +65,7 @@ private:
 	std::string m_vtsh = "", m_vtPath = "", m_fmPath = "", m_goPath = "";
 	int m_attribNum = 0;
 	bool m_enabled = false;
+	static bool uniformErrors;
 
 	GLuint
 		m_programID = 0,
@@ -70,8 +74,8 @@ private:
 		m_geomID = 0;
 
 	static std::unordered_map<GLuint,Shader*> m_shaders;
-	//	static GLuint *m_programs, *m_attribs, m_num;
 
+	//	static GLuint *m_programs, *m_attribs, m_num;
 };
 
 

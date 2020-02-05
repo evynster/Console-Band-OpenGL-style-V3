@@ -15,7 +15,7 @@
 #include "Model.h"
 #include "ExtraMath.h"
 #include "FrameBuffer.h"
-#include "LightSource.h"
+#include "LightManager.h"
 #include "Text.h"
 #include "SkyBox.h"
 
@@ -74,7 +74,7 @@ public:
 
 	static bool mouseCollision(Model* model);
 
-	static void setCameraType(CAMERA_TYPE type, ProjectionPeramiters* proj = nullptr);
+	static void setCameraType(Camera::TYPE type, ProjectionPeramiters* proj = nullptr);
 
 	/*
 	moves the camera position in pixels

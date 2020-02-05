@@ -9,11 +9,12 @@
 #include "Utilities.h"
 #include "Transformer.h"
 #include "Physics3D.h"
-#include "Mesh.h"
+#include "MeshLoader.h"
 #include "Animation.h"
 //#include "FrameBuffer.h"
 
 class Camera;
+class Animation;
 
 class Model: public Transformer
 {
@@ -26,15 +27,17 @@ public:
 
 	bool collision2D(Model* k, Coord3D<float> ignore);
 
-	static bool collision2D(Model* l, Model* k, Coord3D<float> ignore);
-
 	bool collision3D(Model* k);
+
+	static bool collision2D(Model* l, Model* k, Coord3D<float> ignore);
 
 	static bool collision3D(Model* l, Model* k);
 
 	static bool getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& Plane, Model& box1, Model& box2);
-	
+
+
 	virtual void render(Shader& shader, Camera* cam);
+
 
 	void setColour(float r, float g, float b, float a);
 
@@ -44,11 +47,14 @@ public:
 
 	ColourRGBA getColour();
 
+
 	bool loadModel(cstring path);
 
 	void enableBoundingBox(bool enable);
 
 	void addAnimation(std::string tag, Animation* animation);
+
+	void editVerts(Model* first, Model* second);
 
 	//	void addFrameBuffer(FrameBuffer* buffer);
 	//
@@ -70,10 +76,10 @@ public:
 	Animation* getCurrentAnimation();
 	void  setAnimation(cstring tag);
 
-	Mesh* getMesh();
+	Mesh* getMesh(const unsigned index);
 	Shader* getShader();
 
-	void replaceTexture(int mesh,int index,GLuint tex);
+	void replaceTexture(int mesh, int index, GLuint tex);
 
 	void setToRender(bool render);
 	void setTransparent(bool trans);
@@ -82,6 +88,7 @@ public:
 	std::vector<Coord3D<>> getBounds();
 protected:
 	ColourRGBA m_colour;
+	void meshCleanUp();
 
 private:
 	void boundingBoxInit();
@@ -93,7 +100,7 @@ private:
 
 	std::unordered_map< std::string, Animation*>m_animations;
 	std::string m_animation;
-	Mesh* m_mesh;
+	std::vector<Mesh*> m_meshes;
 
 	Camera* m_camera;
 
@@ -114,8 +121,8 @@ private:
 	float m_width, m_height, m_depth;
 	Shader* m_shader, * m_shaderBB;
 	Vertex3D m_vertBBDat[12 * 3];
-	
-	bool m_enableBB = false,m_copy=false;
+
+	bool m_enableBB = false, m_copy = false;
 
 	//std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
 	//std::vector<Model*> m_children;

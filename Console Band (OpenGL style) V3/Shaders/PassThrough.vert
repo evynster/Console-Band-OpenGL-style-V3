@@ -1,4 +1,6 @@
 #version 420
+//Not currently being used
+//Make changes to DeferredRender.vtsh instead 
 
 uniform mat4 uLocalModel;
 uniform mat4 uWorldModel;
@@ -21,14 +23,13 @@ out vec4 pos;
 
 void main()
 {
-
     texcoord = in_uv;
     texcoord.y = 1 - texcoord.y;
 
     vec3 normal = mix(in_normal1, in_normal2, uTime);
     vec3 vert = mix(in_vert1, in_vert2, uTime);
 
-    norm = mat3(uWorldModel) * (mat3(uLocalModel) * mat3(uView) * normal);
+    norm = mat3(uWorldModel) * (mat3(uLocalModel) * normal);
 
     vec4 viewSpace =  uWorldModel * (uLocalModel * vec4(vert, 1.0f));
     viewSpace = uProj * uView * viewSpace; 

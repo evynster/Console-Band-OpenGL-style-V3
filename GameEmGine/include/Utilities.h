@@ -39,6 +39,41 @@ static std::string tolower(char* dir)
 	return tmp;
 }
 
+template <typename T>
+static inline T bezier(const T& p0, const T& t0, const T& t1, const T& p1, const float t)
+{
+	return
+		t * t * t * (-p0 + 3.0f * t0 - 3.0f * t1 + p1) +
+		t * t * (3.0f * p0 - 6.0f * t0 + 3.0f * t1) +
+		t * (-3.0f * p0 + 3.0f * t0) +
+		p0;
+}
+
+template <typename T>
+static inline T catmull(T p0, T p1, T p2, T p3, float t)
+{
+	return 0.5f *
+		t * t * t * (-p0 + p1 * 3.0f + p2 * -3.0f + p3) +
+		t * t * (p0 * 2.0f + p1 * -5.0f + p2 * 4.0f - p3) +
+		t * (-p0 + p2) +
+		(2.0f * p1);
+
+	//return p0;
+}
+
+template<typename T>
+static inline T lerp(const T& v0, const T& v1, const float& t)
+{
+	return (T)((1.0f - t) * v0 + (t)*v1);
+}
+
+//?
+static inline int vectorWrap(int num, int mod)
+{
+	return (num + mod) % mod;
+}
+
+
 template<class T = float>
 struct Coord2D
 {

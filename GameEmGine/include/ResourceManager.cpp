@@ -81,13 +81,13 @@ Shader* ShaderCache::getShader(cstring vtsh, cstring fmsh)
 	if(it == m_shaders.end())
 	{
 		Shader* tmp = new Shader;
-		if(tmp->create(dvtsh, dfmsh))
+		tmp->create(dvtsh, dfmsh);
 		{
 			m_shaders[{ (std::string)dvtsh, (std::string)dfmsh }] = tmp;
 
 			return m_shaders[{ (std::string)dvtsh, (std::string)dfmsh }];
 		}
-		return nullptr;
+		//return nullptr;
 	}
 
 	return it->second;

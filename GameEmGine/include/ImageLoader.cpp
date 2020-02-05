@@ -8,7 +8,7 @@ Texture2D ImageLoader::loadImage2D(cstring path)
 
 	unsigned char* image = SOIL_load_image(path, &texture.width, &texture.height, nullptr, SOIL_LOAD_RGBA);
 
-	if(image == nullptr)
+	if (image == nullptr)
 	{
 		printf("Image \"%s\", returned with null pointer\n", path);
 		return texture;
@@ -43,23 +43,23 @@ Texture3D ImageLoader::loadImage3D(cstring LUTfile)
 	//LUTfile = "Texture/CUSTOM.cube";
 	std::ifstream LUTfile2(LUTfile);
 
-	if(!LUTfile2.is_open())
+	if (!LUTfile2.is_open())
 	{
 		printf("Image \"%s\", returned with null pointer\n", LUTfile);
 		return texture;
 	}
 
-	while(!LUTfile2.eof())
+	while (!LUTfile2.eof())
 	{
 		std::string LUTline;
 		getline(LUTfile2, LUTline);
-		if(LUTline.empty()) continue;
-		if(strstr(LUTline.c_str(), "LUT_3D_SIZE"))
+		if (LUTline.empty()) continue;
+		if (strstr(LUTline.c_str(), "LUT_3D_SIZE"))
 		{
 			sscanf_s(LUTline.c_str(), "LUT_3D_SIZE %d", &texture.lutSize);
 		}
 		float r, g, b;
-		if(sscanf_s(LUTline.c_str(), "%f %f %f", &r, &g, &b) == 3) LUT.push_back({r,g,b});
+		if (sscanf_s(LUTline.c_str(), "%f %f %f", &r, &g, &b) == 3) LUT.push_back({r,g,b});
 	}
 	glEnable(GL_TEXTURE_3D);
 
@@ -92,14 +92,14 @@ Texture3D ImageLoader::createImage3D(cstring SBpath)
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
 
-	for(unsigned a = 0; a < 6; ++a)
-		for(auto& b : fs::directory_iterator(SBpath))
+	for (unsigned a = 0; a < 6; ++a)
+		for (auto& b : fs::directory_iterator(SBpath))
 		{
 			std::wstring path = b.path();
 			std::string tmp;
-			for(auto& c : path)
+			for (auto& c : path)
 				tmp += (char)c;
-			if(strstr(tmp.c_str(), pos[a].c_str()))
+			if (strstr(tmp.c_str(), pos[a].c_str()))
 			{
 
 				data = SOIL_load_image(tmp.c_str(), &texture.width, &texture.height, nullptr, SOIL_LOAD_RGBA);
@@ -107,7 +107,7 @@ Texture3D ImageLoader::createImage3D(cstring SBpath)
 					GL_TEXTURE_CUBE_MAP_POSITIVE_X + a,
 					0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data
 				);
-				printf("%s\n\n",SOIL_last_result());
+				printf("%s\n\n", SOIL_last_result());
 				SOIL_free_image_data(data);
 				break;
 			}

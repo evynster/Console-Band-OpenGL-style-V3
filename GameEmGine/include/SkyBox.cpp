@@ -2,7 +2,8 @@
 
 primitiveCube SkyBox::m_box(2, 2, 2, {}, {}, true);
 
-SkyBox::SkyBox(std::string file):m_sky(&ResourceManager::getTextureCubeMap(file.c_str())) { init(); }
+SkyBox::SkyBox(): m_sky(nullptr) { init(); }
+SkyBox::SkyBox(std::string file) : m_sky(&ResourceManager::getTextureCubeMap(file.c_str())) { init(); }
 
 void SkyBox::init()
 {
@@ -29,14 +30,14 @@ void SkyBox::init()
 void SkyBox::render()
 {
 	//if(!m_sky) return;
-	glDepthMask(GL_FALSE);
-
-	static Camera cam({2, 2, 2},FRUSTUM);
+	glDisable(GL_DEPTH_TEST);
+	
+	static Camera cam({2, 2, 2}, Camera::FRUSTUM);
 	Shader* shader = ResourceManager::getShader("Shaders/SkyBox.vtsh", "Shaders/SkyBox.fmsh");
 	//glDisable(GL_DEPTH_TEST);
 	shader->enable();
 
-	shader->sendUniform("uView",glm::inverse(m_camera->getLocalRotationMatrix()));
+	shader->sendUniform("uView", m_camera->getLocalRotationMatrix());
 	shader->sendUniform("uProj", m_camera->getProjectionMatrix());
 
 	glActiveTexture(GL_TEXTURE0);
@@ -59,7 +60,9 @@ void SkyBox::render()
 	glBindVertexArray(0);
 
 	shader->disable();
-	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
 
 }
 

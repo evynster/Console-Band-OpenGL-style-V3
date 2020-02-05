@@ -6,7 +6,8 @@
 class SkyBox
 {
 public:
-	SkyBox(std::string file = "");
+	SkyBox();
+	SkyBox(std::string file);
 	~SkyBox() = default;
 
 	void render();
