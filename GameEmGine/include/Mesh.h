@@ -314,6 +314,7 @@ public:
 	void replaceTexture(int index, GLuint tex);
 
 	Coord3D<> top, bottom, left, right, front, back;
+	std::string meshName;
 
 	std::vector<Vertex3D>& getUnpackedData() { return m_unpackedData; }
 	std::vector<unsigned>& getIndicieData() { return m_indicieData; }

@@ -21,7 +21,7 @@ public:
 		//Game::setBackgroundColour(.2, .2, 0);
 
 		setSkyBox("Skyboxes/skybox/");
-		model[0] = new Model("Models/nanosuit/nanosuit.obj"/*new primitiveCube(2, 2, 2), "Box1"*/);
+		model[0] = new Model("Models/Note/note.obj"/*"Models/nanosuit/nanosuit.obj"*//*new primitiveCube(2, 2, 2)*/, "Box1");
 		model[0]->setScale(1);
 		model[0]->setColour(0, 1, 0);
 		//model[0]->setTransparent(false);
@@ -49,7 +49,7 @@ public:
 		Game::getMainCamera()->enableFPSMode();
 		Game::addModel(model[0]);
 
-		model[0]->replaceTexture(0, 0, testText.getTexture());
+		//model[0]->replaceTexture(0, 0, testText.getTexture());
 
 		keyPressed =
 			[&](int key, int mod)->void
@@ -238,7 +238,7 @@ int main()
 	Test test;
 	Song song;
 
-	Game::setScene(&test);
+	Game::setScene(&song);
 	Game::run();
 
 	return 0;

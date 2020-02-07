@@ -32,7 +32,7 @@ void Camera::setType(TYPE type, ProjectionPeramiters* peram)
 		break;
 	case FRUSTUM:
 		if (!peram)
-			m_projMat = glm::perspective(glm::radians(45.f), m_size.width / m_size.height, .00000001f, m_size.depth);
+			m_projMat = glm::perspective(glm::radians(45.f), m_size.width / m_size.height, .001f, m_size.depth);
 		else
 			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->zNear, peram2->zFar);
 		break;

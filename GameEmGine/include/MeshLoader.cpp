@@ -116,9 +116,12 @@ bool MeshLoader::load(std::string path)
 				norms.push_back(tmp);
 			} else if(strstr(inputBuff, "o "))
 			{
+				char str[CHAR_BUFF_SIZE];
+				sscanf_s(inputBuff, "o %s", str, CHAR_BUFF_SIZE);
+				
 				//object
 				m_meshes.push_back(new Mesh);
-				
+				m_meshes.back()->meshName = str;
 
 			} 
 			else if(strstr(inputBuff, "s "))

@@ -502,6 +502,8 @@ class Song:public Scene
 
 		Game::getMainCamera()->enableFPSMode(true);
 		Game::setBackgroundColour(0, 0, 0);
+		//FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,500};
+		//Game::setCameraType(Camera::FRUSTUM, &frustum);
 
 		for(int a = 0; a < 5; a++)
 			Game::addModel(&(fretBoard[a] = Model(*note))),

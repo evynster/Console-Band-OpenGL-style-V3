@@ -22,6 +22,8 @@ struct Texture2D
 	ColourRGBA colour;
 	int width, height;
 	TEXTURE_TYPE2D type = TEXTURE_TYPE2D::NONE;
+	std::string name;
+
 
 	void deleteTexture()
 	{
@@ -37,6 +39,7 @@ struct Texture2D
 		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_2D, id);
 	}
+	
 	void bindTexture()
 	{
 		glBindTexture(GL_TEXTURE_2D, id);

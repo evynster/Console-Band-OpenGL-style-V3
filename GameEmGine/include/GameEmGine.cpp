@@ -94,6 +94,9 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 	printf("Creating The Window...\n");
 
+	if(m_window)
+		delete m_window;
+
 	m_window = new WindowCreator(name, {width,height,500}, Coord2D<int>{x, y}, monitor, fullScreen, visable);
 
 	if(m_window)

@@ -79,6 +79,7 @@ void Mesh::render(Shader& shader)
 
 
 	int c = 0, e = 0;
+	meshName; m_textures;
 	for(auto& d : m_textures)
 	{
 		glActiveTexture(GL_TEXTURE0 + e);
@@ -86,9 +87,9 @@ void Mesh::render(Shader& shader)
 			if(d.id || m_replaceTex[c])
 			{
 				textured = true;
-				glUniform1i(shader.getUniformLocation("uTex"), e);
+				glUniform1i(shader.getUniformLocation("uTex"), e++);
 				glBindTexture(GL_TEXTURE_2D, m_replaceTex[c] ? m_replaceTex[c] : d.id);
-				e++;
+				
 			}
 		c++;
 	}

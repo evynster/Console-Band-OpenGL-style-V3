@@ -72,7 +72,7 @@ private:
 		m_layer = GL_NONE,
 		m_fboID = GL_NONE,
 		m_depthAttachment = GL_NONE,
-		* m_colorAttachments = nullptr;
+		*m_colorAttachments = nullptr;
 
 	GLint m_internalFormat = GL_RGBA8,
 		m_filter = GL_LINEAR,

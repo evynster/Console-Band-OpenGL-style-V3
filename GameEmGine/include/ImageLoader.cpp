@@ -14,6 +14,7 @@ Texture2D ImageLoader::loadImage2D(cstring path)
 		return texture;
 	}
 
+	texture.name = std::string(path).substr(std::string(path).find_last_of('/')+1);
 	//Bind texture to model
 	glGenTextures(1, &texture.id);
 	texture.bindTexture();

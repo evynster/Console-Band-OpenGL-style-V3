@@ -30,8 +30,8 @@ void SkyBox::init()
 void SkyBox::render()
 {
 	//if(!m_sky) return;
-	glDisable(GL_DEPTH_TEST);
-	
+	glDepthMask(GL_FALSE);
+
 	static Camera cam({2, 2, 2}, Camera::FRUSTUM);
 	Shader* shader = ResourceManager::getShader("Shaders/SkyBox.vtsh", "Shaders/SkyBox.fmsh");
 	//glDisable(GL_DEPTH_TEST);
@@ -60,9 +60,7 @@ void SkyBox::render()
 	glBindVertexArray(0);
 
 	shader->disable();
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-
+	glDepthMask(GL_TRUE);
 
 }
 
