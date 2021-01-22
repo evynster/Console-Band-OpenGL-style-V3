@@ -4,6 +4,7 @@
 
 #include <GameEmGine.h>
 #include "Song.h"
+#include "Menu.h"
 
 class Test: public Scene
 {
@@ -21,19 +22,29 @@ public:
 		//Game::setBackgroundColour(.2, .2, 0);
 
 		setSkyBox("Skyboxes/skybox/");
-		model[0] = new Model("Models/Note/note.obj"/*"Models/nanosuit/nanosuit.obj"*//*new primitiveCube(2, 2, 2)*/, "Box1");
-		model[0]->setScale(1);
-		model[0]->setColour(0, 1, 0);
-		//model[0]->setTransparent(false);
+		model[0] = new Model(/*"Models/nanosuit2/nanosuit2.obj"*//*"Models/Note/note.obj"*/"Models/BOSS/slam/bsl1.obj"/*new primitiveCube(2, 2, 2)*/, "Box1");
+		static Animation thing;
+		thing.setAnimationSpeed(1);
+		thing.addDir("Models/BOSS/slam/");
+		model[0]->addAnimation("IDK", &thing);
+
+		model[0]->setAnimation("IDK");
+		thing.play();
+		thing.repeat(true);
 		
+		model[0]->setScale(1);
+		//model[0]->setColour(1, .2, .2, 1);
+		model[0]->setTransparent(false);
+		//model[0]->setTransparent(false);
+
 		lit.setLightType(Light::TYPE::POINT);
 		lit.setParent(Game::getMainCamera());
-		LightManager::addLight(&lit);
-		
-		testText.setText("Maybe this Works?");
-		testText.setColour(1, 0, 0);
-		testText.textSize(20);
-		testText.toTexture(50);		
+		//LightManager::addLight(&lit);
+
+		//testText.setText("Maybe this Works?");
+		//testText.setColour(1, 0, 0);
+		//testText.textSize(20);
+		//testText.toTexture(50);		
 
 		model[1] = new Model(*model[0], "Box2");
 		model[2] = new Model(*model[1], "Box3");
@@ -49,17 +60,24 @@ public:
 		Game::getMainCamera()->enableFPSMode();
 		Game::addModel(model[0]);
 
+		forward = new Model(new primitiveCube({1, 1, 1}));
+		forward->setParent(Game::getMainCamera());
+		forward->setScale(.1);
+		//Game::addModel(forward);
+		forward->translate(Game::getMainCamera()->getForward() );
 		//model[0]->replaceTexture(0, 0, testText.getTexture());
 
 		keyPressed =
 			[&](int key, int mod)->void
 		{
-			if(key == GLFW_KEY_R)
+			if(key == 'R')
 			{
 				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-3});
 			}
-			static bool sky = false;
+			static bool sky = false,frame=false;
+			if(key == 'N')
+				model[0]->setWireframe(frame=!frame);
 			if(key == GLFW_KEY_SPACE)
 				enableSkyBox(sky = !sky);
 
@@ -152,6 +170,8 @@ public:
 			if(key == GLFW_KEY_DOWN)
 				rotDown = false;
 		};
+
+
 	}
 
 	void cameraMovement()
@@ -210,6 +230,8 @@ public:
 			model[0]->rotateBy({-angle,0,0});
 		if(rotUp)
 			model[0]->rotateBy({angle,0,0});
+
+		
 	}
 
 	void update(double dt)
@@ -224,6 +246,7 @@ private:
 	float speed = 0.1f, angle = 1;
 
 	Model* model[3];
+	Model* forward;
 	Text testText;
 	Light lit;
 
@@ -234,11 +257,11 @@ int main()
 
 	Game::init("Window Band (Previously Console Band) V3", 800, 400);
 
-	
-	Test test;
-	Song song;
 
-	Game::setScene(&song);
+	Test test;
+	//Song song;
+	Menu main;
+	Game::setScene(&test);
 	Game::run();
 
 	return 0;

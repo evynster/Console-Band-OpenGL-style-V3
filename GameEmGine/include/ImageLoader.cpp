@@ -8,13 +8,16 @@ Texture2D ImageLoader::loadImage2D(cstring path)
 
 	unsigned char* image = SOIL_load_image(path, &texture.width, &texture.height, nullptr, SOIL_LOAD_RGBA);
 
-	if (image == nullptr)
+	if(image == nullptr)
 	{
 		printf("Image \"%s\", returned with null pointer\n", path);
 		return texture;
 	}
+	
+	//set the name of the texture	
+	texture.name = std::string(path).substr(std::string(path).find_last_of('/') + 1);
+	
 
-	texture.name = std::string(path).substr(std::string(path).find_last_of('/')+1);
 	//Bind texture to model
 	glGenTextures(1, &texture.id);
 	texture.bindTexture();
@@ -44,23 +47,23 @@ Texture3D ImageLoader::loadImage3D(cstring LUTfile)
 	//LUTfile = "Texture/CUSTOM.cube";
 	std::ifstream LUTfile2(LUTfile);
 
-	if (!LUTfile2.is_open())
+	if(!LUTfile2.is_open())
 	{
 		printf("Image \"%s\", returned with null pointer\n", LUTfile);
 		return texture;
 	}
 
-	while (!LUTfile2.eof())
+	while(!LUTfile2.eof())
 	{
 		std::string LUTline;
 		getline(LUTfile2, LUTline);
-		if (LUTline.empty()) continue;
-		if (strstr(LUTline.c_str(), "LUT_3D_SIZE"))
+		if(LUTline.empty()) continue;
+		if(strstr(LUTline.c_str(), "LUT_3D_SIZE"))
 		{
 			sscanf_s(LUTline.c_str(), "LUT_3D_SIZE %d", &texture.lutSize);
 		}
 		float r, g, b;
-		if (sscanf_s(LUTline.c_str(), "%f %f %f", &r, &g, &b) == 3) LUT.push_back({r,g,b});
+		if(sscanf_s(LUTline.c_str(), "%f %f %f", &r, &g, &b) == 3) LUT.push_back({r,g,b});
 	}
 	glEnable(GL_TEXTURE_3D);
 
@@ -93,14 +96,14 @@ Texture3D ImageLoader::createImage3D(cstring SBpath)
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture.id);
 
-	for (unsigned a = 0; a < 6; ++a)
-		for (auto& b : fs::directory_iterator(SBpath))
+	for(unsigned a = 0; a < 6; ++a)
+		for(auto& b : fs::directory_iterator(SBpath))
 		{
 			std::wstring path = b.path();
 			std::string tmp;
-			for (auto& c : path)
+			for(auto& c : path)
 				tmp += (char)c;
-			if (strstr(tmp.c_str(), pos[a].c_str()))
+			if(strstr(tmp.c_str(), pos[a].c_str()))
 			{
 
 				data = SOIL_load_image(tmp.c_str(), &texture.width, &texture.height, nullptr, SOIL_LOAD_RGBA);

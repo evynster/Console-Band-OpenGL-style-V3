@@ -52,3 +52,5 @@ GameEmGine/lib/
 *.ilk
 
 Console Band (OpenGL style) V3/Models/nanosuit.rar
+
+Externals/include/glm/out/

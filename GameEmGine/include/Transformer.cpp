@@ -21,9 +21,6 @@ void Transformer::reset()
 	m_forward = {0,0,1};
 	m_up = {0,1,0};
 	m_right = {1,0,0};
-
-
-
 }
 
 void Transformer::enableFPSMode(bool enable)
@@ -37,18 +34,14 @@ void Transformer::rotate(Coord3D<> angles)
 	m_localRotate = glm::mat4(1);
 
 
-	m_rotDat.z = fmodf(angles.z, 360.f);
-	m_rotDat.y = fmodf(angles.y, 360.f);
-	m_rotDat.x = fmodf(angles.x, 360.f);
-
 	if(angles.z)
-		m_localRotate *= Quat::quatRotationMat(m_rotDat.z, Coord3D<>{0, 0, 1});
+		m_localRotate *= Quat::quatRotationMat(angles.z, Coord3D<>{0, 0, 1});
 
 	if(angles.y)
-		m_localRotate *= Quat::quatRotationMat(m_rotDat.y, Coord3D<>{0, 1, 0});
+		m_localRotate *= Quat::quatRotationMat(angles.y, Coord3D<>{0, 1, 0});
 
 	if(angles.x)
-		m_localRotate *= Quat::quatRotationMat(m_rotDat.x, Coord3D<>{1, 0, 0});
+		m_localRotate *= Quat::quatRotationMat(angles.x, Coord3D<>{1, 0, 0});
 
 	m_forward = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 0, 1, 1));
 	m_up = reclass(Coord3D<>, m_localRotate * glm::vec4(0, 1, 0, 1));
@@ -57,6 +50,9 @@ void Transformer::rotate(Coord3D<> angles)
 	m_forward.normalize();
 	m_up.normalize();
 	m_right.normalize();
+
+
+	m_rotDat = angles;
 
 
 }
@@ -68,17 +64,23 @@ void Transformer::rotate(float x, float y, float z)
 
 void Transformer::rotateBy(Coord3D<> angles)
 {
-	Transformer::rotate(angles + m_rotDat);
+	m_moveBy = true;
+	auto forward = m_forward;
+	auto up = m_up;
+	auto right = m_right;
+
+	if(!m_fps)
+		forward = {0,0,1},
+		up = {0,1,0},
+		right = {1,0,0};
+
+	angles = (angles.x * right) + (angles.y * up) + (angles.z * forward);
+	Transformer::rotate(m_rotDat + angles);
 }
 
 void Transformer::rotateBy(float x, float y, float z)
 {
 	Transformer::rotateBy({x,y,z});
-}
-
-void Transformer::translateBy(float x, float y, float z)
-{
-	Transformer::translateBy({x, y, z});
 }
 
 void Transformer::translateBy(Coord3D<> pos)
@@ -99,6 +101,11 @@ void Transformer::translateBy(Coord3D<> pos)
 
 
 
+}
+
+void Transformer::translateBy(float x, float y, float z)
+{
+	Transformer::translateBy({x, y, z});
 }
 
 void Transformer::translate(float x, float y, float z)

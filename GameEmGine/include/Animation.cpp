@@ -56,6 +56,9 @@ void Animation::update(Shader* shader, Model* mesh)
 		init = true;
 	}
 
+	if(m_speed <= 0)
+		return;
+
 	if(!m_pause && !m_stop)
 	{
 		if(mesh)

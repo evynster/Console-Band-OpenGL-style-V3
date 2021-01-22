@@ -24,7 +24,7 @@ void main()
 {
     
     texcoord = in_uv;
-    texcoord.y = abs(float(!flip) - texcoord.y);
+    texcoord.y = abs(1 - float(!flip) - texcoord.y);
 
     vec3 normal = mix(in_normal1, in_normal2, uTime);
     vec3 vert = mix(in_vert1, in_vert2, uTime);

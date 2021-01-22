@@ -276,8 +276,9 @@ void Model::render(Shader& shader, Camera* cam)
 
 	shader.sendUniform("uLocalModel", getLocalTransformation());
 	shader.sendUniform("uWorldModel", getWorldTransformation());
+	shader.sendUniform("colourMod", reclass(glm::vec4, colour));
+	shader.sendUniform("flip", true);
 
-	glUniform4fv(shader.getUniformLocation("colourMod"), 1, colour);
 	shader.disable();
 
 	if(m_animations[m_animation])
@@ -288,6 +289,8 @@ void Model::render(Shader& shader, Camera* cam)
 
 	if(m_render)
 	{
+		if(m_wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//render the meshes
 		for(auto& a : m_meshes)
 			a->render(shader);
@@ -310,6 +313,8 @@ void Model::render(Shader& shader, Camera* cam)
 
 			}
 		resetUpdated();
+		if(m_wireframe)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }
 
@@ -350,7 +355,7 @@ ColourRGBA Model::getColour()
 bool Model::loadModel(cstring path)
 {
 	m_meshes = MeshLoader::loadMesh(path);
-	return m_meshes.size();
+	return !!m_meshes.size();
 }
 
 void Model::enableBoundingBox(bool enable)
@@ -365,8 +370,8 @@ void Model::addAnimation(std::string tag, Animation* animation)
 
 void Model::editVerts(Model* first, Model* second)
 {
-	for(unsigned a=0;a<first->m_meshes.size();a++ )
-		m_meshes[a]->editVerts(first->m_meshes[a],second->m_meshes[a]);
+	for(unsigned a = 0; a < first->m_meshes.size(); a++)
+		m_meshes[a]->editVerts(first->m_meshes[a], second->m_meshes[a]);
 
 }
 
@@ -507,6 +512,11 @@ void Model::setToRender(bool render)
 void Model::setTransparent(bool trans)
 {
 	m_transparent = trans;
+}
+
+void Model::setWireframe(bool wire)
+{
+	m_wireframe = wire;
 }
 
 bool Model::isTransparent()

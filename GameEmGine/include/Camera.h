@@ -13,7 +13,6 @@
 
 class Model;
 
-
 #pragma region Structs
 
 struct ProjectionPeramiters
@@ -32,7 +31,8 @@ struct OrthoPeramiters:public ProjectionPeramiters
 {
 	OrthoPeramiters(float  a_left, float a_right, float a_bottom, float a_top, float a_near, float a_far):
 		ProjectionPeramiters(a_near, a_far),
-		left(a_left), right(a_right), bottom(a_bottom), top(a_top) {}
+		left(a_left), right(a_right), bottom(a_bottom), top(a_top)
+	{}
 
 	void setLeft(float a_left) { left = a_left; }
 	void setRight(float a_right) { right = a_right; }
@@ -41,14 +41,15 @@ struct OrthoPeramiters:public ProjectionPeramiters
 
 	void setXAxis(float a_left, float a_right) { left = a_left; right = a_right; }
 	void setYAxis(float a_top, float a_bottom) { top = a_top; bottom = a_bottom; }
-	float  left, right, bottom, top;
+	float  left = 0, right = 0, bottom = 0, top = 0;
 };
 
 struct FrustumPeramiters:public ProjectionPeramiters
 {
 	FrustumPeramiters(float a_angle, float a_aspect, float a_near, float a_far):
 		ProjectionPeramiters(a_near, a_far),
-		angle(a_angle), aspect(a_aspect) {}
+		angle(a_angle), aspect(a_aspect)
+	{}
 
 	void setAngle(float a_angle) { angle = a_angle; }
 	void setAspect(float a_aspect) { aspect = a_aspect; }
@@ -59,11 +60,11 @@ struct FrustumPeramiters:public ProjectionPeramiters
 class Camera:public Transformer
 {
 public:
-enum TYPE
-{
-	ORTHOGRAPHIC,
-	FRUSTUM
-};
+	enum TYPE
+	{
+		ORTHOGRAPHIC,
+		FRUSTUM
+	};
 
 	Camera(Coord3D<> = {1,1,1}, TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	~Camera();
@@ -110,16 +111,16 @@ enum TYPE
 	//render objects
 	void render(Shader* shader, std::map<void*, Model*>& models, bool transparent = false);
 
-	
+
 	bool isUpdated() { return m_cameraUpdate; }
-	
+
 	/*GETTERS*/
 	Coord3D<> getRotation();
 
 	glm::mat4& getProjectionMatrix();
 	glm::mat4& getViewMatrix();
 	glm::mat4& getCameraMatrix();
-	
+
 	TYPE getType();
 
 protected:

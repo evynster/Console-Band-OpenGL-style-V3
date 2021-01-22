@@ -7,6 +7,9 @@ public:
 	static std::vector<Mesh*> loadMesh(std::string path);
 
 private:
+	
+	MeshLoader();
+
 	static void loadMaterials(cstring path);
 
 	static bool load(std::string path);

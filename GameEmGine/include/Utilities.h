@@ -32,7 +32,7 @@ static cstring cDir(char* dir)
 static std::string tolower(char* dir)
 {
 	std::string tmp;
-	for(unsigned i = 0; i<strlen(dir); i++)
+	for(unsigned i = 0; i < strlen(dir); i++)
 	{
 		tmp += (char)tolower(*(dir + i));
 	}
@@ -234,7 +234,7 @@ struct Coord3D
 
 	T distance()
 	{
-		return sqrtf(x * x + y * y + z * z);
+		return (T)sqrtf(x * x + y * y + z * z);
 	}
 
 	T distanceSquare()
@@ -350,7 +350,8 @@ struct Coord3D
 		return {x / coord,y / coord,z / coord};
 	}
 
-	Coord3D<T>& operator-() {
+	Coord3D<T>& operator-()
+	{
 		static Coord3D<T> tmp;
 		tmp = *this * -1;
 		return tmp;
@@ -422,6 +423,14 @@ struct Coord3D
 	{
 		return !(*this < coord);
 	}
+
+	cstring toString()
+	{
+		sprintf_s(toStr, "(%f, %f, %f)", x, y, z);
+		return toStr;
+	}
+private:
+	char toStr[50];
 };
 
 struct ColourRGBA
@@ -672,7 +681,8 @@ struct Vertex3D
 	}
 };
 
-struct Indicie {
+struct Indicie
+{
 
 	unsigned coord = 0;
 	unsigned uv = 0;

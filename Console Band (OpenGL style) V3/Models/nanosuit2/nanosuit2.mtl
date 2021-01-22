@@ -1,0 +1,83 @@
+# Blender MTL File: 'None'
+# Material Count: 6
+
+newmtl Arm
+Ns 3.599998
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.125000 0.125000 0.125000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd arm_dif.png
+map_Ns arm_dif.png
+map_d arm_dif.png
+
+newmtl Body
+Ns 3.599998
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd body_dif.png
+map_d body_dif.png
+
+newmtl Glass
+Ns 3.599998
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.660000 0.660000 0.660000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump glass_ddn.png
+map_Kd glass_dif.png
+map_d glass_dif.png
+
+newmtl Hand
+Ns 3.599998
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump hand_showroom_ddn.png
+map_Kd hand_dif.png
+map_Ns hand_showroom_ddn.png
+map_d hand_dif.png
+
+newmtl Helmet
+Ns 2.610002
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump helmet_showroom_ddn.png
+map_Kd helmet_dif.png
+map_Ks hand_showroom_spec.png
+map_Ns helmet_showroom_spec.png
+map_d helmet_dif.png
+
+newmtl Leg
+Ns 3.599998
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump leg_showroom_ddn.png
+map_Kd leg_dif.png
+map_Ns leg_showroom_ddn.png
+map_d leg_dif.png

@@ -2,14 +2,14 @@
 #include <GL\glew.h>
 #include "Utilities.h"
 
-enum class TEXTURE_TYPE2D :unsigned
+enum class TEXTURE_TYPE2D:unsigned
 {
 	NONE,
 	DIFFUSE,
 	SPECULAR
 };
 
-enum class TEXTURE_TYPE3D :unsigned
+enum class TEXTURE_TYPE3D:unsigned
 {
 	NONE,
 	LUT,
@@ -22,12 +22,20 @@ struct Texture2D
 	ColourRGBA colour;
 	int width, height;
 	TEXTURE_TYPE2D type = TEXTURE_TYPE2D::NONE;
+	
 	std::string name;
 
+	//~Texture2D()
+	//{
+	//	deleteTexture();
+	//}
+	//Texture2D() = default;
+	//Texture2D(Texture2D&) = default;
+	//Texture2D(const Texture2D&) = default;
 
 	void deleteTexture()
 	{
-		if (id)
+		if(id)
 		{
 			glDeleteTextures(1, &id);
 			id = 0;
@@ -39,7 +47,7 @@ struct Texture2D
 		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(GL_TEXTURE_2D, id);
 	}
-	
+
 	void bindTexture()
 	{
 		glBindTexture(GL_TEXTURE_2D, id);
@@ -68,11 +76,11 @@ struct Texture3D
 	int width, height, depth;
 	int lutSize;
 	TEXTURE_TYPE3D type;
-	Texture3D(TEXTURE_TYPE3D aType = TEXTURE_TYPE3D::NONE) :type(aType) { };
+	Texture3D(TEXTURE_TYPE3D aType = TEXTURE_TYPE3D::NONE):type(aType) {};
 
 	void deleteTexture()
 	{
-		if (id)
+		if(id)
 		{
 			glDeleteTextures(1, &id);
 			id = 0;
@@ -81,7 +89,7 @@ struct Texture3D
 
 	void bindTexture()
 	{
-		switch (type)
+		switch(type)
 		{
 		case TEXTURE_TYPE3D::LUT:
 			glBindTexture(GL_TEXTURE_3D, id);
@@ -98,7 +106,7 @@ struct Texture3D
 
 	void unbindTexture()
 	{
-		switch (type)
+		switch(type)
 		{
 		case TEXTURE_TYPE3D::LUT:
 			glBindTexture(GL_TEXTURE_3D, 0);

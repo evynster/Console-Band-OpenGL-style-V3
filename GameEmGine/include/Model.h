@@ -83,6 +83,7 @@ public:
 
 	void setToRender(bool render);
 	void setTransparent(bool trans);
+	void setWireframe(bool wire);
 	bool isTransparent();
 	void print();
 	std::vector<Coord3D<>> getBounds();
@@ -96,6 +97,7 @@ private:
 
 	bool m_render = true;
 	bool m_transparent = false;
+	bool m_wireframe=false;
 	cstring m_tag;
 
 	std::unordered_map< std::string, Animation*>m_animations;

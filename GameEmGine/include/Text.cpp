@@ -268,10 +268,10 @@ void Text::testSize()
 
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.advance >> 6); // Bitshift by 6 to get value in pixels (2^6 = 64)
+		x += (ch.advance >> 6)* getScale().x; // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 
-	m_size = {(x * getScale().x), ((h - ypos) * getScale().x)};
+	m_size = {(x), ((h - ypos) * getScale().x)};
 }
 
 

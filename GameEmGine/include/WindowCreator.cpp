@@ -110,6 +110,7 @@ Coord3D<int>& WindowCreator::getScreenSize()
 {
 	if(!m_full)
 		glfwGetFramebufferSize(m_window, &m_info->size.width, &m_info->size.height);
+
 	return m_info->size;
 }
 

@@ -108,12 +108,10 @@ void Shader::createDefault()
 		char* errorLog = new char[maxLength];
 		glGetShaderInfoLog(m_vertID, maxLength, &maxLength, errorLog);
 
-		printf("error Default Vert Shader\n");
+		printf("Error in default Vert Shader:\n");
 		printf("%s\n\n", errorLog);
 
 		delete[] errorLog;
-		createDefault();
-		system("pause");
 	}
 
 	tmpFileContent =
@@ -150,15 +148,15 @@ void Shader::createDefault()
 		char* errorLog = new char[maxLength];
 		glGetShaderInfoLog(m_fragID, maxLength, &maxLength, errorLog);
 
-		printf("error Default Frag Shader\n");
+		printf("Error in default Frag Shader:\n");
 		printf("%s\n\n", errorLog);
 
 		delete[] errorLog;
-		createDefault();
-		system("pause");
 	}
 
 	linkShaders();
+	puts("Created default shader\n");
+
 	//delete tmpFileContent;
 }
 
@@ -237,9 +235,12 @@ bool Shader::linkShaders()
 		m_programID = m_vertID = m_fragID = 0;
 
 		// Use the infoLog as you see fit.
+		printf("Error in shader %s or %s\n",m_vtPath.c_str(),m_fmPath.c_str());
 		printf(infoLog);
 		puts("\n");
 		delete[] infoLog;
+
+		createDefault();
 		//system("pause");
 		// In this simple program, we'll just leave
 		return false;

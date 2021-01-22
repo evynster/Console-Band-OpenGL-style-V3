@@ -101,7 +101,8 @@ private:
 		m_updatedTrans = true,
 		m_updatedScale = true,
 		//first person movement
-		m_fps=false;
+		m_fps=false,
+		m_moveBy=false;
 
 protected:
 	Transformer::TYPE m_type;

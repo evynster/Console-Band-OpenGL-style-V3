@@ -1,3 +1,0 @@
-C:/Users/em3/Documents/Visual Studio 2019/Projects/Console Band (OpenGL style) V3/Externals/include/glm/out/build/x64-Debug/CMakeFiles/glm_dummy.dir
-C:/Users/em3/Documents/Visual Studio 2019/Projects/Console Band (OpenGL style) V3/Externals/include/glm/out/build/x64-Debug/CMakeFiles/edit_cache.dir
-C:/Users/em3/Documents/Visual Studio 2019/Projects/Console Band (OpenGL style) V3/Externals/include/glm/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir

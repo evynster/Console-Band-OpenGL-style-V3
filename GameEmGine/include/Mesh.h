@@ -7,7 +7,7 @@
 #include "Shader.h"
 #include "Utilities.h"
 #include "ResourceManager.h"
-#include "FrameBuffer.h"
+//#include "FrameBuffer.h"
 
 #define CHAR_BUFF_SIZE 1000
 
@@ -209,6 +209,7 @@ struct PrimitivePlane:public primitiveMesh
 
 struct primitiveCube: public primitiveMesh
 {
+public:
 	primitiveCube():primitiveMesh() { type = CUBE; }
 
 	primitiveCube(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false):primitiveMesh(dim, offset, rot)
@@ -290,6 +291,7 @@ private:
 	bool m_invert;
 };
 
+
 class Mesh
 {
 public:
@@ -315,6 +317,7 @@ public:
 
 	Coord3D<> top, bottom, left, right, front, back;
 	std::string meshName;
+	std::vector<std::string> matNames;
 
 	std::vector<Vertex3D>& getUnpackedData() { return m_unpackedData; }
 	std::vector<unsigned>& getIndicieData() { return m_indicieData; }
@@ -339,6 +342,7 @@ private:
 	std::vector<Vertex3D> m_unpackedData;
 	std::vector<unsigned> m_indicieData;
 	std::vector<Texture2D>m_textures;
+
 
 };
 

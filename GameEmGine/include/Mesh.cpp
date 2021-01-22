@@ -1,13 +1,12 @@
 #include "Mesh.h"
 #include <functional>
-#include <filesystem>
+//#include <filesystem>
 
-namespace fs = std::filesystem;
+//namespace fs = std::filesystem;
 
 Mesh::Mesh()
 {
-	if(!fs::exists("Models/BIN"))
-		system("mkdir \"Models/BIN\"");
+	
 }
 
 Mesh::Mesh(Mesh& mesh):
@@ -24,9 +23,6 @@ Mesh::Mesh(Mesh& mesh):
 {
 
 
-
-	if(!fs::exists("Models/BIN"))
-		system("mkdir \"Models/BIN\"");
 }
 
 Mesh::~Mesh()
@@ -87,13 +83,12 @@ void Mesh::render(Shader& shader)
 			if(d.id || m_replaceTex[c])
 			{
 				textured = true;
-				glUniform1i(shader.getUniformLocation("uTex"), e++);
 				glBindTexture(GL_TEXTURE_2D, m_replaceTex[c] ? m_replaceTex[c] : d.id);
+				shader.sendUniform("uTex", e++);
 				
 			}
 		c++;
 	}
-
 
 
 	glUniform1i(shader.getUniformLocation("textured"), textured);
@@ -221,8 +216,8 @@ void Mesh::editVerts(Mesh* verts1, Mesh* verts2)
 	//glGenBuffers(1, &m_elemID[a].second);
 
 	////indicies 
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elemID[a].second);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indicieData[a].second.size() * sizeof(unsigned), m_indicieData[a].second.data(), GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elemID);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indicieData.size() * sizeof(unsigned), m_indicieData.data(), GL_STATIC_DRAW);
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
