@@ -1,58 +1,22 @@
 #include "Model.h" 
 #include <ctime>
 
-Model::Model():Transformer()
+Model::Model(Model& model, cstring tag):
+	Transformer(model, "MODEL")
 {
-	m_type = Transformer::TYPE::MODEL;
-}
-
-Model::Model(Model& model, cstring tag) :
-	Transformer(model),
-	m_meshes(model.m_meshes),
-	m_colour(model.m_colour),
-	m_render(model.m_render),
-	m_tag(tag),
-	m_copy(true)
-{
-	m_type = Transformer::TYPE::MODEL;
-	m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
-
-	float top = m_meshes[0]->top.y,
-		bottom = m_meshes[0]->bottom.y,
-		left = m_meshes[0]->left.x,
-		right = m_meshes[0]->right.x,
-		front = m_meshes[0]->front.z,
-		back = m_meshes[0]->back.z;
-
-	for(auto& a : m_meshes)
-	{
-		top = top < a->top.y ? a->top.y : top,
-			bottom = bottom>a->bottom.y ? a->bottom.y : bottom,
-			left = left > a->left.x ? a->left.x : left,
-			right = right < a->right.x ? a->right.x : right,
-			front = front< a->front.z ? a->front.z : front,
-			back = back > a->back.z ? a->back.z : back;
-	}
-	(m_topLeftBack = {left,top,back}),
-		(m_topRightBack = {right,top,back}),
-		(m_topLeftFront = {left,top,front}),
-		(m_topRightFront = {right,top,front}),
-		(m_bottomLeftBack = {left,bottom,back}),
-		(m_bottomRightBack = {right,bottom,back}),
-		(m_bottomLeftFront = {left,bottom,front}),
-		(m_bottomRightFront = {right,bottom,front});
-
-
-	boundingBoxInit();
+	*this = model;
+	m_tag = tag;
+	m_copy = true;
+	//boundingBoxInit();
 	boundingBoxUpdate();
 
 }
 
 Model::Model(primitiveMesh* model, cstring tag):
-	Transformer(),
+	Transformer("MODEL"),
 	m_tag(tag)
 {
-	m_type = Transformer::TYPE::MODEL;
+
 	m_meshes.push_back(new Mesh());
 
 	if(m_meshes[0]->loadPrimitive(model))
@@ -83,12 +47,9 @@ Model::Model(primitiveMesh* model, cstring tag):
 }
 
 Model::Model(cstring path, cstring tag):
-	Transformer(),
+	Transformer("MODEL"),
 	m_tag(tag)
 {
-	m_type = Transformer::TYPE::MODEL;
-
-	//m_meshes = new Mesh;
 	if(loadModel(path))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
@@ -145,26 +106,26 @@ bool Model::collision2D(Model* box1, Model* box2, Coord3D<>RPos)
 {
 
 	RPos.normalize();
-	RPos = (Coord3D<>{1, 1, 1}-RPos);
+	RPos = (Coord3D<>{1, 1, 1} - RPos);
 
 	RPos = (box1->m_center - box2->m_center) * RPos;
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* rotLocal1 = &box1->getLocalRotationMatrix(),
-		* rotLocal2 = &box2->getLocalRotationMatrix(),
+		* rotLocal1 = (glm::mat4*)&box1->getLocalRotationMatrix(),
+		* rotLocal2 = (glm::mat4*)&box2->getLocalRotationMatrix(),
 
-		* rotWorld1 = &box1->getWorldRotationMatrix(),
-		* rotWorld2 = &box2->getWorldRotationMatrix();
+		* rotWorld1 = (glm::mat4*)&box1->getWorldRotationMatrix(),
+		* rotWorld2 = (glm::mat4*)&box2->getWorldRotationMatrix();
 
 	static Coord3D<> AxisX1, AxisY1, AxisZ1, AxisX2, AxisY2, AxisZ2;
-	AxisX1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
-	AxisY1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
-	AxisZ1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
+	AxisX1 = (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*)&AxisX, 1)));
+	AxisY1 = (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*)&AxisY, 1)));
+	AxisZ1 = (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*)&AxisZ, 1)));
 
-	AxisX2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
-	AxisY2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
-	AxisZ2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
+	AxisX2 = (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*)&AxisX, 1)));
+	AxisY2 = (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*)&AxisY, 1)));
+	AxisZ2 = (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*)&AxisZ, 1)));
 
 	return !(
 		getSeparatingPlane(RPos, AxisX1, *box1, *box2) ||
@@ -200,20 +161,20 @@ bool Model::collision3D(Model* box1, Model* box2)
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* rotLocal1 = &box1->getLocalRotationMatrix(),
-		* rotLocal2 = &box2->getLocalRotationMatrix(),
+		* rotLocal1 = (glm::mat4*)&box1->getLocalRotationMatrix(),
+		* rotLocal2 = (glm::mat4*)&box2->getLocalRotationMatrix(),
 
-		* rotWorld1 = &box1->getWorldRotationMatrix(),
-		* rotWorld2 = &box2->getWorldRotationMatrix();
+		* rotWorld1 = (glm::mat4*)&box1->getWorldRotationMatrix(),
+		* rotWorld2 = (glm::mat4*)&box2->getWorldRotationMatrix();
 
 	static Coord3D<> AxisX1, AxisY1, AxisZ1, AxisX2, AxisY2, AxisZ2;
-	AxisX1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
-	AxisY1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
-	AxisZ1 = *(Coord3D<>*) & (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
+	AxisX1 = (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*)&AxisX, 1)));
+	AxisY1 = (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*)&AxisY, 1)));
+	AxisZ1 = (*rotWorld1 * (*rotLocal1 * glm::vec4(*(glm::vec3*)&AxisZ, 1)));
 
-	AxisX2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisX, 1)));
-	AxisY2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisY, 1)));
-	AxisZ2 = *(Coord3D<>*) & (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*) & AxisZ, 1)));
+	AxisX2 = (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*)&AxisX, 1)));
+	AxisY2 = (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*)&AxisY, 1)));
+	AxisZ2 = (*rotWorld2 * (*rotLocal2 * glm::vec4(*(glm::vec3*)&AxisZ, 1)));
 
 	return !(
 		getSeparatingPlane(RPos, AxisX1, *box1, *box2) ||
@@ -240,22 +201,22 @@ bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Mo
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4
-		* trans1 = &box1.getLocalRotationMatrix(),
-		* trans2 = &box2.getLocalRotationMatrix();
+		* trans1 = (glm::mat4*)&box1.getLocalRotationMatrix(),
+		* trans2 = (glm::mat4*)&box2.getLocalRotationMatrix();
 
-	Coord3D<> AxisX1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisX, 1));
-	Coord3D<> AxisY1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisY, 1));
-	Coord3D<> AxisZ1 = *(Coord3D<>*) & (*trans1 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
+	Coord3D<> AxisX1 = (*trans1 * glm::vec4(*(glm::vec3*)&AxisX, 1));
+	Coord3D<> AxisY1 = (*trans1 * glm::vec4(*(glm::vec3*)&AxisY, 1));
+	Coord3D<> AxisZ1 = (*trans1 * glm::vec4(*(glm::vec3*)&AxisZ, 1));
 
-	Coord3D<> AxisX2 = *(Coord3D<>*) & (*trans2 * glm::vec4(*(glm::vec3*) & AxisX, 1));
-	Coord3D<> AxisY2 = *(Coord3D<>*) & (*trans2 * glm::vec4(*(glm::vec3*) & AxisY, 1));
-	Coord3D<> AxisZ2 = *(Coord3D<>*) & (*trans2 * glm::vec4(*(glm::vec3*) & AxisZ, 1));
+	Coord3D<> AxisX2 = (*trans2 * glm::vec4(*(glm::vec3*)&AxisX, 1));
+	Coord3D<> AxisY2 = (*trans2 * glm::vec4(*(glm::vec3*)&AxisY, 1));
+	Coord3D<> AxisZ2 = (*trans2 * glm::vec4(*(glm::vec3*)&AxisZ, 1));
 
 	//float w, h;
 	//glfwGetFramebufferSize(glfwGetCurrentContext(), &w, &h);
 
 	return (fabs(Coord3D<>::dotProduct(RPos, plane)) >
-		(
+			(
 			fabs(Coord3D<>::dotProduct((AxisX1 * (box1.m_width / 2)), plane)) +
 			fabs(Coord3D<>::dotProduct((AxisY1 * (box1.m_height / 2)), plane)) +
 			fabs(Coord3D<>::dotProduct((AxisZ1 * (box1.m_depth / 2)), plane)) +
@@ -290,7 +251,7 @@ void Model::render(Shader& shader, Camera* cam)
 	if(m_render)
 	{
 		if(m_wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//render the meshes
 		for(auto& a : m_meshes)
 			a->render(shader);
@@ -301,17 +262,13 @@ void Model::render(Shader& shader, Camera* cam)
 		static Shader* shader2;
 		//render child meshes
 		for(auto& a : getChildren())
-			switch(a->getType())
-			{
-			case MODEL:
+			if(a->getType() == "MODEL")
 				reclass(Model*, a)->render(shader, cam);
-				break;
-			case TEXT:
-				shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh");
+			else if(a->getType() == "TEXT")
+				shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh"),
 				reclass(Text*, a)->render(*shader2, cam);
-				break;
 
-			}
+
 		resetUpdated();
 		if(m_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -435,12 +392,12 @@ void Model::boundingBoxUpdate()
 
 	std::vector<glm::vec4> bounds =
 	{
-	{*(glm::vec3*) & m_bottomRightBack,1},
-	{*(glm::vec3*) & m_bottomLeftBack,1},
-	{*(glm::vec3*) & m_topLeftBack,1},
-	{*(glm::vec3*) & m_bottomLeftBack,1},
-	{*(glm::vec3*) & m_topLeftFront,1},
-	{*(glm::vec3*) & m_topLeftBack,1}
+	{*(glm::vec3*)&m_bottomRightBack,1},
+	{*(glm::vec3*)&m_bottomLeftBack,1},
+	{*(glm::vec3*)&m_topLeftBack,1},
+	{*(glm::vec3*)&m_bottomLeftBack,1},
+	{*(glm::vec3*)&m_topLeftFront,1},
+	{*(glm::vec3*)&m_topLeftBack,1}
 	};
 
 
@@ -455,12 +412,12 @@ void Model::boundingBoxUpdate()
 
 	bounds =
 	{
-	{*(glm::vec3*) & m_bottomRightBack,1},
-	{*(glm::vec3*) & m_bottomLeftBack,1},
-	{*(glm::vec3*) & m_topLeftBack,1},
-	{*(glm::vec3*) & m_bottomLeftBack,1},
-	{*(glm::vec3*) & m_topLeftFront,1},
-	{*(glm::vec3*) & m_topLeftBack,1}
+	{*(glm::vec3*)&m_bottomRightBack,1},
+	{*(glm::vec3*)&m_bottomLeftBack,1},
+	{*(glm::vec3*)&m_topLeftBack,1},
+	{*(glm::vec3*)&m_bottomLeftBack,1},
+	{*(glm::vec3*)&m_topLeftFront,1},
+	{*(glm::vec3*)&m_topLeftBack,1}
 	};
 
 
@@ -487,6 +444,11 @@ Animation* Model::getCurrentAnimation()
 void Model::setAnimation(cstring tag)
 {
 	m_animation = tag;
+}
+
+void Model::addMesh(Mesh* mesh)
+{
+	m_meshes.push_back(mesh);
 }
 
 Mesh* Model::getMesh(const unsigned index)

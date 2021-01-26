@@ -7,7 +7,6 @@
 #include "Shader.h"
 #include "Utilities.h"
 #include "ResourceManager.h"
-//#include "FrameBuffer.h"
 
 #define CHAR_BUFF_SIZE 1000
 
@@ -15,15 +14,18 @@ enum PRIMITIVE_TYPE
 {
 	NONE,
 	PLANE,
-	CUBE
+	CUBE,
+	SPHEAR
 };
 
 struct primitiveMesh
 {
 	primitiveMesh() {}
-	primitiveMesh(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):m_dim(dim), m_offset(offset), m_rotation(rot) {}
-	primitiveMesh(float width, float height, float depth, Coord3D<> offset = {}, Coord3D<> rot = {})
-		:m_dim({width,height,depth}), m_offset(offset), m_rotation(rot)
+	primitiveMesh(Coord3D<> dim, Coord3D<> offset = {}, Coord3D<> rot = {}):
+		m_dim(dim), m_offset(offset), m_rotation(rot)
+	{}
+	primitiveMesh(float width, float height, float depth, Coord3D<> offset = {}, Coord3D<> rot = {}):
+		m_dim({width,height,depth}), m_offset(offset), m_rotation(rot)
 	{}
 
 	virtual ~primitiveMesh() {}
@@ -50,22 +52,27 @@ protected:
 	PRIMITIVE_TYPE type = NONE;
 	std::vector<Vertex3D> m_unpackedData;
 	std::vector<unsigned> m_indices;
+
+	//adds indices to the existing structure
 	template<class _iter>
 	void indiceAdder(_iter begin, _iter end, std::vector<Vertex3D> verts)
 	{
-		for(auto& i = begin; i < end; i++)
+		for(auto& i = begin; i < end; ++i)
 		{
 			std::vector<Vertex3D>::iterator tmp;
 			if((tmp = std::find(m_unpackedData.begin(), m_unpackedData.end(), verts[*i])) != m_unpackedData.end())
 			{
 				m_indices.push_back(unsigned(tmp - m_unpackedData.begin()));
-			} else
+			}
+			else
 			{
 				m_unpackedData.push_back(verts[*i]);
 				m_indices.push_back(m_unpackedData.size() - 1);
 			}
 		}
 	}
+
+	//clears all mesh data before adding indices
 	void indiceCreator(std::vector<Vertex3D> verts)
 	{
 		m_unpackedData.clear();
@@ -77,7 +84,8 @@ protected:
 			if((tmp = std::find(m_unpackedData.begin(), m_unpackedData.end(), *i)) != m_unpackedData.end())
 			{
 				m_indices.push_back(unsigned(tmp - m_unpackedData.begin()));
-			} else
+			}
+			else
 			{
 				m_unpackedData.push_back(*i);
 				m_indices.push_back(m_unpackedData.size() - 1);
@@ -110,39 +118,34 @@ struct PrimitivePlane:public primitiveMesh
 
 		//coords
 		std::vector<Vertex3D> tmp;
+		glm::vec4 holder;
 		//bottom left tri
-		tmp.push_back({m_offset + reclass(Coord3D<>,
+		tmp.push_back({m_offset + reclass(Coord3D<>,holder =
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{-halfW,-halfH, halfD}).toVec3(), 1)
-			)
-					  });//bottom left
-		tmp.push_back({m_offset + reclass(Coord3D<>,
+			)});//bottom left
+		tmp.push_back({m_offset + reclass(Coord3D<>,holder =
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{ halfW,-halfH,-halfD}).toVec3(), 1)
-			)
-					  });//bottom right*
-		tmp.push_back({m_offset + reclass(Coord3D<>,
+			)});//bottom right*
+		tmp.push_back({m_offset + reclass(Coord3D<>,holder =
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{-halfW, halfH,-halfD}).toVec3(), 1)
-			)
-					  });//top left*
+			)});//top left*
 
 				  //top right tri
-		tmp.push_back({m_offset + reclass(Coord3D<>,
+		tmp.push_back({m_offset + reclass(Coord3D<>,holder =
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{ halfW, halfH,-halfD}).toVec3(), 1)
-			)
-					  });//top right
-		tmp.push_back({m_offset + reclass(Coord3D<>,
+			)});//top right
+		tmp.push_back({m_offset + reclass(Coord3D<>,holder =
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{-halfW, halfH, halfD}).toVec3(), 1)
-			)
-					  });//top left*
-		tmp.push_back({m_offset + reclass(Coord3D<>,
+			)});//top left*
+		tmp.push_back({m_offset + reclass(Coord3D<>,holder =
 			Quat::quatRotationMat(m_rotation.x,1,0,0) * Quat::quatRotationMat(m_rotation.y,0,1,0) * Quat::quatRotationMat(m_rotation.z,0,0,1) *
 			glm::vec4((Coord3D<>{ halfW,-halfH, halfD}).toVec3(), 1)
-			)
-					  });//bottom right*
+			)});//bottom right*
 
 
 		m_top = m_bottom = m_left = m_right = m_front = m_back = tmp[0].coord;
@@ -174,11 +177,13 @@ struct PrimitivePlane:public primitiveMesh
 		{
 			x = {1,0,0};
 			y = {0,1,0};
-		} else if(abs(norm) == Coord3D<>{0, 1, 0})
+		}
+		else if(abs(norm) == Coord3D<>{0, 1, 0})
 		{
 			x = {1,0,0};
 			y = {0,0,1};
-		} else if(abs(norm) == Coord3D<>{1, 0, 0})
+		}
+		else if(abs(norm) == Coord3D<>{1, 0, 0})
 		{
 			x = {0,0,1};
 			y = {0,1,0};
@@ -186,21 +191,20 @@ struct PrimitivePlane:public primitiveMesh
 
 		//uv
 		Coord3D<> val;
-		//auto valy = (norm) * (tmp[0].coord - tmp[2].coord).normal();
 
 		val = ((tmp[0].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
 		tmp[0].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//bottom left 
 		val = ((tmp[1].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
-		tmp[1].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//bottom right*
+		tmp[1].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//bottom right*
 		val = ((tmp[2].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
-		tmp[2].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//top left*
+		tmp[2].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//top left*
 
 		val = ((tmp[3].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
-		tmp[3].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//top right
+		tmp[3].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//top right
 		val = ((tmp[4].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
-		tmp[4].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//top left*
+		tmp[4].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//top left*
 		val = ((tmp[5].coord - m_offset) + Coord3D<>{halfW, halfH, halfD});
-		tmp[5].uv = {float((val * x).distance() > 0),float((val* y).distance() > 0)};//bottom right*
+		tmp[5].uv = {float((val * x).distance() > 0),float((val * y).distance() > 0)};//bottom right*
 
 
 		indiceCreator(tmp);
@@ -261,9 +265,9 @@ public:
 		for(auto& a : m_unpackedData)
 		{
 			glm::mat4 rot = Quat::quatRotationMat(m_rotation.x, 1, 0, 0) * Quat::quatRotationMat(m_rotation.y, 0, 1, 0) * Quat::quatRotationMat(m_rotation.z, 0, 0, 1);
-
-			a.coord = reclass(Coord3D<>, rot * glm::vec4(a.coord.toVec3(), 1));
-			a.norm = reclass(Coord3D<>, rot * glm::vec4(a.norm.toVec3(), 1));
+			glm::vec4 holder;
+			a.coord = reclass(Coord3D<>, holder = rot * glm::vec4(a.coord.toVec3(), 1));
+			a.norm = reclass(Coord3D<>, holder = rot * glm::vec4(a.norm.toVec3(), 1));
 		}
 
 		if(m_invert)
@@ -291,6 +295,93 @@ private:
 	bool m_invert;
 };
 
+struct primitiveSphear:public primitiveMesh
+{
+public:
+	primitiveSphear():primitiveMesh() { type = SPHEAR; }
+
+	primitiveSphear(Coord2D<> dim, int segments, int divisions, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false):
+		primitiveMesh(dim, offset, rot),
+		m_segments(segments),
+		m_divisions(divisions),
+		m_invert(invert)
+	{
+		type = SPHEAR; createMesh();
+	}
+
+	primitiveSphear(float w, float h, int segments, int divisions, Coord3D<> offset = {}, Coord3D<> rot = {}, bool invert = false):
+		primitiveMesh(w, h, w, offset, rot),
+		m_segments(segments),
+		m_divisions(divisions),
+		m_invert(invert)
+	{
+		type = SPHEAR;  createMesh();
+	}
+
+	~primitiveSphear() {}
+
+	void createMesh()
+	{
+		std::vector<Vertex3D>tmp;
+
+		//calculate segments
+		for(int b = 1; b <= m_divisions; ++b)
+			for(int a = 0; a <= m_segments; ++a)
+			{
+				Quat tmp2;
+				if(b == 1)
+				{
+					if(a % 2 == 0 || a > 1)
+					{
+						//Top Coord
+						tmp.push_back({{0,m_dim.h * .5f,0}});
+						tmp.back().norm = {0,1,0};
+
+						//last segment
+						if(tmp.size() > 3)
+							tmp.push_back(tmp[tmp.size() - 2]);
+					}
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, (m_dim.h * .5f)* (1.f - (b / (float)m_divisions) * (b / (float)m_divisions)), (m_dim.w * .5f)* ((b / (float)m_divisions) / (b / (float)m_divisions))}).rotation(360.f / m_segments * a,0,1,0))});
+
+					if(!(tmp.size() % 3) && tmp.size() > 2)
+					{
+						Coord3D<> norm = Coord3D<>::crossProduct(tmp[tmp.size() - 1].coord - tmp[tmp.size() - 3].coord, tmp[tmp.size() - 1].coord - tmp[tmp.size() - 2].coord).normal();
+						tmp[tmp.size() - 1].norm =
+							tmp[tmp.size() - 2].norm =
+							tmp[tmp.size() - 3].norm = norm;
+
+					}
+				}
+				else
+				{
+
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, m_dim.h * .5f * (1.f - ((b - 1) / (float)m_divisions) * ((b - 1) / (float)m_divisions)), m_dim.w * .5f * (((b - 1) / (float)m_divisions) / ((b - 1) / (float)m_divisions))}).rotation(360.f / m_segments * a,0,1,0))});
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, m_dim.h * .5f * (1.f - (b / (float)m_divisions) * (b / (float)m_divisions)), m_dim.w * .5f * ((b / (float)m_divisions) / (b / (float)m_divisions))}).rotation(360.f / m_segments * a,0,1,0))});
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, m_dim.h * .5f * (1.f - (b / (float)m_divisions) * (b / (float)m_divisions)), m_dim.w * .5f * ((b / (float)m_divisions) / (b / (float)m_divisions))}).rotation(360.f / m_segments * (a + 1),0,1,0))});
+
+					Coord3D<> norm = Coord3D<>::crossProduct(tmp[tmp.size() - 1].coord - tmp[tmp.size() - 3].coord, tmp[tmp.size() - 1].coord - tmp[tmp.size() - 2].coord).normal();
+					tmp[tmp.size() - 1].norm =
+						tmp[tmp.size() - 2].norm =
+						tmp[tmp.size() - 3].norm = norm;
+
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, m_dim.h * .5f * (1.f - ((b - 1) / (float)m_divisions) * ((b - 1) / (float)m_divisions)), m_dim.w * .5f * (((b - 1) / (float)m_divisions) / ((b - 1) / (float)m_divisions))}).rotation(360.f / m_segments * a,0,1,0))});
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, m_dim.h * .5f * (1.f - (b / (float)m_divisions) * (b / (float)m_divisions)), m_dim.w * .5f * ((b / (float)m_divisions) / (b / (float)m_divisions))}).rotation(360.f / m_segments * (a + 1),0,1,0))});
+					tmp.push_back({reclass(Coord3D<>,tmp2 = Quat(Coord3D<> {0, m_dim.h * .5f * (1.f - ((b - 1) / (float)m_divisions) * ((b - 1) / (float)m_divisions)), m_dim.w * .5f * (((b - 1) / (float)m_divisions) / ((b - 1) / (float)m_divisions))}).rotation(360.f / m_segments * (a + 1),0,1,0))});
+
+					norm = Coord3D<>::crossProduct(tmp[tmp.size() - 1].coord - tmp[tmp.size() - 3].coord, tmp[tmp.size() - 1].coord - tmp[tmp.size() - 2].coord).normal();
+					tmp[tmp.size() - 1].norm =
+						tmp[tmp.size() - 2].norm =
+						tmp[tmp.size() - 3].norm = norm;
+				}
+
+			}
+
+		indiceCreator(tmp);
+	}
+private:
+	int m_segments = 1, m_divisions;
+	bool m_invert;
+};
 
 class Mesh
 {
@@ -303,9 +394,7 @@ public:
 
 	bool loadPrimitive(primitiveMesh* mesh);
 
-	//TODO: migrate this to Model
-	//std::vector<std::vector<Vertex3D>>& loadAni(std::string);
-	
+
 	//TODO: Migrate this to Model
 	void editVerts(Mesh* verts1, Mesh* verts2);
 
@@ -334,10 +423,6 @@ private:
 	GLuint m_vaoID;
 	std::pair<GLuint, GLuint> m_vboID;
 	GLuint m_elemID;
-
-	//std::vector<Coord3D<>> m_verts;
-	//std::vector<UV> m_uvs;
-	//std::vector<Coord3D<>> m_norms;
 
 	std::vector<Vertex3D> m_unpackedData;
 	std::vector<unsigned> m_indicieData;

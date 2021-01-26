@@ -7,7 +7,7 @@
 
 
 
-struct Light :public Transformer
+struct Light:public Transformer
 {
 	enum TYPE
 	{
@@ -16,8 +16,13 @@ struct Light :public Transformer
 		DIRECTIONAL,
 		SPOTLIGHT
 	};
+	Light():Transformer("LIGHT") {}
+	Light(Light& lit):Transformer(lit, "LIGHT") { 
+		*this = lit; }
 
 	void setLightType(Light::TYPE type);
+
+	void setAmbient(ColourRGBA diff);
 
 	void setDiffuse(ColourRGBA diff);
 
@@ -33,19 +38,19 @@ struct Light :public Transformer
 
 	void enableLight(bool enable);
 
-//private: //maybe later 
-	Light::TYPE type;
+	//private: //maybe later 
+	 Light::TYPE type = DEFAULT;
 
-	ColourRGBA diffuse, specular;
-	Coord3D<> direction = { 0,0,1 };
-	float
+
+	 ColourRGBA ambient, diffuse, specular;
+	 float
 		angleConstraint = 45,
-		specularExponent = .1f,
-		attenuationConst =.1f,
-		attenuationLinear =.1f,
-		attenuationQuadratic = .1f;
+		specularExponent = 32,
+		attenuationConst = 1.f,
+		attenuationLinear = 0.1f,
+		attenuationQuadratic = .001f;
 
-	bool enable = true;
+	 bool enable = true;
 
 };
 
@@ -74,7 +79,7 @@ public:
 	static void clear();
 private:
 	//Coord3D m_coord, m_spec;
-	static ColourRGBA m_ambient;
+
 	static std::vector<Light*> m_lights;
 	static FrameBuffer* m_framebuffer;
 	static std::vector<std::vector<FrameBuffer*>>m_shadows;

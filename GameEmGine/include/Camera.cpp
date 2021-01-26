@@ -1,7 +1,7 @@
 #include "Camera.h"
 
-Camera::Camera(Coord3D<> size, TYPE type, ProjectionPeramiters* peram)
-	:Transformer(), m_scale(1), m_projMat(1), m_viewMat(1), m_cameraUpdate(true)
+Camera::Camera(Coord3D<> size, CAM_TYPE type, ProjectionPeramiters* peram)
+	:Transformer("CAMERA"), m_scale(1), m_projMat(1), m_viewMat(1), m_cameraUpdate(true)
 {
 	//m_position = new Coord3D{-.25,-.5,0};
 	init(size, type, peram);
@@ -10,28 +10,30 @@ Camera::Camera(Coord3D<> size, TYPE type, ProjectionPeramiters* peram)
 Camera::~Camera()
 {}
 
-void Camera::init(Coord3D<> size, TYPE type, ProjectionPeramiters* peram)
+void Camera::init(Coord3D<> size, CAM_TYPE type, ProjectionPeramiters* peram)
 {
+	Component::m_type = "CAMERA";
+
 	m_size = size;
 
 	setType(type, peram);
 }
 
-void Camera::setType(TYPE type, ProjectionPeramiters* peram)
+void Camera::setType(CAM_TYPE type, ProjectionPeramiters* peram)
 {
 	OrthoPeramiters* peram1 = reclass(OrthoPeramiters*, peram);
 	FrustumPeramiters* peram2 = reclass(FrustumPeramiters*, peram);
-	switch (m_type = type)
+	switch(m_type = type)
 	{
 	case ORTHOGRAPHIC:
-		if (!peram)
+		if(!peram)
 			m_projMat = glm::ortho(-m_size.width, m_size.width, -m_size.height, m_size.height, -m_size.depth, m_size.depth);
 		else
 			m_projMat = glm::ortho(peram1->left, peram1->right, peram1->bottom, peram1->top, peram1->zNear, peram1->zFar);
 
 		break;
 	case FRUSTUM:
-		if (!peram)
+		if(!peram)
 			m_projMat = glm::perspective(glm::radians(45.f), m_size.width / m_size.height, .001f, m_size.depth);
 		else
 			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->zNear, peram2->zFar);
@@ -42,26 +44,26 @@ void Camera::setType(TYPE type, ProjectionPeramiters* peram)
 	m_cameraUpdate = true;
 }
 
-Camera::TYPE Camera::getType()
+Camera::CAM_TYPE Camera::getType()
 {
 	return m_type;
 }
 
 bool Camera::update()
 {
-	if (m_cameraUpdate)
+	if(m_cameraUpdate)
 	{
-		if (m_isTranslate)
+		if(m_isTranslate)
 			Transformer::translate(m_position);
 
-		if (m_isTranslateBy)
+		if(m_isTranslateBy)
 			Transformer::translateBy(m_positionBy);
 
-		if (m_isRotate)
+		if(m_isRotate)
 			m_rotate.y *= -1,
 			Transformer::rotate(m_rotate);
 
-		if (m_isRotateBy)
+		if(m_isRotateBy)
 			m_rotateBy.y *= -1,
 			Transformer::rotateBy(m_rotateBy);
 
@@ -153,34 +155,34 @@ bool Camera::cull(Model* mod)
 	return false;
 }
 
-glm::mat4 Camera::getLocalRotationMatrix()
+const glm::mat4& Camera::getLocalRotationMatrix()
 {
-	return glm::inverse(Transformer::getLocalRotationMatrix());
+	return m_camLocalRotate = (Transformer::getLocalRotationMatrix());
 }
 
-glm::mat4 Camera::getLocalScaleMatrix()
+const glm::mat4& Camera::getLocalScaleMatrix()
 {
-	return glm::inverse(Transformer::getLocalScaleMatrix());
+	return m_camLocalScale= (Transformer::getLocalScaleMatrix());
 }
 
-glm::mat4 Camera::getLocalTranslationMatrix()
+const glm::mat4& Camera::getLocalTranslationMatrix()
 {
-	return glm::inverse(Transformer::getLocalTranslationMatrix());
+	return m_camLocalTranslate= (Transformer::getLocalTranslationMatrix());
 }
 
-glm::mat4 Camera::getWorldRotationMatrix()
+const glm::mat4& Camera::getWorldRotationMatrix()
 {
-	return glm::inverse(Transformer::getWorldRotationMatrix());
+	return m_camWorldRotate= (Transformer::getWorldRotationMatrix());
 }
 
-glm::mat4 Camera::getWorldScaleMatrix()
+const glm::mat4& Camera::getWorldScaleMatrix()
 {
-	return glm::inverse(Transformer::getWorldScaleMatrix());
+	return m_camWorldScale = (Transformer::getWorldScaleMatrix());
 }
 
-glm::mat4 Camera::getWorldTranslationMatrix()
+const glm::mat4& Camera::getWorldTranslationMatrix()
 {
-	return glm::inverse(Transformer::getWorldTranslationMatrix());
+	return m_camWorldTranslate = (Transformer::getWorldTranslationMatrix());
 }
 
 glm::mat4 Camera::getLocalTransformation()
@@ -196,22 +198,18 @@ glm::mat4 Camera::getWorldTransformation()
 void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 {
 	Shader* shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh");
-	for (auto& a : models)
-		switch (a.second->getType())
+	for(auto& a : models)
+		if(a.second->getType() == "TEXT")
 		{
-		case MODEL:
-
-			if (!cull(a.second))
-				if (trans == a.second->isTransparent())
-					a.second->render(*shader, this);
-			break;
-
-		case TEXT:
-
 			Text* tmp = reclass(Text*, a.second);
-			if (trans == tmp->isTransparent())
+			if(trans == tmp->isTransparent())
 				tmp->render(*shader2, this);
-			break;
+		}
+		else//if(a.second->getType() == "MODEL")
+		{
+			if(!cull(a.second))
+				if(trans == a.second->isTransparent())
+					a.second->render(*shader, this);
 		}
 
 }

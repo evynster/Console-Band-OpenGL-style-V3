@@ -22,15 +22,18 @@ public:
 		//Game::setBackgroundColour(.2, .2, 0);
 
 		setSkyBox("Skyboxes/skybox/");
-		model[0] = new Model(/*"Models/nanosuit2/nanosuit2.obj"*//*"Models/Note/note.obj"*/"Models/BOSS/slam/bsl1.obj"/*new primitiveCube(2, 2, 2)*/, "Box1");
-		static Animation thing;
-		thing.setAnimationSpeed(1);
-		thing.addDir("Models/BOSS/slam/");
-		model[0]->addAnimation("IDK", &thing);
+		enableSkyBox(true);
+		model[0] = new Model(/*"Models/nanosuit/nanosuit.obj"*//*"Models/Note/note.obj"*//*"Models/BOSS/slam/bsl1.obj"*/new primitiveSphear(2, 2,19,20), "Box1");
+		model[0]->setColour(.6, .13, .05);
+
+		static Animation ani;
+		ani.setAnimationSpeed(1);
+		ani.addDir("Models/BOSS/slam/");
+		//model[0]->addAnimation("IDK", &ani);
 
 		model[0]->setAnimation("IDK");
-		thing.play();
-		thing.repeat(true);
+		ani.play();
+		ani.repeat(true);
 		
 		model[0]->setScale(1);
 		//model[0]->setColour(1, .2, .2, 1);
@@ -39,7 +42,9 @@ public:
 
 		lit.setLightType(Light::TYPE::POINT);
 		lit.setParent(Game::getMainCamera());
-		//LightManager::addLight(&lit);
+		lit.setSpecular({0,0,145});
+		
+		LightManager::addLight(&lit);
 
 		//testText.setText("Maybe this Works?");
 		//testText.setColour(1, 0, 0);
@@ -75,7 +80,7 @@ public:
 				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-3});
 			}
-			static bool sky = false,frame=false;
+			static bool sky = true , frame = false;
 			if(key == 'N')
 				model[0]->setWireframe(frame=!frame);
 			if(key == GLFW_KEY_SPACE)
@@ -170,8 +175,8 @@ public:
 			if(key == GLFW_KEY_DOWN)
 				rotDown = false;
 		};
-
-
+		auto list = Component::getComponentList();
+		printf("there are %d items in list",list.size());
 	}
 
 	void cameraMovement()
@@ -255,7 +260,7 @@ private:
 int main()
 {
 
-	Game::init("Window Band (Previously Console Band) V3", 800, 400);
+	Game::init("Window Band (Previously Console Band) V3", 900, 500);
 
 
 	Test test;

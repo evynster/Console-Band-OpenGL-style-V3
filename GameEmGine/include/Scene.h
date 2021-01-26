@@ -9,7 +9,7 @@ GameEmgine class is created
 class Scene
 {
 public:
-	virtual ~Scene() { parent = nullptr; }
+	virtual ~Scene() { m_parent = nullptr; }
 
 	////shader initialization
 	//virtual void shaderInit() = 0;
@@ -25,24 +25,34 @@ public:
 		keyInput,
 		mouseInput;
 
-	std::function<void(int button, int mod)>
 		//instance key is pressed 
-		keyPressed,
+	std::function<void(int key, int mod)>
+		keyPressed;
 
 		//instance key is released
-		keyReleased,
+	std::function<void(int key, int mod)>
+		keyReleased;
 
 		//instance button is pressed 
-		mousePressed,
+	std::function<void(int button, int mod)>
+		mousePressed;
 
 		//instance button is released
+	std::function<void(int button, int mod)>
 		mouseReleased;
+
 	void enableSkyBox(bool enable) { skyBoxEnabled = enable; }
-	void setSkyBox(cstring path) { skybox.setCubeMap(path); }
-	SkyBox skybox;
-	Scene* parent = nullptr;
+	
+	void setSkyBox(cstring path) { m_skybox.setCubeMap(path); }
+	const SkyBox& getSkyBox() { return m_skybox; }
+	
+	void setParent(const Scene* parent) { m_parent =(Scene*) parent; };
+	const Scene* getParent() { return m_parent; }
+	
 	bool skyBoxEnabled = false;
-private:
+protected:
+	SkyBox m_skybox;
+	Scene* m_parent = nullptr;
 
 };
 

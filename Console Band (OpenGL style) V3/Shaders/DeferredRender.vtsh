@@ -39,7 +39,7 @@ void main()
     gl_Position = viewSpace;
    
     viewSpace = uWorldModel * (uLocalModel * vec4(vert, 1.0f));    
-    viewSpace = uProj * viewSpace; 
+   // viewSpace = uProj * viewSpace; 
    
     pos = viewSpace;
 }

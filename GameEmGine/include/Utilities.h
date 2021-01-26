@@ -81,6 +81,7 @@ struct Coord2D
 	{
 		struct { T x, y; };
 		struct { T u, v; };
+		struct { T w, h; };
 		struct { T width, height; };
 	};
 	glm::vec2 toVec2()
@@ -164,6 +165,7 @@ struct Coord3D
 	union
 	{
 		struct { T x, y, z; };
+		struct { T w, h, d; };
 		struct { T width, height, depth; };
 	};
 
@@ -175,6 +177,12 @@ struct Coord3D
 		x = coord.x;
 		y = coord.y;
 		z = 0;
+	}
+	Coord3D(glm::vec4 coord)
+	{
+		x = coord.x;
+		y = coord.y;
+		z = coord.z;
 	}
 
 	void operator=(Coord2D<T> coord)
@@ -256,6 +264,16 @@ struct Coord3D
 			a.x * b.y - a.y * b.x
 		};
 	}
+	Coord3D<T> crossProduct( Coord3D<T> b)
+	{
+		return
+		{
+			y * b.z - z * b.y,
+			z * b.x - x * b.z,
+			x * b.y - y * b.x
+		};
+	}
+
 	friend static Coord3D<T> abs(Coord3D<T> val)
 	{
 		return {sqrtf(val.x * val.x),sqrtf(val.y * val.y),sqrtf(val.z * val.z)};
@@ -726,16 +744,3 @@ struct Indicie
 	}
 };
 
-struct WindowInfo
-{
-	std::string title;
-	Coord3D<int> position, size;
-	int monitor;
-	void print()
-	{
-		printf("Title    : %s\n\n", title.c_str());
-		printf("Position : (%d, %d)\n", position.x, position.y);
-		printf("Size     : (%d, %d, %d)\n", size.width, size.height, size.depth);
-		printf("Monitor  : %d\n\n", monitor);
-	}
-};

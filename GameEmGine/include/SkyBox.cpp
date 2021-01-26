@@ -37,7 +37,7 @@ void SkyBox::render()
 	//glDisable(GL_DEPTH_TEST);
 	shader->enable();
 
-	shader->sendUniform("uView", m_camera->getLocalRotationMatrix());
+	shader->sendUniform("uView", inverse(m_camera->getLocalRotationMatrix()));
 	shader->sendUniform("uProj", m_camera->getProjectionMatrix());
 
 	glActiveTexture(GL_TEXTURE0);

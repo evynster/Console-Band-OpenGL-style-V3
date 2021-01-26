@@ -33,7 +33,7 @@ uniform sampler2D uPos;
 uniform sampler2D uNorm;
 uniform sampler2D uScene;
 uniform sampler2D uRamp;
-uniform vec3 uViewDir = vec3(0, 0, 1);
+uniform vec4 uViewPos;
 
 uniform bool toonActive;
 
@@ -42,103 +42,83 @@ in vec2 texcoord;
 out vec4 outColor;
 
 void pointLight();
-
+void directionalLight();
 vec3 calculatePointLight();
 
-void defaultLight() { pointLight(); }
+void defaultLight() { directionalLight(); }
 
-void spotLight() {
-  //vec4 viewDir = mat4(mat3(uView)) * vec4(0, 0, 1, 1);
-
-  //float theta = max(dot(LightDirection, uViewDir.xyz), 0.0);
-//if( theta > .1)
-    outColor.rgb += calculatePointLight();
+void spotLight() 
+{
+  
 
 }
 
-vec3 calculatePointLight() 
+vec3 blinnPhong(vec3 lightDir, vec3 viewDir )
 {
-
-  vec3 norm = (texture(uNorm, texcoord) * 2 - 1).rgb;
-  vec3 pos = (texture(uPos, texcoord) * 2 - 1).rgb;
-  //account for rasterizer interpolating
-  vec3 normal = normalize((texture(uNorm, texcoord) * 2 - 1).rgb);
-  
-  vec3 lightVec =  LightPosition.xyz - (texture(uPos, texcoord) * 2 - 1).rgb;
-  float dist = length(lightVec);
-  vec3 lightDir = lightVec / dist;
-  
-  float NdotL = dot(normal, lightDir);
+  vec3 norm = (texture(uNorm, texcoord)).rgb;
+  vec3 pos  = (texture(uPos, texcoord)).rgb;//frag position
   
   vec3 diffuse, specular;
-  if(NdotL > 0.0)
-  {
-    //The light contributes to this surface
-    
-    //Calculate attenuation (falloff)
-    float attenuation = 1.0 / (Attenuation_Constant + (Attenuation_Linear * dist) + (Attenuation_Quadratic * dist * dist));
-    
-    //Calculate diffuse contribution
-    diffuse = LightDiffuse * NdotL * attenuation;
-    
-    //Blinn-Phong half vector
-    float NdotHV =  max(dot(normal, normalize(lightDir + normalize(-(texture(uPos, texcoord) * 2 - 1).rgb))), 0.0); 
-    
-    //Calculate specular contribution
-    specular += LightSpecular * pow(NdotHV, LightSpecularExponent) * attenuation;
-  }
+ 
+ 
+  vec3 halfDir    = normalize(lightDir + viewDir);
 
-  return diffuse + specular;
+//Blinn-Phong Lighting here:
+  
+  //Diffuse   
+  diffuse = max(dot(norm, lightDir),0.0) * LightDiffuse;
 
+  //Specular  
+  specular = pow(max(dot(norm, halfDir),0.0), LightSpecularExponent) *  LightSpecular;
 
-
-
-
-
-//  vec4 normal = texture(uNorm, texcoord) * 2 - 1;
-//  normal = normal / normal.w;
-//
-//  //vec4 viewDir = mat4(mat3(uView)) * vec4(0, 0, 1, 1);
-//  vec3 lightDir =
-//    normalize(( (texture(uPos, texcoord) * 2 - 1)- LightPosition).xyz );
-//
-//  float NdotL = max(dot(normal.xyz, lightDir) , 0.0);
-//
-//  vec3 reflectDir = reflect(-lightDir, normal.xyz);
-//  float spec = pow(max(dot(uViewDir.xyz, reflectDir), 0), LightSpecularExponent);
-//
-//  float dist = length(LightPosition.xyz - (texture(uPos, texcoord).xyz * 2 - 1));
-//  float attenuation =
-//      1.0 / (Attenuation_Constant + (Attenuation_Linear * dist) +
-//             (Attenuation_Quadratic * dist * dist));
-//
-// //Blinn-Phong half vector
-//  float NdotHV =  max(dot(normal.xyz, normalize(lightDir + normalize(-(texture(uPos, texcoord).xyz * 2 - 1)))), 0.0); 
-//        
-//  vec3 diffuse = LightDiffuse * NdotL * attenuation;
-//  vec3 specular = LightSpecular * pow(NdotHV, LightSpecularExponent)  * attenuation;
-//
-//  //if(!toonActive)
-//  //{
-//  //  return texture(uRamp, vec2((1 - NdotL),0.5)).rgb/* * (diffuse + specular)*/;
-//  //}
-//  return (diffuse + specular) * (texture(uRamp, vec2((NdotL),0.5)).rgb * int(toonActive));
+ 
+  return (diffuse + specular) * int(LightEnable);
 }
 
-void pointLight() { outColor.rgb += calculatePointLight(); }
+vec3 calculatePointLight(){
+
+  
+  vec3 pos  = (texture(uPos, texcoord)).rgb;//frag position
+  vec3 lightDir   = LightPosition.xyz - pos;
+  vec3 viewDir    = uViewPos.xyz - pos;   
+  
+//Atenuation calculation
+  float dist= length(LightPosition.xyz - pos);
+  float attenuation = ( 1.0 / (Attenuation_Constant + Attenuation_Linear * dist + Attenuation_Quadratic * (dist * dist)));
+ 
+  return blinnPhong(lightDir, viewDir) * attenuation;
+
+}
+
+void pointLight() {   
+ outColor.rgb += calculatePointLight();
+
+ }
 
 vec3 calculateDirectionalLight() {
-  vec3 normal = normalize(texture(uNorm, texcoord).rgb) * 2 - 1;
-
-  vec3 lightDir = normalize(LightDirection);
+  vec3 norm = (texture(uNorm, texcoord)).rgb;
+  vec3 pos  = (texture(uPos, texcoord)).rgb;
   
-  float diff = max(dot(normal, lightDir), 0.0);
+  
+ // float diff = max(dot(norm, lightDir), 0.0);
 
-  vec3 reflectDir = reflect(-lightDir, normal);
-  float spec = pow(max(dot(uViewDir, reflectDir), 0), LightSpecularExponent);
+ // vec3 reflectDir = reflect(-lightDir, norm);
+  vec3 viewDir    = uViewPos.xyz - pos;
+  //float spec = pow(max(dot(viewDir, reflectDir), 0), LightSpecularExponent);
 
   vec3 diffuse = LightDiffuse;
   vec3 specular = LightSpecular;
+
+  //Blinn-Phong Lighting here:
+  
+  //Diffuse 
+  vec3 lightDir = normalize(-LightDirection);
+ diffuse = max(dot(norm, lightDir),0.0) * LightDiffuse;
+
+  //Specular
+  vec3 halfDir    = normalize(lightDir + viewDir);
+  specular = pow(max(dot(viewDir, halfDir),0.0), LightSpecularExponent) *  LightSpecular;
+
 
   
   return diffuse + specular;
@@ -158,7 +138,7 @@ void main() {
   float ambientStrength = 1.0;
   outColor.rgb = colour * LightAmbient * ambientStrength;
 
-  if (LightEnable)
+ 
     switch (LightType) {
     case POINT:
       pointLight();

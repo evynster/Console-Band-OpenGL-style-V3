@@ -60,17 +60,17 @@ struct FrustumPeramiters:public ProjectionPeramiters
 class Camera:public Transformer
 {
 public:
-	enum TYPE
+	enum CAM_TYPE
 	{
 		ORTHOGRAPHIC,
 		FRUSTUM
 	};
 
-	Camera(Coord3D<> = {1,1,1}, TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
+	Camera(Coord3D<> = {1,1,1}, CAM_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	~Camera();
 
-	void init(Coord3D<> = {}, TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
-	void setType(TYPE type, ProjectionPeramiters* peram = nullptr);
+	void init(Coord3D<> = {}, CAM_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
+	void setType(CAM_TYPE type, ProjectionPeramiters* peram = nullptr);
 	bool update();
 
 	/*SET POSITION*/
@@ -94,13 +94,13 @@ public:
 	bool cull(Model*);
 
 	/*Matricies*/
-	virtual glm::mat4 getLocalRotationMatrix();
-	virtual glm::mat4 getLocalScaleMatrix();
-	virtual glm::mat4 getLocalTranslationMatrix();
+	virtual const glm::mat4& getLocalRotationMatrix();
+	virtual const glm::mat4& getLocalScaleMatrix();
+	virtual const glm::mat4& getLocalTranslationMatrix();
 
-	virtual glm::mat4 getWorldRotationMatrix();
-	virtual glm::mat4 getWorldScaleMatrix();
-	virtual glm::mat4 getWorldTranslationMatrix();
+	virtual const glm::mat4& getWorldRotationMatrix();
+	virtual const glm::mat4& getWorldScaleMatrix();
+	virtual const glm::mat4& getWorldTranslationMatrix();
 
 	/*Gets a combination of the rotation, scale, and translation matricies*/
 
@@ -121,7 +121,7 @@ public:
 	glm::mat4& getViewMatrix();
 	glm::mat4& getCameraMatrix();
 
-	TYPE getType();
+	CAM_TYPE getType();
 
 protected:
 
@@ -135,11 +135,21 @@ protected:
 		m_position, m_positionBy,
 		m_rotate, m_rotateBy;
 
-	TYPE m_type = FRUSTUM;
+	CAM_TYPE m_type = FRUSTUM;
 
-	glm::mat4 m_cameraMat;
-	glm::mat4 m_projMat;
-	glm::mat4 m_viewMat;
+	glm::mat4
+		m_cameraMat,
+		m_projMat,
+		m_viewMat;
+
+	glm::mat4
+		m_camLocalTranslate,
+		m_camLocalRotate,
+		m_camLocalScale,
+
+		m_camWorldTranslate,
+		m_camWorldRotate,
+		m_camWorldScale;
 
 private:
 	/*REMOVED FROM TRANSFORMER*/

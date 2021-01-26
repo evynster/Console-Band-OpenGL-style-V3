@@ -5,20 +5,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Quat.h"
 #include "Utilities.h"
+#include "Component.h"
 
-
-
-class Transformer
+class Transformer:public Component
 {
 public:
-	enum TYPE
-	{
-		TRANSFORMER,
-		MODEL,
-		TEXT
-	};
-
+	
 	Transformer();
+	Transformer(Transformer&, COMP_TYPE type="TRANSFORMER");
+	Transformer(COMP_TYPE type);
 	~Transformer();
 
 	void reset();
@@ -55,13 +50,13 @@ public:
 	Coord3D<> getUp();
 	Coord3D<> getRight();
 
-	virtual glm::mat4 getLocalRotationMatrix();
-	virtual glm::mat4 getLocalScaleMatrix();
-	virtual glm::mat4 getLocalTranslationMatrix();
-	 
-	virtual glm::mat4 getWorldRotationMatrix();
-	virtual glm::mat4 getWorldScaleMatrix();
-	virtual glm::mat4 getWorldTranslationMatrix();
+	virtual const glm::mat4& getLocalRotationMatrix();
+	virtual const glm::mat4& getLocalScaleMatrix();
+	virtual const glm::mat4& getLocalTranslationMatrix();
+	 					   
+	virtual const glm::mat4& getWorldRotationMatrix();
+	virtual const glm::mat4& getWorldScaleMatrix();
+	virtual const glm::mat4& getWorldTranslationMatrix();
 	
 	/*Gets a combination of the rotation, scale, and translation matricies*/
 
@@ -85,7 +80,6 @@ public:
 	virtual Transformer* getParent();
 	virtual std::vector<Transformer*>& getChildren();
 
-	Transformer::TYPE getType();
 private:
 
 	void calculateWorldRotationMatrix();
@@ -93,8 +87,8 @@ private:
 	void calculateWorldTranslationMatrix();
 
 
-	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
 	Coord3D<> m_forward = {0,0,1}, m_up = {0,1,0}, m_right = {1,0,0};
+	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
 	std::vector<Transformer* >m_children;
 	Transformer* m_parent;
 	bool  m_updatedRot = true,
@@ -102,10 +96,9 @@ private:
 		m_updatedScale = true,
 		//first person movement
 		m_fps=false,
-		m_moveBy=false;
+		m_rotateBy=false;
 
 protected:
-	Transformer::TYPE m_type;
 	glm::mat4
 		m_localTranslate,
 		m_localRotate,
