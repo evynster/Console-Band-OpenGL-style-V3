@@ -74,7 +74,8 @@ public:
 
 	static bool mouseCollision(Model* model);
 
-	static void setCameraType(Camera::CAM_TYPE type, ProjectionPeramiters* proj = nullptr);
+	static void setCameraType(Camera::CAM_TYPE type);
+	static void setCameraType(ProjectionPeramiters* proj);
 
 	/*
 	moves the camera position in pixels
@@ -106,7 +107,8 @@ public:
 	static void removeText(Text* text);
 
 	static void addCamera(Camera* camera);
-
+	
+	static void enableBloom(bool bloom);
 
 	static void setFPSLimit(short limit);
 	static short getFPSLimit();
@@ -146,7 +148,7 @@ private:
 	static void update();
 	static void changeViewport(GLFWwindow* win, int w, int h);
 
-	
+
 
 	static Shader* m_modelShader, * m_postProcess, * m_forwardRender, * m_grayScalePost, * m_bloomHighPass, * m_blurHorizontal, * m_blurVertical, * m_blurrComposite, * m_sobel, * m_shadows;
 	

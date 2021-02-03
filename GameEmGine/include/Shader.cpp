@@ -336,6 +336,11 @@ void Shader::sendUniform(cstring uniform, int val)
 	glUniform1i(uni, val);
 }
 
+void Shader::sendUniform(cstring uniform, bool val)
+{
+	sendUniform(uniform, (int)val);
+}
+
 
 void Shader::enable()
 {

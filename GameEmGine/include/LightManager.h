@@ -16,9 +16,12 @@ struct Light:public Transformer
 		DIRECTIONAL,
 		SPOTLIGHT
 	};
+
 	Light():Transformer("LIGHT") {}
-	Light(Light& lit):Transformer(lit, "LIGHT") { 
-		*this = lit; }
+	Light(Light& lit):Transformer(lit, "LIGHT")
+	{
+		*this = lit;
+	}
 
 	void setLightType(Light::TYPE type);
 
@@ -37,21 +40,26 @@ struct Light:public Transformer
 	void setAttenuationQuadratic(float attenQuad);
 
 	void enableLight(bool enable);
+	void enableAmbiant(bool enable);
+	void enableDiffuse(bool enable);
+	void enableSpecular(bool enable);
 
 	//private: //maybe later 
-	 Light::TYPE type = DEFAULT;
+	Light::TYPE type = DEFAULT;
 
 
-	 ColourRGBA ambient, diffuse, specular;
-	 float
+	ColourRGBA ambient, diffuse, specular;
+	float
 		angleConstraint = 45,
-		specularExponent = 32,
+		specularExponent = 25,
 		attenuationConst = 1.f,
 		attenuationLinear = 0.1f,
-		attenuationQuadratic = .001f;
+		attenuationQuadratic = .01f;
 
-	 bool enable = true;
-
+	bool lightEnable = true;
+	bool ambiantEnable = true;
+	bool diffuseEnable = true;
+	bool specularEnable = true;
 };
 
 class LightManager
@@ -62,10 +70,7 @@ public:
 	static void removeLight(Light* lit);
 	static void removeLight(unsigned index);
 
-
 	static Light* getLight(unsigned index);
-
-	static void setSceneAmbient(ColourRGBA ambi);
 
 	static void setCamera(Camera* cam);
 
@@ -78,16 +83,12 @@ public:
 	static void update();
 	static void clear();
 private:
-	//Coord3D m_coord, m_spec;
 
 	static std::vector<Light*> m_lights;
 	static FrameBuffer* m_framebuffer;
 	static std::vector<std::vector<FrameBuffer*>>m_shadows;
-	//static unsigned m_size;
 
 	static Shader* m_shader;
 	static Camera* m_cam;
-	//static LightInfo m_info;
-
 };
 

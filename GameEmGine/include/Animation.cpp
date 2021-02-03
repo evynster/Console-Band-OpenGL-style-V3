@@ -15,16 +15,19 @@ Animation::~Animation()
 	m_frames.clear();
 }
 
+//adds model to the end of the frame list
 void Animation::addFrame(Model* frame, float speed)
 {
-	m_frames.push_back(frame), speed;
+	m_frames.push_back(new Model(*frame)), speed;
 }
 
+//time between frames(will fix later)
 void Animation::setAnimationSpeed(float speed)
 {
 	m_speed = speed;
 }
 
+//adds directory of Morph-Target models in Name order
 void Animation::addDir(cstring dir)
 {
 	std::string path(dir);
@@ -107,7 +110,11 @@ int Animation::getFrameNumber()
 {
 	return m_frame;
 }
-
+int Animation::getTotalFrames()
+{
+	return m_frames.size();
+}
+//checks if animation has ended if repeat is disabled
 bool Animation::hasEnded()
 {
 	return m_frame == m_frames.size() && !m_repeat;

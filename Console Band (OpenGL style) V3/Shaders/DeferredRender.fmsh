@@ -25,8 +25,8 @@ void main()
     if(textured)
     {       
         vec4 textureColour = texture(uTex, texcoord);
-        outColour         = textureColour;
-        outColour        *= colourMod;
+        outColour          = textureColour;
+        outColour         *= colourMod;
     }
     else     
     {

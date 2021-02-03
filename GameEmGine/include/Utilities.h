@@ -3,12 +3,12 @@
 #include <GL/glew.h>
 #include <glm/common.hpp>
 #include <string>
+#include <map>
 
 #define reclass(a_class,a_val) (*(a_class*)&(a_val))
 typedef const char* cstring;
 //#define unsigned int unsigned int
 //#define ushort unsigned short
-
 
 static cstring cDir(char* dir)
 {
@@ -72,6 +72,40 @@ static inline int vectorWrap(int num, int mod)
 {
 	return (num + mod) % mod;
 }
+
+//template<class Enum, class Base>
+//class _EnumCreator
+//{
+//public:
+//	static Base* create(Enum a_enum)
+//	{
+//		typename std::map<Base, _EnumCreator<Enum, Base>*>::const_iterator const it = lookup().find(a_enum);
+//		if(it == lookup().end())
+//			return NULL;
+//		return it->second->create();
+//	}
+//protected:
+//	static std::map<Base, _EnumCreator<Enum, Base>*> lookup()
+//	{
+//		static std::map<Base, EnumCreator<Enum, Base>*> list;
+//		return list;
+//	}
+//private:
+//	virtual Base* create() = 0;
+//};
+//
+//template<class Enum, class Base, class Der>
+//class EnumCreator:public _EnumCreator
+//{
+//public:
+//	EnumCreator(Enum val):
+//		pos(this->lookup().insert(std::make_pair<Enum, _EnumCreator<Enum, Base>*>(key, this)).first)
+//	{}
+//private:
+//	Base* create() { return new Der(); }
+//	typename std::map<Enum, EnumFactory<Enum, Base>*>::iterator pos;
+//};
+
 
 
 template<class T = float>
@@ -180,9 +214,9 @@ struct Coord3D
 	}
 	Coord3D(glm::vec4 coord)
 	{
-		x = coord.x;
-		y = coord.y;
-		z = coord.z;
+		x = (T)coord.x;
+		y = (T)coord.y;
+		z = (T)coord.z;
 	}
 
 	void operator=(Coord2D<T> coord)
@@ -221,7 +255,7 @@ struct Coord3D
 
 	glm::vec3 toVec3()
 	{
-		return {x,y,z};
+		return glm::vec3{x,y,z};
 	}
 
 	static glm::vec3 toVec3(Coord3D<float> a0)
@@ -264,7 +298,7 @@ struct Coord3D
 			a.x * b.y - a.y * b.x
 		};
 	}
-	Coord3D<T> crossProduct( Coord3D<T> b)
+	Coord3D<T> crossProduct(Coord3D<T> b)
 	{
 		return
 		{
@@ -328,51 +362,50 @@ struct Coord3D
 		return *error;
 	}
 
-	Coord3D<T> operator+(Coord3D<T> coord)
+	Coord3D<T> operator+(Coord3D<T> coord)const
 	{
 		return {T(x + coord.x), T(y + coord.y), T(z + coord.z)};
 	}
 
-	Coord3D<T> operator-(Coord3D<T> coord)
+	Coord3D<T> operator-(Coord3D<T> coord)const
 	{
 		return {T(x - coord.x), T(y - coord.y), T(z - coord.z)};
 	}
 
-	friend Coord3D<T> operator-(T val, Coord3D<T> coord)
+	friend Coord3D<T> operator-(T val, const Coord3D<T> coord)
 	{
 		return {T(val - coord.x), T(val - coord.y), T(val - coord.z)};
 	}
 
-	friend Coord3D<T> operator*(T scaler, Coord3D<T> coord)
+	friend Coord3D<T> operator*(T scaler, const Coord3D<T> coord)
 	{
 		return {scaler * coord.x, scaler * coord.y, scaler * coord.z};
 	}
 
-	Coord3D<T> operator*(Coord3D<T> coord)
+	Coord3D<T> operator*(Coord3D<T> coord)const
 	{
 		return {x * coord.x, y * coord.y, z * coord.z};
 	}
 
-	Coord3D<T> operator*(T coord)
+	Coord3D<T> operator*(T coord)const
 	{
 		return {x * coord, y * coord, z * coord};
 	}
 
-	Coord3D<T> operator/(Coord3D<T> coord)
+	Coord3D<T> operator/(Coord3D<T> coord)const
 	{
 		return {x / coord.x,y / coord.y,z / coord.z};
 	}
 
-	Coord3D<T> operator/(T coord)
+	Coord3D<T> operator/(T coord)const
 	{
 		return {x / coord,y / coord,z / coord};
 	}
 
-	Coord3D<T>& operator-()
+	Coord3D<T> operator-()const
 	{
-		static Coord3D<T> tmp;
-		tmp = *this * -1;
-		return tmp;
+
+		return *this * -1;
 	}
 
 	void operator-=(Coord3D<T> coord)
@@ -424,20 +457,23 @@ struct Coord3D
 		return !(*this == coord);
 	}
 
-	bool operator>(Coord3D<T> coord)
+	//based on distance
+	bool operator>(Coord3D<T> coord)const
 	{
 		return this->distanceSquare() > coord.distanceSquare();
 	}
-
-	bool operator<=(Coord3D<T> coord)
+	//based on distance
+	bool operator<=(Coord3D<T> coord)const
 	{
 		return !(*this > coord);
 	}
-	bool operator<(Coord3D<T> coord)
+	//based on distance
+	bool operator<(Coord3D<T> coord)const
 	{
 		return this->distanceSquare() < coord.distanceSquare();
 	}
-	bool operator>=(Coord3D<T> coord)
+	//based on distance
+	bool operator>=(Coord3D<T> coord)const
 	{
 		return !(*this < coord);
 	}

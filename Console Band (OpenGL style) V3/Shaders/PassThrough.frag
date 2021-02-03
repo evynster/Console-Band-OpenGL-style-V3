@@ -19,11 +19,11 @@ uniform float Attenuation_Constant;
 uniform float Attenuation_Linear;
 uniform float Attenuation_Quadratic;
 
-// amount of lights
-uniform int LightAmount;
-
 // other
-uniform bool LightEnable;
+uniform bool LightEnable = true;
+uniform bool AmbiantEnable = true;
+uniform bool DiffuseEnable = true;
+uniform bool SpecularEnable = true;
 uniform int LightType;
 uniform vec3 LightDirection;
 uniform float LightAngleConstraint;
@@ -55,21 +55,18 @@ void spotLight()
 
 vec3 blinnPhong(vec3 lightDir, vec3 viewDir )
 {
-  vec3 norm = (texture(uNorm, texcoord)).rgb;
-  vec3 pos  = (texture(uPos, texcoord)).rgb;//frag position
-  
+  vec3 norm    = (texture(uNorm, texcoord)).rgb;
+  vec3 pos     = (texture(uPos,  texcoord)).rgb;//frag position  
+  vec3 halfDir = normalize(lightDir + viewDir);
   vec3 diffuse, specular;
- 
- 
-  vec3 halfDir    = normalize(lightDir + viewDir);
 
-//Blinn-Phong Lighting here:
+  //Blinn-Phong Lighting here:
   
   //Diffuse   
-  diffuse = max(dot(norm, lightDir),0.0) * LightDiffuse;
+  diffuse = max(dot(norm, lightDir),0.0) * LightDiffuse * int(DiffuseEnable);
 
   //Specular  
-  specular = pow(max(dot(norm, halfDir),0.0), LightSpecularExponent) *  LightSpecular;
+  specular = pow(max(dot(norm, halfDir),0.0), LightSpecularExponent) *  LightSpecular * int(SpecularEnable);
 
  
   return (diffuse + specular) * int(LightEnable);
@@ -77,15 +74,16 @@ vec3 blinnPhong(vec3 lightDir, vec3 viewDir )
 
 vec3 calculatePointLight(){
 
-  
+  //variables  
   vec3 pos  = (texture(uPos, texcoord)).rgb;//frag position
-  vec3 lightDir   = LightPosition.xyz - pos;
+  vec3 lightDir   = normalize(LightPosition.xyz - pos);
   vec3 viewDir    = uViewPos.xyz - pos;   
   
-//Atenuation calculation
+  //Atenuation calculation
   float dist= length(LightPosition.xyz - pos);
   float attenuation = ( 1.0 / (Attenuation_Constant + Attenuation_Linear * dist + Attenuation_Quadratic * (dist * dist)));
- 
+  
+  //return 
   return blinnPhong(lightDir, viewDir) * attenuation;
 
 }
@@ -136,7 +134,7 @@ void main() {
 
   // Ambient Light
   float ambientStrength = 1.0;
-  outColor.rgb = colour * LightAmbient * ambientStrength;
+  outColor.rgb = colour * LightAmbient * ambientStrength * int(AmbiantEnable);
 
  
     switch (LightType) {

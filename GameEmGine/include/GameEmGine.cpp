@@ -7,7 +7,6 @@ void(*m_compileShaders)();
 std::function<void(double)>m_gameLoop;
 Camera* m_mainCamera;
 std::vector<Camera*>m_cameras;
-
 Shader
 * GameEmGine::m_modelShader, * GameEmGine::m_postProcess,
 * GameEmGine::m_forwardRender, * GameEmGine::m_grayScalePost,
@@ -34,6 +33,7 @@ short m_fpsLimit;
 Scene* m_mainScene;
 std::vector<Text*> m_text;
 Coord2D<int> m_screenSize;
+bool m_bloom;
 
 
 //GLuint GameEmGine::colorCustom;
@@ -112,7 +112,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 		return;
 	}
 	
-	m_mainCamera = new Camera({(float)getWindowWidth(), (float)getWindowHeight(),(float)getWindowWidth()});
+	m_mainCamera = new Camera(Camera::FRUSTUM,{(float)getWindowWidth(), (float)getWindowHeight(),(float)getWindowWidth()});
 
 
 
@@ -131,7 +131,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 	m_mainFrameBuffer->initDepthTexture(getWindowWidth(), getWindowHeight());
 	m_mainFrameBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	m_mainFrameBuffer->initColourTexture(1, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
-	m_mainFrameBuffer->initColourTexture(2, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	m_mainFrameBuffer->initColourTexture(2, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	if(!m_mainFrameBuffer->checkFBO())
 	{
 		puts("FBO failed Creation");
@@ -228,8 +228,7 @@ void GameEmGine::run()
 
 			static Text fps;
 			OrthoPeramiters ortho{0,(float)getWindowWidth(),(float)getWindowHeight(),0,0,500};
-			static Camera cam({(float)getWindowSize().width,(float)getWindowSize().height,500}
-			, Camera::ORTHOGRAPHIC, &ortho);
+			static Camera cam(&ortho, {(float)getWindowSize().width,(float)getWindowSize().height,500});
 			cam.update();
 
 			fps.setColour(1, 0, 0, .7f);
@@ -431,9 +430,13 @@ bool GameEmGine::mouseCollision(Model* model)
 	return mouse.collision2D(model, reclass(Coord3D<>, direction));
 }
 
-void GameEmGine::setCameraType(Camera::CAM_TYPE type, ProjectionPeramiters* proj)
+void GameEmGine::setCameraType(Camera::CAM_TYPE type)
 {
-	m_mainCamera->setType(type, proj);
+	m_mainCamera->setType(type, nullptr);
+}
+void GameEmGine::setCameraType(ProjectionPeramiters* proj)
+{
+	m_mainCamera->setType(proj);
 }
 
 void GameEmGine::translateCameraBy(Coord3D<> pos)
@@ -484,7 +487,10 @@ void GameEmGine::addCamera(Camera* cam)
 	//realloc(m_cameras, sizeof(Camera3D*)*++_numCameras);
 	//m_cameras[_numCameras - 1] = cam;
 }
-
+void GameEmGine::enableBloom(bool bloom)
+{
+	m_bloom = bloom;
+}
 void GameEmGine::update()
 {
 
@@ -568,7 +574,7 @@ void GameEmGine::update()
 	m_postBuffer->enable();
 	//sky box
 	if(m_mainScene->skyBoxEnabled)
-		((SkyBox)m_mainScene->getSkyBox()).render();
+		(*(SkyBox*)&m_mainScene->getSkyBox()).render();
 	m_mainCamera->render(m_forwardRender, m_models, true);
 	m_postBuffer->disable();
 
@@ -635,6 +641,8 @@ void GameEmGine::update()
 	glActiveTexture(GL_TEXTURE1);
 	m_blurrComposite->sendUniform("uBloom", 1);
 	glBindTexture(GL_TEXTURE_2D, m_buffer1->getColorHandle(0));
+
+	m_blurrComposite->sendUniform("uBloomEnable", m_bloom);
 	FrameBuffer::drawFullScreenQuad();
 
 	glActiveTexture(GL_TEXTURE1);

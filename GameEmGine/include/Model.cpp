@@ -197,7 +197,7 @@ bool Model::collision3D(Model* box1, Model* box2)
 bool Model::getSeparatingPlane(const Coord3D<>& RPos, const Coord3D<>& plane, Model& box1, Model& box2)
 {
 
-	RPos;
+	//RPos;
 	Coord3D<> AxisX{1,0,0}, AxisY{0,1,0}, AxisZ{0,0,1};
 
 	glm::mat4

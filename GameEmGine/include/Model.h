@@ -39,10 +39,13 @@ public:
 	virtual void render(Shader& shader, Camera* cam);
 
 
+	//sets RGBA colour with float values ranging from 0 -> 1
 	void setColour(float r, float g, float b, float a);
 
+	//sets RGB colour with float values ranging from 0 -> 1
 	void setColour(float r, float g, float b);
 
+	//sets RGBA colour with values ranging from 0 -> 255
 	void setColour(ColourRGBA colour);
 
 	ColourRGBA getColour();

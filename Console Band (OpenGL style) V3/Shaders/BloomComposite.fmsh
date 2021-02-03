@@ -2,6 +2,7 @@
 
 uniform sampler2D uScene;
 uniform sampler2D uBloom; 
+uniform bool uBloomEnable;
 
 in vec2 texcoord;
 
@@ -12,6 +13,6 @@ void main()
     vec3 colourA = texture(uScene,texcoord).rgb;
     vec3 colourB = texture(uBloom,texcoord).rgb;
 
-    outColour.rgb = 1.0 - (1.0 - colourA) * (1.0 - colourB);
+    outColour.rgb = 1.0 - (1.0 - colourA) * (1.0 - colourB * int(uBloomEnable));
     outColour.a = 1.0;
 }

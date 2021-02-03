@@ -1,14 +1,16 @@
 #include "Camera.h"
 
-Camera::Camera(Coord3D<> size, CAM_TYPE type, ProjectionPeramiters* peram)
+Camera::Camera(CAM_TYPE type, Coord3D<> size)
 	:Transformer("CAMERA"), m_scale(1), m_projMat(1), m_viewMat(1), m_cameraUpdate(true)
 {
 	//m_position = new Coord3D{-.25,-.5,0};
-	init(size, type, peram);
+	init(size, type, nullptr);
 }
-
-Camera::~Camera()
-{}
+Camera::Camera(ProjectionPeramiters* peram, Coord3D<> size)
+	: Transformer("CAMERA"), m_scale(1), m_projMat(1), m_viewMat(1), m_cameraUpdate(true)
+{
+	init(size, CAM_TYPE::NONE, peram);
+}
 
 void Camera::init(Coord3D<> size, CAM_TYPE type, ProjectionPeramiters* peram)
 {
@@ -24,6 +26,31 @@ void Camera::setType(CAM_TYPE type, ProjectionPeramiters* peram)
 	OrthoPeramiters* peram1 = reclass(OrthoPeramiters*, peram);
 	FrustumPeramiters* peram2 = reclass(FrustumPeramiters*, peram);
 	switch(m_type = type)
+	{
+	case ORTHOGRAPHIC:
+		if(!peram)
+			m_projMat = glm::ortho(-m_size.width, m_size.width, -m_size.height, m_size.height, -m_size.depth, m_size.depth);
+		else
+			m_projMat = glm::ortho(peram1->left, peram1->right, peram1->bottom, peram1->top, peram1->zNear, peram1->zFar);
+
+		break;
+	case FRUSTUM:
+		if(!peram)
+			m_projMat = glm::perspective(glm::radians(45.f), m_size.width / m_size.height, .001f, m_size.depth);
+		else
+			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->zNear, peram2->zFar);
+		break;
+	default:
+		m_projMat = glm::mat4(1);
+	}
+	m_cameraUpdate = true;
+}
+
+void Camera::setType(ProjectionPeramiters* peram)
+{
+	OrthoPeramiters* peram1 = reclass(OrthoPeramiters*, peram);
+	FrustumPeramiters* peram2 = reclass(FrustumPeramiters*, peram);
+	switch(peram->type)
 	{
 	case ORTHOGRAPHIC:
 		if(!peram)
@@ -69,7 +96,7 @@ bool Camera::update()
 
 
 		Transformer::setScale(m_scale);
-		m_viewMat = glm::inverse(m_localTranslate * m_localRotate);
+		m_viewMat = m_worldTranslate * m_worldRotate * glm::inverse(m_localTranslate * m_localRotate);
 
 		m_cameraMat = m_projMat * m_viewMat;
 
@@ -81,6 +108,8 @@ bool Camera::update()
 		m_isRotate = m_isRotateBy =
 			m_isTranslate = m_isTranslateBy =
 			m_cameraUpdate = false;
+
+		m_camPosition = Transformer::getRotation() * Coord3D<>{1, -1, 1};
 
 		return true;
 	}
@@ -162,17 +191,17 @@ const glm::mat4& Camera::getLocalRotationMatrix()
 
 const glm::mat4& Camera::getLocalScaleMatrix()
 {
-	return m_camLocalScale= (Transformer::getLocalScaleMatrix());
+	return m_camLocalScale = (Transformer::getLocalScaleMatrix());
 }
 
 const glm::mat4& Camera::getLocalTranslationMatrix()
 {
-	return m_camLocalTranslate= (Transformer::getLocalTranslationMatrix());
+	return m_camLocalTranslate = (Transformer::getLocalTranslationMatrix());
 }
 
 const glm::mat4& Camera::getWorldRotationMatrix()
 {
-	return m_camWorldRotate= (Transformer::getWorldRotationMatrix());
+	return m_camWorldRotate = (Transformer::getWorldRotationMatrix());
 }
 
 const glm::mat4& Camera::getWorldScaleMatrix()
@@ -216,7 +245,7 @@ void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 
 Coord3D<> Camera::getRotation()
 {
-	return Transformer::getRotation() * Coord3D<>{1, -1, 1};
+	return m_camPosition;
 }
 
 glm::mat4& Camera::getProjectionMatrix()

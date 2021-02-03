@@ -41,6 +41,7 @@ public:
 	void sendUniform(cstring uniform, float val);
 	void sendUniform(cstring uniform, unsigned val);
 	void sendUniform(cstring uniform, int val);
+	void sendUniform(cstring uniform, bool val);
 
 	//enables shader program for use
 	void enable();

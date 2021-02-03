@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include <functional>
 //#include <filesystem>
-
 //namespace fs = std::filesystem;
 
 Mesh::Mesh()

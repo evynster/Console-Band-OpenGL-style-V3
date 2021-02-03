@@ -8,7 +8,7 @@ class SkyBox
 public:
 	SkyBox();
 	SkyBox(std::string file);
-	~SkyBox() = default;
+	~SkyBox() ;
 
 	void render();
 
@@ -18,11 +18,12 @@ public:
 private:
 	void init();
 
+	primitiveCube* m_box;
 	Texture3D* m_sky;
-	static primitiveCube m_box;
-
+	
 	Camera* m_camera;
 	GLuint m_vaoID, m_vboID, m_eleID;
 
+	static SkyBox* m_instance;
 };
 

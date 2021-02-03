@@ -12,65 +12,25 @@
 #include "Text.h"
 
 class Model;
-
-#pragma region Structs
-
-struct ProjectionPeramiters
-{
-	ProjectionPeramiters(float znear, float zfar):zNear(znear), zFar(zfar) {}
-	~ProjectionPeramiters() = default;
-
-	void setNear(float znear) { zNear = znear; }
-	void setFar(float zfar) { zFar = zfar; }
-	void setZAxis(float znear, float zfar) { zNear = znear; zFar = zfar; }
-
-	float zNear, zFar;
-};
-
-struct OrthoPeramiters:public ProjectionPeramiters
-{
-	OrthoPeramiters(float  a_left, float a_right, float a_bottom, float a_top, float a_near, float a_far):
-		ProjectionPeramiters(a_near, a_far),
-		left(a_left), right(a_right), bottom(a_bottom), top(a_top)
-	{}
-
-	void setLeft(float a_left) { left = a_left; }
-	void setRight(float a_right) { right = a_right; }
-	void setBottom(float a_bottom) { bottom = a_bottom; }
-	void setTop(float a_top) { top = a_top; }
-
-	void setXAxis(float a_left, float a_right) { left = a_left; right = a_right; }
-	void setYAxis(float a_top, float a_bottom) { top = a_top; bottom = a_bottom; }
-	float  left = 0, right = 0, bottom = 0, top = 0;
-};
-
-struct FrustumPeramiters:public ProjectionPeramiters
-{
-	FrustumPeramiters(float a_angle, float a_aspect, float a_near, float a_far):
-		ProjectionPeramiters(a_near, a_far),
-		angle(a_angle), aspect(a_aspect)
-	{}
-
-	void setAngle(float a_angle) { angle = a_angle; }
-	void setAspect(float a_aspect) { aspect = a_aspect; }
-	float angle, aspect;
-};
-#pragma endregion
+struct ProjectionPeramiters;
 
 class Camera:public Transformer
 {
 public:
 	enum CAM_TYPE
 	{
+		NONE,
 		ORTHOGRAPHIC,
 		FRUSTUM
 	};
 
-	Camera(Coord3D<> = {1,1,1}, CAM_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
-	~Camera();
+	Camera(CAM_TYPE = FRUSTUM, Coord3D<> = {1,1,1});
+	Camera(ProjectionPeramiters* peram, Coord3D<> = {1,1,1});
+	~Camera()=default;
 
 	void init(Coord3D<> = {}, CAM_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	void setType(CAM_TYPE type, ProjectionPeramiters* peram = nullptr);
+	void setType(ProjectionPeramiters* peram = nullptr);
 	bool update();
 
 	/*SET POSITION*/
@@ -133,7 +93,8 @@ protected:
 
 	Coord3D<> m_size,
 		m_position, m_positionBy,
-		m_rotate, m_rotateBy;
+		m_rotate, m_rotateBy,
+		m_camPosition;
 
 	CAM_TYPE m_type = FRUSTUM;
 
@@ -162,5 +123,54 @@ private:
 	bool isScaleUpdated() { return false; }
 	bool isRotationUpdated() { return false; }
 	bool isTranslatinUpdated() { return false; }
+
+
 };
+
+#pragma region Structs
+
+struct ProjectionPeramiters
+{
+	Camera::CAM_TYPE type = Camera::CAM_TYPE::NONE;
+	float zNear, zFar;
+	ProjectionPeramiters(Camera::CAM_TYPE a_type = Camera::CAM_TYPE::NONE):type(a_type) {}
+	ProjectionPeramiters(float znear, float zfar, Camera::CAM_TYPE a_type = Camera::CAM_TYPE::NONE):zNear(znear), zFar(zfar), type(a_type) {}
+	~ProjectionPeramiters() = default;
+
+	void setNear(float znear) { zNear = znear; }
+	void setFar(float zfar) { zFar = zfar; }
+	void setZExtents(float znear, float zfar) { zNear = znear; zFar = zfar; }
+
+
+};
+
+struct OrthoPeramiters:public ProjectionPeramiters
+{
+	OrthoPeramiters(float  a_left, float a_right, float a_bottom, float a_top, float a_near, float a_far):
+		ProjectionPeramiters(a_near, a_far, Camera::CAM_TYPE::ORTHOGRAPHIC),
+		left(a_left), right(a_right), bottom(a_bottom), top(a_top)
+	{}
+
+	void setLeft(float a_left) { left = a_left; }
+	void setRight(float a_right) { right = a_right; }
+	void setBottom(float a_bottom) { bottom = a_bottom; }
+	void setTop(float a_top) { top = a_top; }
+
+	void setXAxis(float a_left, float a_right) { left = a_left; right = a_right; }
+	void setYAxis(float a_top, float a_bottom) { top = a_top; bottom = a_bottom; }
+	float  left = 0, right = 0, bottom = 0, top = 0;
+};
+
+struct FrustumPeramiters:public ProjectionPeramiters
+{
+	FrustumPeramiters(float a_angle, float a_aspect, float a_near, float a_far):
+		ProjectionPeramiters(a_near, a_far, Camera::CAM_TYPE::FRUSTUM),
+		angle(a_angle), aspect(a_aspect)
+	{}
+
+	void setAngle(float a_angle) { angle = a_angle; }
+	void setAspect(float a_aspect) { aspect = a_aspect; }
+	float angle, aspect;
+};
+#pragma endregion
 

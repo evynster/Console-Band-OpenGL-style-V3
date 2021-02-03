@@ -139,20 +139,26 @@ void LightManager::update()
 	for(unsigned a = 0; a < m_lights.size(); a++)
 	{
 
-		if(!m_lights[a]->enable)
+		if(!m_lights[a]->lightEnable)
 		{
 			m_shader->sendUniform("LightEnable", false);
 			continue;
 		}
 		m_shader->sendUniform("LightEnable", true);
+		
+		m_shader->sendUniform("AmbiantEnable", m_lights[a]->ambiantEnable);
+		m_shader->sendUniform("DiffuseEnable", m_lights[a]->diffuseEnable);
+		m_shader->sendUniform("SpecularEnable", m_lights[a]->specularEnable);
+
+
 
 		glm::vec4 pos(0, 0, 0, 1.0f);
 		glm::vec4 dir(0, 0, 1, 1.0f);
 
 
 		pos = m_lights[a]->getWorldTranslationMatrix() * (m_lights[a]->getLocalTranslationMatrix() * glm::vec4(m_lights[a]->getPosition().toVec3(), 1));
-		pos = m_cam->getProjectionMatrix() * pos;
-		pos.z *= -1;
+	//	pos = m_cam->getProjectionMatrix() * pos;
+	//	pos.z *= -1;
 		//if(pos.w)
 		//	pos /= pos.w;
 		//else
@@ -248,7 +254,22 @@ void Light::setAttenuationQuadratic(float attenQuad)
 	*(float*)&attenuationQuadratic = attenQuad;
 }
 
-void Light::enableLight(bool a_enable)
+void Light::enableLight(bool enable)
 {
-	*(bool*)&this->enable = a_enable;
+	lightEnable = enable;
+}
+
+void Light::enableAmbiant(bool enable)
+{
+	ambiantEnable = enable;
+}
+
+void Light::enableDiffuse(bool enable)
+{
+	diffuseEnable = enable;
+}
+
+void Light::enableSpecular(bool enable)
+{
+	specularEnable = enable;
 }

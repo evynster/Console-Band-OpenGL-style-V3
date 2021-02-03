@@ -14,10 +14,19 @@ struct Quat
 {
 	float  x, y, z;
 
+protected:
+	float w;
+
+public:
 	Quat();
 	Quat(float x, float y, float z);
 	Quat(float w, float x, float y, float z);
 	Quat(Coord3D<> rot);
+
+	Coord3D<> getCoord()
+	{
+		return {x,y,z};
+	}
 
 	Quat normal();
 	void normalize();
@@ -43,6 +52,5 @@ struct Quat
 	Quat operator-(Quat a_quat)const;
 	Quat operator-() const;
 	void operator-=(Quat a_quat)const;
-protected:
-	float w;
+
 };

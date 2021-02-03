@@ -5,7 +5,7 @@ Transformer::Transformer():
 	m_localTranslate(1), m_localRotate(1),
 	m_localScale(1), m_worldTranslate(1),
 	m_worldRotate(1), m_worldScale(1),
-	m_fps(false), m_parent(nullptr),
+	m_fps(false),
 	Component("TRANSFORMER")
 {}
 
@@ -14,11 +14,11 @@ Transformer::Transformer(Transformer& ref, COMP_TYPE type):Component(type)
 	*this = ref;
 }
 
-Transformer::Transformer(COMP_TYPE type):
+Transformer::Transformer(COMP_TYPE type) :
 	m_localTranslate(1), m_localRotate(1),
 	m_localScale(1), m_worldTranslate(1),
 	m_worldRotate(1), m_worldScale(1),
-	m_fps(false), m_parent(nullptr),
+	m_fps(false),
 	Component(type)
 {}
 
@@ -45,16 +45,16 @@ void Transformer::rotate(Coord3D<> angles)
 {
 	m_updatedRot = true;
 	m_localRotate = glm::mat4(1);
-	
-		if(angles.z)
-			m_localRotate *= Quat::quatRotationMat(angles.z, Coord3D<>{0, 0, 1});
 
-		if(angles.y)
-			m_localRotate *= Quat::quatRotationMat(angles.y, Coord3D<>{0, 1, 0});
+	if(angles.z)
+		m_localRotate *= Quat::quatRotationMat(angles.z, Coord3D<>{0, 0, 1});
 
-		if(angles.x)
-			m_localRotate *= Quat::quatRotationMat(angles.x, Coord3D<>{1, 0, 0});
-	
+	if(angles.y)
+		m_localRotate *= Quat::quatRotationMat(angles.y, Coord3D<>{0, 1, 0});
+
+	if(angles.x)
+		m_localRotate *= Quat::quatRotationMat(angles.x, Coord3D<>{1, 0, 0});
+
 
 	m_forward = m_localRotate * glm::vec4(0, 0, 1, 1);
 	m_right = m_localRotate * glm::vec4(1, 0, 0, 1);
@@ -63,7 +63,7 @@ void Transformer::rotate(Coord3D<> angles)
 	m_forward.normalize();
 	m_up.normalize();
 	m_right.normalize();
-		m_rotDat = angles;
+	m_rotDat = angles;
 
 	m_rotateBy = false;
 }
@@ -233,45 +233,56 @@ const glm::mat4& Transformer::getWorldTranslationMatrix()
 
 void Transformer::calculateWorldRotationMatrix()
 {
-	for(auto& a : m_children)
-		a->m_updatedRot = true;
+	for(auto& a : getChildren())
+		if(dynamic_cast<Transformer*>(a))
+			((Transformer*)a)->m_updatedRot = true;
 
 	m_worldRotate = glm::mat4(1);
-	static Transformer* parent; parent = m_parent;
+	static Transformer* parent; parent = (Transformer*)getParent();
 
-	if(m_parent)
-		while(parent)
-			m_worldRotate = parent->m_localRotate * m_worldRotate,
-			parent = parent->m_parent;
-
+	//	if(parent)
+	while(parent)
+	{
+		if(dynamic_cast<Transformer*>(parent))
+			m_worldRotate = parent->m_localRotate * m_worldRotate;
+		parent = (Transformer*)parent->getParent();
+	}
 }
 
 void Transformer::calculateWorldScaleMatrix()
 {
-	for(auto& a : m_children)
-		a->m_updatedScale = true;
+	for(auto& a : getChildren())
+		if(dynamic_cast<Transformer*>(a))
+			((Transformer*)a)->m_updatedScale = true;
 
 	m_worldScale = glm::mat4(1);
-	static Transformer* parent; parent = m_parent;
-	if(m_parent)
-		while(parent)
-			m_worldScale = parent->m_localScale * m_worldScale,
-			parent = parent->m_parent;
+	static Transformer* parent; parent = (Transformer*)getParent();
+
+	//if(parent)
+	while(parent)
+	{
+		if(dynamic_cast<Transformer*>(parent))
+			m_worldScale = parent->m_localScale * m_worldScale;
+		parent = (Transformer*)parent->getParent();
+	}
 }
 
 void Transformer::calculateWorldTranslationMatrix()
 {
-	for(auto& a : m_children)
-		a->m_updatedTrans = true;
+	for(auto& a : getChildren())
+		if(dynamic_cast<Transformer*>(a))
+			((Transformer*)a)->m_updatedTrans = true;
 
 	m_worldTranslate = glm::mat4(1);
-	static Transformer* parent; parent = m_parent;
+	static Transformer* parent; parent = (Transformer*)getParent();
 
-	if(m_parent)
-		while(parent)
-			m_worldTranslate = parent->m_localTranslate * m_worldTranslate,
-			parent = parent->m_parent;
-
+	//if(m_parent)
+	while(parent)
+	{
+		if(dynamic_cast<Transformer*>(getParent()))
+			m_worldTranslate = parent->m_localTranslate * m_worldTranslate;
+		parent = (Transformer*)parent->getParent();
+	}
 }
 
 glm::mat4 Transformer::getLocalTransformation()
@@ -309,66 +320,3 @@ bool Transformer::isTranslatinUpdated()
 {
 	return m_updatedTrans;
 }
-
-void Transformer::addChild(Transformer* child)
-{
-	if(!child)return;
-
-	if(std::find(m_children.begin(), m_children.end(), child) == m_children.end())
-		m_children.push_back(child);
-	child->m_parent = this;
-}
-
-void Transformer::removeChild(Transformer* child)
-{
-	if(!child)return;
-
-	child->m_parent = nullptr;
-
-	std::vector<Transformer*>::iterator ref;
-	if((ref = std::find(m_children.begin(), m_children.end(), child)) != m_children.end())
-		m_children.erase(ref);
-
-
-}
-
-void Transformer::removeChild(unsigned index)
-{
-	if(index >= m_children.size())return;
-
-	m_children[index]->m_parent = nullptr;
-	m_children.erase(m_children.begin() + index);
-
-}
-
-void Transformer::setParent(Transformer* parent)
-{
-	if(!parent)return;
-
-	parent->addChild(this);
-
-}
-
-void Transformer::removeParent(Transformer* parent)
-{
-	if(!parent)return;
-
-	parent->removeChild(this);
-}
-
-Transformer* Transformer::getChild(unsigned int index)
-{
-	return m_children[index];
-}
-
-Transformer* Transformer::getParent()
-{
-	return m_parent;
-}
-
-std::vector<Transformer*>& Transformer::getChildren()
-{
-	return m_children;
-}
-
-
