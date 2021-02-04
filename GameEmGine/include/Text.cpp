@@ -4,7 +4,7 @@ Text::Text():Transformer(), m_vaoID(0), m_vboID(0)
 {
 	setScale(1);
 
-	m_type = Transformer::TYPE::TEXT;
+	m_type = "TEXT";
 	m_font = "fonts/arial.ttf";
 
 	//printf("%s\n", m_face->style_name);
@@ -22,7 +22,7 @@ Text::Text(cstring font):Transformer(), m_vaoID(0), m_vboID(0)
 {
 	setScale(1);
 
-	m_type = Transformer::TYPE::TEXT;
+	m_type = "TEXT";
 	m_font = font;
 
 	m_texture = new FrameBuffer(1);
@@ -111,7 +111,7 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 
 	s.sendUniform("uLocalModel", texture ? glm::mat4(1) : getLocalTransformation());
 	s.sendUniform("uWorldModel", texture ? glm::mat4(1) : getWorldTransformation());
-		
+
 	glUniformMatrix4fv(s.getUniformLocation("uView"), 1, GL_FALSE, &(cam->getViewMatrix()[0][0]));
 	glUniformMatrix4fv(s.getUniformLocation("uProj"), 1, GL_FALSE, &(cam->getProjectionMatrix()[0][0]));
 
@@ -178,15 +178,11 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 	//render child meshes
 	if(!texture)
 		for(auto& a : getChildren())
-			switch(a->getType())
-			{
-			case Transformer::TYPE::MODEL:
+			if(a->getType() == "MODEL")
 				reclass(Model*, a)->render(s, cam);
-				break;
-			case Transformer::TYPE::TEXT:
+			else if(a->getType() == "TEXT")
 				reclass(Text*, a)->render(s, cam);
-				break;
-			}
+
 }
 
 void Text::toTexture(unsigned int width)
@@ -220,8 +216,9 @@ void Text::toTexture(unsigned int width)
 	ypos *= getScale().x;
 	h *= getScale().x;
 
-	static Camera cam; 
-	cam.setType(Camera::ORTHOGRAPHIC, &OrthoPeramiters{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f});
+	static Camera cam;
+	OrthoPeramiters perams{0.f,(float)x,0.f,(float)(h - ypos),0.f,1.f};
+	cam.setType(Camera::ORTHOGRAPHIC, &perams);
 
 	m_texture->clear();
 	m_texture->resizeColour(0, (int)x, int(h - ypos), GL_RGBA8);
@@ -234,7 +231,7 @@ void Text::toTexture(unsigned int width)
 	m_texture->enable();
 
 	m_initY = h;
-	auto a=m_colour;
+	auto a = m_colour;
 	setColour(1, 1, 1);
 	render(*ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh"), &cam, true);
 	setColour(a);
@@ -268,7 +265,7 @@ void Text::testSize()
 
 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.advance >> 6)* getScale().x; // Bitshift by 6 to get value in pixels (2^6 = 64)
+		x += (ch.advance >> 6) * getScale().x; // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 
 	m_size = {(x), ((h - ypos) * getScale().x)};

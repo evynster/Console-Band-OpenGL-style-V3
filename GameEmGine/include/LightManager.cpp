@@ -1,7 +1,6 @@
 #include "LightManager.h"
 
 #pragma region Static Variables
-ColourRGBA LightManager::m_ambient;
 std::vector<Light*>LightManager::m_lights;
 FrameBuffer* LightManager::m_framebuffer;
 std::vector<std::vector<FrameBuffer*>>LightManager::m_shadows;
@@ -39,10 +38,7 @@ Light* LightManager::getLight(unsigned index)
 	return m_lights[index];
 }
 
-void LightManager::setSceneAmbient(ColourRGBA ambi)
-{
-	m_ambient = ambi;
-}
+
 
 void LightManager::setCamera(Camera* cam)
 {
@@ -131,8 +127,7 @@ std::vector<FrameBuffer*> LightManager::shadowBuffers(unsigned w, unsigned h, st
 void LightManager::update()
 {
 	m_shader->enable();
-	//m_shader->sendUniform("LightAmount", (int)m_lights.size());
-	m_shader->sendUniform("LightAmbient", Coord3D<>{m_ambient[0] / 255.0f, m_ambient[1] / 255.0f, m_ambient[2] / 255.0f});
+	
 
 	if(m_framebuffer)
 	{
@@ -144,24 +139,30 @@ void LightManager::update()
 	for(unsigned a = 0; a < m_lights.size(); a++)
 	{
 
-		if(!m_lights[a]->enable)
+		if(!m_lights[a]->lightEnable)
 		{
 			m_shader->sendUniform("LightEnable", false);
 			continue;
 		}
 		m_shader->sendUniform("LightEnable", true);
+		
+		m_shader->sendUniform("AmbiantEnable", m_lights[a]->ambiantEnable);
+		m_shader->sendUniform("DiffuseEnable", m_lights[a]->diffuseEnable);
+		m_shader->sendUniform("SpecularEnable", m_lights[a]->specularEnable);
+
+
 
 		glm::vec4 pos(0, 0, 0, 1.0f);
 		glm::vec4 dir(0, 0, 1, 1.0f);
 
 
-		pos = m_lights[a]->getWorldTranslationMatrix() * (m_lights[a]->getLocalTranslationMatrix() * pos);
-		pos = m_cam->getProjectionMatrix() * pos;
-
-		if(pos.w)
-			pos /= pos.w;
-		else
-			pos = {0,0,0,1};
+		pos = m_lights[a]->getWorldTranslationMatrix() * (m_lights[a]->getLocalTranslationMatrix() * glm::vec4(m_lights[a]->getPosition().toVec3(), 1));
+	//	pos = m_cam->getProjectionMatrix() * pos;
+	//	pos.z *= -1;
+		//if(pos.w)
+		//	pos /= pos.w;
+		//else
+		//	pos = {0,0,0,1};
 
 
 		//pos = glm::normalize(pos);
@@ -169,13 +170,15 @@ void LightManager::update()
 
 
 		dir = m_lights[a]->getWorldRotationMatrix() * (m_lights[a]->getLocalRotationMatrix() * dir);
-		dir = m_cam->getProjectionMatrix() * dir;
-		dir = glm::normalize(dir);
+		dir = normalize(dir);
 
 		pos = {0, 0, 0, 1.0f};
-		m_shader->sendUniform("uViewDir", (m_cam->getForward()));
+		pos = inverse(m_cam->getViewMatrix()) * pos;
+		m_shader->sendUniform("uViewPos", pos);
 
 		m_shader->sendUniform("LightType", (int)m_lights[a]->type);
+	
+		m_shader->sendUniform("LightAmbient", Coord3D<>{m_lights[a]->ambient[0] / 255.0f, m_lights[a]->ambient[1] / 255.0f, m_lights[a]->ambient[2] / 255.0f});
 
 		m_shader->sendUniform("LightDiffuse", m_lights[a]->diffuse[0] / 255.0f, m_lights[a]->diffuse[1] / 255.0f, m_lights[a]->diffuse[2] / 255.0f);
 
@@ -183,7 +186,7 @@ void LightManager::update()
 
 		m_shader->sendUniform("LightDirection", dir);
 
-		m_shader->sendUniform("LightSpecularExponent", 50.0f);
+		m_shader->sendUniform("LightSpecularExponent", m_lights[a]->specularExponent);
 
 		m_shader->sendUniform("Attenuation_Constant", m_lights[a]->attenuationConst);
 
@@ -213,40 +216,60 @@ void LightManager::setFramebuffer(FrameBuffer* buff)
 
 void Light::setLightType(TYPE a_type)
 {
-	this->type = a_type;
+	*(TYPE*)&this->type = a_type;
+}
+
+void Light::setAmbient(ColourRGBA ambi)
+{
+	(ColourRGBA)ambient = ambi;
 }
 
 void Light::setDiffuse(ColourRGBA diff)
 {
-	diffuse = diff;
+	(ColourRGBA)diffuse = diff;
 }
 
 void Light::setSpecular(ColourRGBA spec)
 {
-	specular = spec;
+	(ColourRGBA)specular = spec;
 }
 
 void Light::setSpecularExponent(float specEx)
 {
-	specularExponent = specEx;
+	*(float*)&specularExponent = specEx;
 }
 
 void Light::setAttenuationConstant(float attenConst)
 {
-	attenuationConst = attenConst;
+	*(float*)&attenuationConst = attenConst;
 }
 
 void Light::setAttenuationLinear(float attenLinear)
 {
-	attenuationLinear = attenLinear;
+	*(float*)&attenuationLinear = attenLinear;
 }
 
 void Light::setAttenuationQuadratic(float attenQuad)
 {
-	attenuationQuadratic = attenQuad;
+	*(float*)&attenuationQuadratic = attenQuad;
 }
 
-void Light::enableLight(bool a_enable)
+void Light::enableLight(bool enable)
 {
-	this->enable = a_enable;
+	lightEnable = enable;
+}
+
+void Light::enableAmbiant(bool enable)
+{
+	ambiantEnable = enable;
+}
+
+void Light::enableDiffuse(bool enable)
+{
+	diffuseEnable = enable;
+}
+
+void Light::enableSpecular(bool enable)
+{
+	specularEnable = enable;
 }

@@ -15,7 +15,6 @@ layout(location = 2) in vec3 in_normal1;
 layout(location = 3) in vec3 in_vert2;
 layout(location = 4) in vec3 in_normal2;
 
-
 out vec2 texcoord;
 out vec3 norm;
 out vec4 pos;
@@ -34,12 +33,12 @@ void main()
     norm = normalize(norm);
     
     vec4 viewSpace = uWorldModel * (uLocalModel * vec4(vert, 1.0f));
+    pos = viewSpace;
     
     viewSpace = uProj * uView * viewSpace; 
     gl_Position = viewSpace;
    
     viewSpace = uWorldModel * (uLocalModel * vec4(vert, 1.0f));    
-    viewSpace = uProj * viewSpace; 
+   // viewSpace = uProj * viewSpace; 
    
-    pos = viewSpace;
 }

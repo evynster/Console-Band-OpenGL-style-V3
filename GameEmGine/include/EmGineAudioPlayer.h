@@ -55,7 +55,7 @@ public:
 	static bool createAudioStream(const char* file, std::string tag = "");
 
 	//plays a single audio channel created by EmGineAudioPlayer::createAudio/AudioStream()	
-	static void play(bool loop = false, bool newInstance = false, unsigned int index = (m_controle->size() - 1),
+	static void play(bool loop = false, bool newInstance = false, unsigned int index = (m_control->size() - 1),
 		unsigned int from = 0, unsigned int to = 0, FMOD_TIMEUNIT unit = FMOD_TIMEUNIT_MS);
 
 	static void play(std::string tag, bool loop = false, bool newInstance = false,
@@ -65,21 +65,21 @@ public:
 	static void playAll(bool loop = false, unsigned int from = 0, unsigned int to = 0, FMOD_TIMEUNIT unit = FMOD_TIMEUNIT_MS);
 
 	//pauses an audio channel at specified index.
-	static void pause(unsigned int index = (m_controle->size() - 1));
+	static void pause(unsigned int index = (m_control->size() - 1));
 	static void pause(std::string tag = "");
 
 	//pauses all audio channels	
 	static void pauseAll();
 
 	//stops audio channel at specified index
-	static void stop(unsigned int index = (m_controle->size() - 1));
+	static void stop(unsigned int index = (m_control->size() - 1));
 	static void stop(std::string tag = "");
 
 	//stops all audio channels
 	static void stopAll();
 
 	//mutes audio channel at specified index
-	static void mute(unsigned int index = (m_controle->size() - 1));
+	static void mute(unsigned int index = (m_control->size() - 1));
 	static void mute(std::string tag = "");
 
 	//mutes all audio channels
@@ -91,7 +91,7 @@ public:
 	audio is not considered off until audio has reached it's end
 	or EmGineAudioPlayer::stop/stopAll() is called
 	*/
-	static bool isStoped(unsigned int index = (m_controle->size() - 1));
+	static bool isStoped(unsigned int index = (m_control->size() - 1));
 	static bool isStoped(std::string tag = "");
 
 	/*
@@ -100,10 +100,10 @@ public:
 	audio is not considered off until audio has reached it's end
 	or EmGineAudioPlayer::pause/pauseAll() is called
 	*/
-	static bool isPaused(unsigned int index = (m_controle->size() - 1));
+	static bool isPaused(unsigned int index = (m_control->size() - 1));
 	static bool isPaused(std::string tag = "");
 
-	static unsigned int getPosition(unsigned int index = (m_controle->size() - 1), FMOD_TIMEUNIT type = FMOD_TIMEUNIT_MS);
+	static unsigned int getPosition(unsigned int index = (m_control->size() - 1), FMOD_TIMEUNIT type = FMOD_TIMEUNIT_MS);
 	static unsigned int getPosition(std::string tag, FMOD_TIMEUNIT type = FMOD_TIMEUNIT_MS);
 
 	//gets the amount of audio channels created
@@ -115,7 +115,7 @@ public:
 	*levels below 0 will invert sound.
 	*increasing level above the normal level may result in distortion.
 	*/
-	static void setVolume(float vol, unsigned int index = (m_controle->size() - 1));
+	static void setVolume(float vol, unsigned int index = (m_control->size() - 1));
 	static void setVolume(std::string tag, float vol);
 
 
@@ -146,7 +146,7 @@ private:
 
 	static AudioSystem* m_system;
 	static AudioChannelGroup* m_mainChannelGroup;
-	static std::vector<AudioControle*>* m_controle;
+	static std::vector<AudioControle*>* m_control;
 	//static std::vector<Audio*>* m_sounds;
 };
 

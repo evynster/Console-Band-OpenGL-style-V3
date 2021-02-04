@@ -68,13 +68,14 @@ public:
 	/*
 	Gets window size in pixels
 	*/
-	static Coord3D<int> getWindowSize();
+	static Coord2D<int> getWindowSize();
 
 	static Camera* getMainCamera();
 
 	static bool mouseCollision(Model* model);
 
-	static void setCameraType(Camera::TYPE type, ProjectionPeramiters* proj = nullptr);
+	static void setCameraType(Camera::CAM_TYPE type);
+	static void setCameraType(ProjectionPeramiters* proj);
 
 	/*
 	moves the camera position in pixels
@@ -95,8 +96,10 @@ public:
 	*/
 	static void setCameraRotation(Coord3D<> direction);
 
+	//Adds a new model to the draw list
 	static void addModel(Model* model);
 
+	//Adds new text to the draw list
 	static void addText(Text* text);
 
 	static void removeModel(Model* model);
@@ -104,7 +107,8 @@ public:
 	static void removeText(Text* text);
 
 	static void addCamera(Camera* camera);
-
+	
+	static void enableBloom(bool bloom);
 
 	static void setFPSLimit(short limit);
 	static short getFPSLimit();
@@ -124,7 +128,6 @@ public:
 
 	static XinputDevice* getController(int m_index);
 
-	static Shader* m_modelShader, * m_postProcess, * m_forwardRender, * m_grayScalePost, * m_bloomHighPass, * m_blurHorizontal, * m_blurVertical, * m_blurrComposite, * m_sobel, * m_shadows;
 
 
 	static Texture2D* m_LUT;
@@ -144,22 +147,11 @@ private:
 
 	static void update();
 	static void changeViewport(GLFWwindow* win, int w, int h);
-	static void(*m_compileShaders)();
-	static std::function<void()>m_buffer;
-	static std::function<void(double)> m_gameLoop;
-	static WindowCreator* m_window;
-	static ColourRGBA m_colour;
-	static Camera* m_mainCamera;
-	static std::vector<Camera*> m_cameras;
-	static FrameBuffer* m_mainFrameBuffer, * m_postBuffer, * m_buffer1, * m_buffer2, * m_greyscaleBuffer, * m_outline, * m_shadowBuffer;
-	static std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
-	static std::map<void*, Model*> m_models;
-	static Scene* m_mainScene;
-	static std::vector<Text*> m_text;
 
-	static bool exitGame;
-	static float m_fps;
-	static short m_fpsLimit;
+
+
+	static Shader* m_modelShader, * m_postProcess, * m_forwardRender, * m_grayScalePost, * m_bloomHighPass, * m_blurHorizontal, * m_blurVertical, * m_blurrComposite, * m_sobel, * m_shadows;
+	
 
 	//static GLuint colorCustom;
 	//static int LUTsize;

@@ -19,7 +19,7 @@ class Animation;
 class Model: public Transformer
 {
 public:
-	Model();
+	Model():Transformer("MODEL") {};
 	Model(Model& model, cstring tag = "");
 	Model(primitiveMesh* model, cstring tag = "");
 	Model(cstring path, cstring tag = "");
@@ -39,10 +39,13 @@ public:
 	virtual void render(Shader& shader, Camera* cam);
 
 
+	//sets RGBA colour with float values ranging from 0 -> 1
 	void setColour(float r, float g, float b, float a);
 
+	//sets RGB colour with float values ranging from 0 -> 1
 	void setColour(float r, float g, float b);
 
+	//sets RGBA colour with values ranging from 0 -> 255
 	void setColour(ColourRGBA colour);
 
 	ColourRGBA getColour();
@@ -56,26 +59,20 @@ public:
 
 	void editVerts(Model* first, Model* second);
 
-	//	void addFrameBuffer(FrameBuffer* buffer);
-	//
-	//	void removeFrameBuffer(std::string tag);
-	//
-	//	std::unordered_map<std::string, FrameBuffer*>& getFrameBuffers();
-
+	
 	float getWidth();
 	float getHeight();
 	float getDepth();
-
 	Coord3D<> getSize();
 
 	Coord3D<> getCenter();
 
-	void boundingBoxUpdate();
 
 	Animation* getAnimation(cstring tag);
 	Animation* getCurrentAnimation();
 	void  setAnimation(cstring tag);
 
+	void addMesh(Mesh*);
 	Mesh* getMesh(const unsigned index);
 	Shader* getShader();
 
@@ -93,6 +90,7 @@ protected:
 
 private:
 	void boundingBoxInit();
+	void boundingBoxUpdate();
 	void drawBoundingBox();
 
 	bool m_render = true;

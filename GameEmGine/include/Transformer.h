@@ -3,23 +3,18 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Component.h"
 #include "Quat.h"
 #include "Utilities.h"
 
-
-
-class Transformer
+class Transformer:public Component
 {
 public:
-	enum TYPE
-	{
-		TRANSFORMER,
-		MODEL,
-		TEXT
-	};
 
 	Transformer();
-	~Transformer();
+	Transformer(Transformer&, COMP_TYPE type = "TRANSFORMER");
+	Transformer(COMP_TYPE type);
+	virtual ~Transformer();
 
 	void reset();
 	void enableFPSMode(bool enable = true);
@@ -27,7 +22,7 @@ public:
 	/*SET ROTATION*/
 
 	virtual void rotate(Coord3D<> angles);
-	virtual void rotate(float x,float y ,float z);
+	virtual void rotate(float x, float y, float z);
 	virtual void rotateBy(Coord3D<> angles);
 	virtual void rotateBy(float x, float y, float z);
 
@@ -55,18 +50,17 @@ public:
 	Coord3D<> getUp();
 	Coord3D<> getRight();
 
-	virtual glm::mat4 getLocalRotationMatrix();
-	virtual glm::mat4 getLocalScaleMatrix();
-	virtual glm::mat4 getLocalTranslationMatrix();
-	 
-	virtual glm::mat4 getWorldRotationMatrix();
-	virtual glm::mat4 getWorldScaleMatrix();
-	virtual glm::mat4 getWorldTranslationMatrix();
-	
+	virtual const glm::mat4& getLocalRotationMatrix();
+	virtual const glm::mat4& getLocalScaleMatrix();
+	virtual const glm::mat4& getLocalTranslationMatrix();
+
+	virtual const glm::mat4& getWorldRotationMatrix();
+	virtual const glm::mat4& getWorldScaleMatrix();
+	virtual const glm::mat4& getWorldTranslationMatrix();
+
 	/*Gets a combination of the rotation, scale, and translation matricies*/
 
 	virtual glm::mat4 getLocalTransformation();
-
 	virtual glm::mat4 getWorldTransformation();
 
 	virtual void resetUpdated();
@@ -75,17 +69,8 @@ public:
 	virtual bool isRotationUpdated();
 	virtual bool isTranslatinUpdated();
 
-	virtual void addChild(Transformer* child);
-	virtual void removeChild(Transformer* child);
-	virtual void removeChild(unsigned index);
-	virtual void setParent(Transformer* parent);
-	virtual void removeParent(Transformer* parent);
 
-	virtual Transformer* getChild(unsigned int index);
-	virtual Transformer* getParent();
-	virtual std::vector<Transformer*>& getChildren();
 
-	Transformer::TYPE getType();
 private:
 
 	void calculateWorldRotationMatrix();
@@ -93,19 +78,17 @@ private:
 	void calculateWorldTranslationMatrix();
 
 
-	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
 	Coord3D<> m_forward = {0,0,1}, m_up = {0,1,0}, m_right = {1,0,0};
-	std::vector<Transformer* >m_children;
-	Transformer* m_parent;
+	Coord3D<> m_posDat, m_rotDat, m_scaleDat;
+	
 	bool  m_updatedRot = true,
 		m_updatedTrans = true,
 		m_updatedScale = true,
 		//first person movement
-		m_fps=false,
-		m_moveBy=false;
+		m_fps = false,
+		m_rotateBy = false;
 
 protected:
-	Transformer::TYPE m_type;
 	glm::mat4
 		m_localTranslate,
 		m_localRotate,

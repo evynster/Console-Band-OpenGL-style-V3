@@ -8,6 +8,20 @@
 
 class Test: public Scene
 {
+
+#pragma region Variables
+
+	float speed = 0.1f, angle = 1;
+	Animation ani;
+	Model* model[10];
+	Model* bigBoss[2];
+	Model* rocket;
+
+	Model* forward;
+	Text testText;
+	Light lit;
+#pragma endregion
+
 public:
 	bool moveLeft, moveRight, moveForward, moveBack, moveUp, moveDown,
 		rotLeft, rotRight, rotUp, rotDown, tiltLeft, tiltRight,
@@ -15,69 +29,108 @@ public:
 
 	void init()
 	{
-		Game::setBackgroundColour(0, 0, 0);
+		Game::setBackgroundColour(.15, .15, .15);
 		Game::setCameraPosition({0,0,-3});
-		FrustumPeramiters frustum{55,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,500};
-		Game::setCameraType(Camera::FRUSTUM, &frustum);
-		//Game::setBackgroundColour(.2, .2, 0);
+		FrustumPeramiters frustum{65,(float)Game::getWindowWidth() / Game::getWindowHeight(),0.001f,500};
+		Game::setCameraType(&frustum);
 
-		setSkyBox("Skyboxes/skybox/");
-		model[0] = new Model(/*"Models/nanosuit2/nanosuit2.obj"*//*"Models/Note/note.obj"*/"Models/BOSS/slam/bsl1.obj"/*new primitiveCube(2, 2, 2)*/, "Box1");
-		static Animation thing;
-		thing.setAnimationSpeed(1);
-		thing.addDir("Models/BOSS/slam/");
-		model[0]->addAnimation("IDK", &thing);
+		setSkyBox("Skyboxes/space/");
+		enableSkyBox(true);
 
-		model[0]->setAnimation("IDK");
-		thing.play();
-		thing.repeat(true);
-		
-		model[0]->setScale(1);
-		//model[0]->setColour(1, .2, .2, 1);
-		model[0]->setTransparent(false);
-		//model[0]->setTransparent(false);
+
+
+
+		// Scene setup 
+		bigBoss[0] = new Model("Models/BOSS/slam/bsl1.obj", "Boss1");
+		bigBoss[0]->translate(-15, 0, 0);
+
+		ani.setAnimationSpeed(1);
+		ani.addDir("Models/BOSS/slam/");
+		bigBoss[0]->addAnimation("IDK", &ani);
+
+		bigBoss[0]->setAnimation("IDK");
+		ani.play();
+		ani.repeat(true);
+
+
+		rocket = new Model("Models/rocket-ship/rocket ship.obj", "ship");
+		bigBoss[1] = new Model(*bigBoss[0], "Boss2");
+		bigBoss[1]->translate(15, 0, 0);
+		bigBoss[0]->rotate(0, 90, 0);
+		bigBoss[1]->rotate(0, -90, 0);
+
+		//floor 
+		static Model floor = Model(new PrimitivePlane({100,0,100}), "floor");
+		Game::addModel(&floor);
+		floor.replaceTexture(0, 0, ResourceManager::getTexture2D("Textures/moon.jpg").id);
+
+
 
 		lit.setLightType(Light::TYPE::POINT);
 		lit.setParent(Game::getMainCamera());
-		//LightManager::addLight(&lit);
+		lit.setSpecular({0,0,145});
+
+		LightManager::addLight(&lit);
 
 		//testText.setText("Maybe this Works?");
 		//testText.setColour(1, 0, 0);
 		//testText.textSize(20);
 		//testText.toTexture(50);		
 
-		model[1] = new Model(*model[0], "Box2");
-		model[2] = new Model(*model[1], "Box3");
+		Game::addModel(bigBoss[0]);
+		Game::addModel(bigBoss[1]);
 
-		Game::addModel(model[1]);
-		Game::addModel(model[2]);
-
-		model[1]->translate(5, 0, 0);
-		model[2]->translate(-10, 0, 0);
 
 		//Game::addText(&testText);
 
 		Game::getMainCamera()->enableFPSMode();
-		Game::addModel(model[0]);
+		Game::addModel(rocket);
 
-		forward = new Model(new primitiveCube({1, 1, 1}));
-		forward->setParent(Game::getMainCamera());
-		forward->setScale(.1);
-		//Game::addModel(forward);
-		forward->translate(Game::getMainCamera()->getForward() );
-		//model[0]->replaceTexture(0, 0, testText.getTexture());
+		//forward.translate(Game::getMainCamera()->getForward());
+		//model[0].replaceTexture(0, 0, testText.getTexture());
 
 		keyPressed =
 			[&](int key, int mod)->void
 		{
+
+			switch(key)
+			{
+			case GLFW_KEY_1:
+				lit.enableDiffuse(false);
+				lit.enableSpecular(false);
+				Game::enableBloom(false);
+				break;
+			case GLFW_KEY_2:
+				lit.enableDiffuse(true);
+				lit.enableSpecular(false);
+				Game::enableBloom(false);
+				break;
+			case GLFW_KEY_3:
+				lit.enableDiffuse(false);
+				lit.enableSpecular(true);
+				Game::enableBloom(false);
+				break;
+			case GLFW_KEY_4:
+				lit.enableDiffuse(true);
+				lit.enableSpecular(true);
+				Game::enableBloom(false);
+				break;
+			case GLFW_KEY_5:
+				lit.enableDiffuse(true);
+				lit.enableSpecular(true);
+				Game::enableBloom(true);
+				break;
+			}
+
+
 			if(key == 'R')
 			{
 				Game::getMainCamera()->reset();
 				Game::setCameraPosition({0,0,-3});
 			}
-			static bool sky = false,frame=false;
+			static bool sky = true, frame = false;
 			if(key == 'N')
-				model[0]->setWireframe(frame=!frame);
+				model[0]->setWireframe(frame = !frame);
 			if(key == GLFW_KEY_SPACE)
 				enableSkyBox(sky = !sky);
 
@@ -171,7 +224,12 @@ public:
 				rotDown = false;
 		};
 
-
+		auto list = Component::getComponentList();
+		printf("there are %d items in the list", list.size());
+		puts("here they are: ");
+		for(auto& a : list)
+			for(int b = 0; b < a.second; b++)
+				puts(a.first.c_str());
 	}
 
 	void cameraMovement()
@@ -209,59 +267,51 @@ public:
 	{
 		// Movement
 		if(moveLeft)
-			model[0]->translateBy({-speed,0.f,0.f});
+			bigBoss[0]->translateBy({-speed,0.f,0.f});
 		if(moveRight)
-			model[0]->translateBy({speed,0,0});
+			bigBoss[0]->translateBy({speed,0,0});
 		if(moveForward)
-			model[0]->translateBy({0,0,speed});
+			bigBoss[0]->translateBy({0,0,speed});
 		if(moveBack)
-			model[0]->translateBy({0,0,-speed});
+			bigBoss[0]->translateBy({0,0,-speed});
 		if(moveUp)
-			model[0]->translateBy({0,speed,0});
+			bigBoss[0]->translateBy({0,speed,0});
 		if(moveDown)
-			model[0]->translateBy({0,-speed,0});
+			bigBoss[0]->translateBy({0,-speed,0});
 
 		// Rotation
 		if(rotLeft)
-			model[0]->rotateBy({0,-angle,0});
+			bigBoss[0]->rotateBy({0,-angle,0});
 		if(rotRight)
-			model[0]->rotateBy({0,angle,0});
+			bigBoss[0]->rotateBy({0,angle,0});
 		if(rotDown)
-			model[0]->rotateBy({-angle,0,0});
+			bigBoss[0]->rotateBy({-angle,0,0});
 		if(rotUp)
-			model[0]->rotateBy({angle,0,0});
+			bigBoss[0]->rotateBy({angle,0,0});
 
-		
+
 	}
 
 	void update(double dt)
 	{
-		if(tab)
-			objectMovement();
-		else
-			cameraMovement();
-
+		cameraMovement();
+		int speed = 5;
+		ani.setAnimationSpeed((float)speed / ani.getTotalFrames());
+		bigBoss[0]->translate(lerp(Coord3D<>{-60, 0, 0}, Coord3D<>{-15, 0, 0}, fmod(clock() / (float)CLOCKS_PER_SEC-1, speed)/speed));
+		bigBoss[1]->translate(lerp(Coord3D<>{60, 0, 0}, Coord3D<>{15, 0, 0}, fmod(clock() / (float)CLOCKS_PER_SEC-1, speed)/speed));
 	}
-private:
-	float speed = 0.1f, angle = 1;
 
-	Model* model[3];
-	Model* forward;
-	Text testText;
-	Light lit;
+
 
 };
 
 int main()
 {
-
-	Game::init("Window Band (Previously Console Band) V3", 800, 400);
-
+	Game::init("Assignment 1", 900, 500);
 
 	Test test;
-	//Song song;
-	Menu main;
-	Game::setScene(&test);
+	Song song;
+	Game::setScene(&song);
 	Game::run();
 
 	return 0;

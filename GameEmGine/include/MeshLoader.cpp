@@ -65,9 +65,9 @@ bool MeshLoader::load(std::string path)
 
 	if(!fs::exists((path.substr(0, path.find('/') + 1) + "BIN") + path.substr(path.find_last_of('/'), path.find_first_of('.') - path.find_last_of('/') + 1) + "bin"))
 	{
+	//	puts("Load from File\n");
+
 	#pragma region Open Meshes 
-
-
 		FILE* f;
 
 		fopen_s(&f, path.c_str(), "r");
@@ -355,6 +355,8 @@ bool MeshLoader::load(std::string path)
 	}
 	else
 	{
+	//	puts("Load from BIN\n");
+
 		loadMaterials(path.c_str());
 
 	#pragma region UNPACK DATA
@@ -417,7 +419,6 @@ bool MeshLoader::load(std::string path)
 				delete str;
 			}
 
-
 			//bounds data
 			fread(&m_meshes[a]->top, sizeof(Coord3D<>), 6, bin);
 
@@ -444,11 +445,13 @@ void MeshLoader::loadMaterials(cstring path)
 	FILE* f;
 	cDir((char*)path);
 	fopen_s(&f, path, "r");
+	
 	if(!f)
 	{
 		printf("unknown material\n");
 		return;
 	}
+
 	char str[CHAR_BUFF_SIZE];
 	char* MeshCheck;
 	std::string tmpDir;
@@ -578,4 +581,3 @@ void MeshLoader::loadMaterials(cstring path)
 	if(f)
 		fclose(f);
 }
-

@@ -24,6 +24,8 @@ public:
 
 	int getFrameNumber();
 
+	int getTotalFrames();
+
 	bool hasEnded();
 
 	bool checkPlay();

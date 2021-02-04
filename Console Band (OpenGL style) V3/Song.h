@@ -1,4 +1,10 @@
 #pragma once
+/*I see you found my easter egg ;)
+* this is an opengl version of my initial project console band 
+* you wont see any notes for a little while
+* hope you enjoy
+*/
+
 #include <functional>
 #include <thread>
 #include <filesystem>
@@ -65,37 +71,41 @@ class Song:public Scene
 		for(auto& a : countAmountBass)a = 0;
 		for(auto& a : colliCountDrum)a = 0;
 		for(auto& a : countAmountDrum)a = 0;
-		for(auto& a : *disiNotes)a.clear();
+		for(auto& a : *disiNotes)
+			a.clear();
+
 		firstLyric = 0;
-
-
 
 		for(auto& a : fs::directory_iterator(songDir))
 		{
 			wstring ogg = cDir(a.path());
-			if(ogg.substr(ogg.find_last_of('.') + 1) == L"ogg")
+			if(ogg.substr(ogg.find_last_of('.')) == L".ogg")
 				if(ogg.substr(ogg.find_last_of('/') + 1, ogg.find_last_of('.') - ogg.find_last_of('/') - 1) != L"preview")
 					AudioPlayer::createAudioStream(string(ogg.begin(), ogg.end()).c_str());
 		}
 
-		guitarTrackTmp->clear(),
-			* guitarTrackTmp = *guitarTrack;
-		bassTrackTmp->clear(),
-			* bassTrackTmp = *bassTrack;
-		drumTrackTmp->clear(),
-			* drumTrackTmp = *drumTrack;
-		barCount =
-			notesHit = 0;
+		for(int a = 0; a < (int)guitarTrackTmp->size(); a++)
+			guitarTrackTmp[0][a].clear();
+
+		guitarTrackTmp[0] = guitarTrack[0];
+		//bassTrackTmp->clear(),
+		//	*bassTrackTmp = *bassTrack;
+		//drumTrackTmp->clear(),
+		//	*drumTrackTmp = *drumTrack;
+
+		barCount = notesHit = 0;
 
 		AudioPlayer::playAll();
+
+		AudioPlayer::setMasterVolume(.1f);
 		if(AudioPlayer::size())
-			incriment = (float)AudioPlayer::getPosition(0);
+			incriment = AudioPlayer::getPosition(0);
 		start = true;
 	}
 
 #pragma region File I/O
 
-	void openSong(string songFolder = "Songs/01. Survivor - Eye of the Tiger/")
+	void openSong(string songFolder = "songs/QUEEN - BOHEMIAN RHAPSODY/")
 	{
 
 		smf::MidiFile file;
@@ -447,7 +457,7 @@ class Song:public Scene
 		if(lyricTiming->size())
 			lyricTiming->back().back().second += 750;
 
-#pragma region Vocal Information
+	#pragma region Vocal Information
 		for(unsigned int a = 0; a < vocalTrack->size();)
 			if((120 - vocalTrack->size()) / 12 > 1)
 				if((*vocalTrack)[a].size() == 0)
@@ -467,7 +477,7 @@ class Song:public Scene
 					break;
 			else
 				vocalTrack->erase(vocalTrack->end() - 1);
-#pragma endregion
+	#pragma endregion
 
 		lyrics;
 		lyricTiming;
@@ -871,7 +881,8 @@ class Song:public Scene
 						pressed[a] = false;
 						//	LightSource::enableLight(a, false);
 						fretBoard[a].setColour(fretColour[0][a] * .5f);
-					} else if(/*KeyInput::press(keyfrets[a]) ||*/ InputManager::getController(0)->isButtonPressed(guitarfrets[a]))
+					}
+					else if(/*KeyInput::press(keyfrets[a]) ||*/ InputManager::getController(0)->isButtonPressed(guitarfrets[a]))
 					{
 						pressed[a] = true;
 						fretLit[a].enableLight(true);
@@ -900,9 +911,11 @@ class Song:public Scene
 						{
 							currentHealth -= currentHealth > 0 ? 1 : 0;
 							//missFX(rand());
-						} else
+						}
+						else
 							currentHealth += currentHealth < HEALTH_CAP ? .5f : 0;
-					} else
+					}
+					else
 					{
 						currentHealth -= currentHealth > 0 ? 1 : 0;
 						//missFX(rand());
@@ -977,7 +990,7 @@ class Song:public Scene
 				if(instrument == "guitar")
 				{
 					while(colliCountGuitar[a] < (*guitarTrackTmp)[a].size() &&
-						(*guitarTrackTmp)[a][colliCountGuitar[a]].pos + noteOffset < fretboardPosition - note->getDepth())
+						  (*guitarTrackTmp)[a][colliCountGuitar[a]].pos + noteOffset < fretboardPosition - note->getDepth())
 						colliCountGuitar[a]++;
 
 					if(pressed[a])
@@ -1062,7 +1075,8 @@ class Song:public Scene
 				if(pressed[num[0]])
 					notesHit++,
 					(*disiNotes)[num[0]].push_back(colliCountGuitar[num[0]]++);
-			} else
+			}
+			else
 			{
 				int counter = 0, sum = 0;
 				for(int a = 0; a < 5; a++)
@@ -1072,17 +1086,18 @@ class Song:public Scene
 							if(num[counter++] != a)
 								return false;
 
-						} else
+						}
+						else
 							return false;
 
 
-						if((uint)sum != num.size())
-							return false;
+				if((uint)sum != num.size())
+					return false;
 
 
-						for(auto& a : num)
-							notesHit++,
-							(*disiNotes)[a].push_back(colliCountGuitar[a]++);
+				for(auto& a : num)
+					notesHit++,
+					(*disiNotes)[a].push_back(colliCountGuitar[a]++);
 			}
 		}
 		//else if(instrument == "rhythm")

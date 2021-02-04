@@ -304,7 +304,7 @@ class SongSelect:public Scene
 				AudioPlayer::getMasterChannelGroup()->addFadePoint(0, 1);
 				AudioPlayer::stopAll();
 				
-				Game::setScene(parent);
+				Game::setScene(m_parent);
 			}
 			else
 			{

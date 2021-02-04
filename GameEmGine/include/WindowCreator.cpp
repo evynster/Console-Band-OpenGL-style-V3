@@ -1,13 +1,14 @@
 #include "WindowCreator.h"
 
-
+WindowInfo* m_info = new WindowInfo;
+void(*WindowCreator::m_onWindowResizeCallback)(GLFWwindow*, int, int);
 
 WindowCreator::WindowCreator()
 {
 	m_monitor = glfwGetPrimaryMonitor();
 }
 
-WindowCreator::WindowCreator(std::string name, Coord3D<int> size, Coord2D<int> position, int monitor, bool fullScreeen, bool visable)
+WindowCreator::WindowCreator(std::string name, Coord2D<int> size, Coord2D<int> position, int monitor, bool fullScreeen, bool visable)
 {
 	createWindow(name, size, position, monitor, fullScreeen, visable);
 }
@@ -16,7 +17,7 @@ WindowCreator::WindowCreator(std::string name, Coord3D<int> size, Coord2D<int> p
 WindowCreator::~WindowCreator()
 {}
 
-int WindowCreator::createWindow(std::string name, Coord3D<int> size, Coord2D<int> position, int monitor, bool fullScreeen, bool visable)
+int WindowCreator::createWindow(std::string name, Coord2D<int> size, Coord2D<int> position, int monitor, bool fullScreeen, bool visable)
 {
 	int monCount;
 	GLFWmonitor** mons = glfwGetMonitors(&monCount);
@@ -41,6 +42,9 @@ int WindowCreator::createWindow(std::string name, Coord3D<int> size, Coord2D<int
 
 	setFullScreen(fullScreeen);
 	setVisable(visable);
+
+	
+	glfwSetFramebufferSizeCallback(m_window, onWindowResize);
 
 	return m_window != nullptr ? WINDOW_CREATED : WINDOW_FAILED;
 }
@@ -106,11 +110,8 @@ std::string& WindowCreator::getTitle()
 	return m_info->title;
 }
 
-Coord3D<int>& WindowCreator::getScreenSize()
+Coord2D<int>& WindowCreator::getScreenSize()
 {
-	if(!m_full)
-		glfwGetFramebufferSize(m_window, &m_info->size.width, &m_info->size.height);
-
 	return m_info->size;
 }
 
@@ -122,4 +123,12 @@ int WindowCreator::getScreenWidth()
 int WindowCreator::getScreenHeight()
 {
 	return getScreenSize().height;
+}
+
+void WindowCreator::onWindowResize(GLFWwindow* glfw, int w, int h)
+{
+	m_info->size = {w,h};
+	if(m_onWindowResizeCallback)
+		m_onWindowResizeCallback(glfw,w,h);
+	
 }

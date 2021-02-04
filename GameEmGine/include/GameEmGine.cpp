@@ -2,12 +2,11 @@
 #include "GameEmGine.h"
 
 #pragma region Static Variables
-void(*GameEmGine::m_compileShaders)();
+void(*m_compileShaders)();
 //std::function<void()>GameEmGine::m_render;
-std::function<void(double)>GameEmGine::m_gameLoop;
-Camera* GameEmGine::m_mainCamera;
-std::vector<Camera*>GameEmGine::m_cameras;
-
+std::function<void(double)>m_gameLoop;
+Camera* m_mainCamera;
+std::vector<Camera*>m_cameras;
 Shader
 * GameEmGine::m_modelShader, * GameEmGine::m_postProcess,
 * GameEmGine::m_forwardRender, * GameEmGine::m_grayScalePost,
@@ -15,24 +14,28 @@ Shader
 * GameEmGine::m_blurVertical, * GameEmGine::m_blurrComposite,
 * GameEmGine::m_sobel, * GameEmGine::m_shadows;
 
-FrameBuffer*
-GameEmGine::m_mainFrameBuffer, * GameEmGine::m_postBuffer,
-* GameEmGine::m_buffer1, * GameEmGine::m_buffer2,
-* GameEmGine::m_greyscaleBuffer, * GameEmGine::m_outline,
-* GameEmGine::m_shadowBuffer;
+FrameBuffer
+* m_mainFrameBuffer, * m_postBuffer,
+* m_buffer1, * m_buffer2,
+* m_greyscaleBuffer, * m_outline,
+* m_shadowBuffer;
 
 
-WindowCreator* GameEmGine::m_window;	//must be init in the constructor
-ColourRGBA GameEmGine::m_colour{123,123,123};
+WindowCreator* m_window;	//must be init in the constructor
+ColourRGBA m_colour{123,123,123};
 
-std::unordered_map<std::string, FrameBuffer*> GameEmGine::m_frameBuffers;
-std::map<void*, Model*> GameEmGine::m_models;
+std::unordered_map<std::string, FrameBuffer*> m_frameBuffers;
+std::map<void*, Model*> m_models;
 
-bool GameEmGine::exitGame = false;
-float GameEmGine::m_fps;
-short GameEmGine::m_fpsLimit;
-Scene* GameEmGine::m_mainScene;
-std::vector<Text*> GameEmGine::m_text;
+bool exitGame = false;
+float m_fps;
+short m_fpsLimit;
+Scene* m_mainScene;
+std::vector<Text*> m_text;
+Coord2D<int> m_screenSize;
+bool m_bloom;
+
+
 //GLuint GameEmGine::colorCustom;
 //int GameEmGine::LUTsize = 0;
 
@@ -44,17 +47,17 @@ bool GameEmGine::toonActive = false;
 
 void GLAPIENTRY
 GameEmGine::MessageCallback(GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar * message,
-	const void* userParam)
+							GLenum type,
+							GLuint id,
+							GLenum severity,
+							GLsizei length,
+							const GLchar* message,
+							const void* userParam)
 {
 	source, id, length, userParam;
 	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-		type, severity, message);
+			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+			type, severity, message);
 }
 
 Texture3D tmpLUT;
@@ -67,7 +70,7 @@ void GameEmGine::init(std::string name, int width, int height, int x, int y, int
 	AudioPlayer::init();
 	InputManager::init();
 
-	tmpRamp= ResourceManager::getTexture2D("textures/Texture Ramp.png");
+	tmpRamp = ResourceManager::getTexture2D("textures/Texture Ramp.png");
 	toonActive = true;
 
 
@@ -97,7 +100,9 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 	if(m_window)
 		delete m_window;
 
-	m_window = new WindowCreator(name, {width,height,500}, Coord2D<int>{x, y}, monitor, fullScreen, visable);
+	m_window = new WindowCreator(name, {width,height}, Coord2D<int>{x, y}, monitor, fullScreen, visable);
+	m_window->m_onWindowResizeCallback = changeViewport;
+	
 
 	if(m_window)
 		puts("Window Creation Successful\n");
@@ -106,10 +111,10 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 		puts("Window Creation Unsuccessful\n");
 		return;
 	}
+	
+	m_mainCamera = new Camera(Camera::FRUSTUM,{(float)getWindowWidth(), (float)getWindowHeight(),(float)getWindowWidth()});
 
-	glfwSetFramebufferSizeCallback(m_window->getWindow(), changeViewport);
 
-	m_mainCamera = new Camera({(float)getWindowWidth(), (float)getWindowHeight(),(float)getWindowWidth()});
 
 	shaderInit();
 
@@ -124,8 +129,8 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 	m_buffer2 = new FrameBuffer(1, "Test2");
 
 	m_mainFrameBuffer->initDepthTexture(getWindowWidth(), getWindowHeight());
-	m_mainFrameBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
-	m_mainFrameBuffer->initColourTexture(1, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	m_mainFrameBuffer->initColourTexture(0, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	m_mainFrameBuffer->initColourTexture(1, getWindowWidth(), getWindowHeight(), GL_RGB16F, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	m_mainFrameBuffer->initColourTexture(2, getWindowWidth(), getWindowHeight(), GL_RGB8, GL_NEAREST, GL_CLAMP_TO_EDGE);
 	if(!m_mainFrameBuffer->checkFBO())
 	{
@@ -192,7 +197,7 @@ void GameEmGine::createNewWindow(std::string name, int width, int height, int x,
 
 void GameEmGine::run()
 {
-	
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
@@ -222,9 +227,8 @@ void GameEmGine::run()
 			glClear(GL_DEPTH_BUFFER_BIT);
 
 			static Text fps;
-			OrthoPeramiters ortho{0,(float)getWindowWidth(),(float)getWindowHeight(),0,0,(float)getWindowSize().depth};
-			static Camera cam({(float)getWindowSize().width,(float)getWindowSize().height,(float)getWindowSize().depth}
-			, Camera::ORTHOGRAPHIC, &ortho);
+			OrthoPeramiters ortho{0,(float)getWindowWidth(),(float)getWindowHeight(),0,0,500};
+			static Camera cam(&ortho, {(float)getWindowSize().width,(float)getWindowSize().height,500});
 			cam.update();
 
 			fps.setColour(1, 0, 0, .7f);
@@ -235,14 +239,14 @@ void GameEmGine::run()
 
 			static std::map<void*, Model*> tmp;
 
-			tmp[&fps] = (Model*)& fps;
+			tmp[&fps] = (Model*)&fps;
 			cam.render(m_forwardRender, tmp, true);
 
 			//glfwSetWindowTitle(m_window->getWindow(), (m_window->getTitle() + "--> " + str).c_str());
 		}
 
 		glfwSwapBuffers(m_window->getWindow());
-		//glFlush();
+		glFlush();
 		fpsLimiter();
 	}
 	glfwInit();
@@ -360,7 +364,7 @@ void GameEmGine::setScene(Scene* scene)
 	m_frameBuffers.clear();
 	LightManager::clear();
 	m_frameBuffers[m_mainFrameBuffer->getTag()] = m_mainFrameBuffer;
-	scene->parent = m_mainScene;//set the parent to the previous scene
+	scene->setParent( m_mainScene);//set the parent to the previous scene
 	m_mainScene = scene;
 	scene->init();
 	InputManager::setKeyPressedCallback(scene->keyPressed);
@@ -389,7 +393,7 @@ int GameEmGine::getWindowHeight()
 	return m_window->getScreenHeight();
 }
 
-Coord3D<int> GameEmGine::getWindowSize()
+Coord2D<int> GameEmGine::getWindowSize()
 {
 	return m_window->getScreenSize();
 }
@@ -401,7 +405,8 @@ Camera* GameEmGine::getMainCamera()
 
 bool GameEmGine::mouseCollision(Model* model)
 {
-	static Model mouse(&primitiveCube({.01f}), "Mouse");
+	static primitiveCube smallCube({.01f});
+	static Model mouse(&smallCube, "Mouse");
 
 	addModel(&mouse);
 	mouse.setColour(0, 1, 0);
@@ -409,7 +414,7 @@ bool GameEmGine::mouseCollision(Model* model)
 	Camera* cam = getMainCamera();
 	//	glm::mat4 tmp = glm::inverse(cam->getProjectionMatrix());
 	Coord3D<> mPos = {InputManager::getMousePosition(),0};
-	glm::vec4 direction((mPos * 2 / (Coord3D<>{(float)getWindowSize().x, (float)getWindowSize().y, (float)getWindowSize().z} -1)).toVec3(), 1);
+	glm::vec4 direction((mPos * 2 / (Coord3D<>{(float)getWindowSize().x, (float)getWindowSize().y, 500} - 1)).toVec3(), 1);
 	direction = {direction.x,-direction.y,1,1};
 
 
@@ -425,9 +430,13 @@ bool GameEmGine::mouseCollision(Model* model)
 	return mouse.collision2D(model, reclass(Coord3D<>, direction));
 }
 
-void GameEmGine::setCameraType(Camera::TYPE type, ProjectionPeramiters* proj)
+void GameEmGine::setCameraType(Camera::CAM_TYPE type)
 {
-	m_mainCamera->setType(type, proj);
+	m_mainCamera->setType(type, nullptr);
+}
+void GameEmGine::setCameraType(ProjectionPeramiters* proj)
+{
+	m_mainCamera->setType(proj);
 }
 
 void GameEmGine::translateCameraBy(Coord3D<> pos)
@@ -478,7 +487,10 @@ void GameEmGine::addCamera(Camera* cam)
 	//realloc(m_cameras, sizeof(Camera3D*)*++_numCameras);
 	//m_cameras[_numCameras - 1] = cam;
 }
-
+void GameEmGine::enableBloom(bool bloom)
+{
+	m_bloom = bloom;
+}
 void GameEmGine::update()
 {
 
@@ -494,19 +506,19 @@ void GameEmGine::update()
 	m_mainCamera->update();
 
 	m_modelShader->enable();
-	glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &( m_mainCamera->getViewMatrix()[0][0]));
+	glUniformMatrix4fv(m_modelShader->getUniformLocation("uView"), 1, GL_FALSE, &(m_mainCamera->getViewMatrix()[0][0]));
 	glUniformMatrix4fv(m_modelShader->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
 	m_modelShader->disable();
 
 	m_forwardRender->enable();
-	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uView"), 1, GL_FALSE, &( m_mainCamera->getViewMatrix()[0][0]));
+	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uView"), 1, GL_FALSE, &(m_mainCamera->getViewMatrix()[0][0]));
 	glUniformMatrix4fv(m_forwardRender->getUniformLocation("uProj"), 1, GL_FALSE, &(m_mainCamera->getProjectionMatrix()[0][0]));
 	m_forwardRender->disable();
 
 
 	LightManager::setCamera(m_mainCamera);
-	m_mainScene->skybox.setCamera(m_mainCamera);
-	
+	((SkyBox*)&m_mainScene->getSkyBox())->setCamera(m_mainCamera);
+
 
 	glViewport(0, 0, getWindowWidth(), getWindowHeight());
 
@@ -514,11 +526,11 @@ void GameEmGine::update()
 	m_mainCamera->render(m_modelShader, m_models, false);
 	m_mainFrameBuffer->disable();
 
-	
+
 	//store data for post process
 	m_postBuffer->enable();
 	m_postProcess->enable();
-	
+
 
 
 	//bind textures
@@ -556,16 +568,16 @@ void GameEmGine::update()
 	m_postProcess->disable();
 	m_postBuffer->disable();
 
-	
+
 
 	m_mainFrameBuffer->moveDepthToBuffer(getWindowWidth(), getWindowHeight(), m_postBuffer->getFrameBufferID());
-	m_postBuffer->enable();	
+	m_postBuffer->enable();
 	//sky box
 	if(m_mainScene->skyBoxEnabled)
-		m_mainScene->skybox.render();
+		(*(SkyBox*)&m_mainScene->getSkyBox()).render();
 	m_mainCamera->render(m_forwardRender, m_models, true);
 	m_postBuffer->disable();
-	
+
 	//LightSource::setShader(m_forwardRender);
 	//LightSource::update();
 
@@ -629,6 +641,8 @@ void GameEmGine::update()
 	glActiveTexture(GL_TEXTURE1);
 	m_blurrComposite->sendUniform("uBloom", 1);
 	glBindTexture(GL_TEXTURE_2D, m_buffer1->getColorHandle(0));
+
+	m_blurrComposite->sendUniform("uBloomEnable", m_bloom);
 	FrameBuffer::drawFullScreenQuad();
 
 	glActiveTexture(GL_TEXTURE1);
@@ -675,7 +689,11 @@ void GameEmGine::update()
 
 void GameEmGine::changeViewport(GLFWwindow*, int w, int h)
 {
-	
+
+	m_screenSize = {w,h};
+	glViewport(0, 0, w, h);
+
+
 	//Framebuffer Resizing 
 	m_mainFrameBuffer->resizeDepth(w, h);
 	m_mainFrameBuffer->resizeColour(0, w, h);
