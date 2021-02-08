@@ -95,6 +95,10 @@ public:
 
 		customPostEffect = [&](FrameBuffer* gbuff, FrameBuffer* postBuff)->void
 		{
+			m_greyscaleBuffer->clear();
+			m_buffer1->clear();
+			m_buffer2->clear();
+
 
 			glViewport(0, 0, Game::getWindowWidth() / SCREEN_RATIO, Game::getWindowHeight() / SCREEN_RATIO);
 
