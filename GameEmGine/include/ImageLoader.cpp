@@ -13,10 +13,10 @@ Texture2D ImageLoader::loadImage2D(cstring path)
 		printf("Image \"%s\", returned with null pointer\n", path);
 		return texture;
 	}
-	
+
 	//set the name of the texture	
 	texture.name = std::string(path).substr(std::string(path).find_last_of('/') + 1);
-	
+
 
 	//Bind texture to model
 	glGenTextures(1, &texture.id);
@@ -42,6 +42,7 @@ Texture2D ImageLoader::loadImage2D(cstring path)
 Texture3D ImageLoader::loadImage3D(cstring LUTfile)
 {
 	Texture3D texture = Texture3D();
+	texture.type = TEXTURE_TYPE3D::LUT;
 	std::vector<Coord3D<>> LUT{};
 
 	//LUTfile = "Texture/CUSTOM.cube";
@@ -57,28 +58,32 @@ Texture3D ImageLoader::loadImage3D(cstring LUTfile)
 	{
 		std::string LUTline;
 		getline(LUTfile2, LUTline);
+		
 		if(LUTline.empty()) continue;
+		if(LUTline[0] == ('#'))continue;
+		
 		if(strstr(LUTline.c_str(), "LUT_3D_SIZE"))
-		{
 			sscanf_s(LUTline.c_str(), "LUT_3D_SIZE %d", &texture.lutSize);
-		}
+
+
 		float r, g, b;
 		if(sscanf_s(LUTline.c_str(), "%f %f %f", &r, &g, &b) == 3) LUT.push_back({r,g,b});
 	}
 	glEnable(GL_TEXTURE_3D);
 
 	glGenTextures(1, &texture.id);
-	glBindTexture(GL_TEXTURE_3D, texture.id);
+	texture.bindTexture();
+	
 
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, texture.lutSize, texture.lutSize, texture.lutSize, 0, GL_RGBA, GL_FLOAT, LUT.data());
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, texture.lutSize, texture.lutSize, texture.lutSize, 0, GL_RGB, GL_FLOAT, LUT.data());
 
-	glBindTexture(GL_TEXTURE_3D, 0);
+	texture.unbindTexture();
 	glDisable(GL_TEXTURE_3D);
 
 	LUT.clear();
@@ -87,7 +92,6 @@ Texture3D ImageLoader::loadImage3D(cstring LUTfile)
 
 Texture3D ImageLoader::createImage3D(cstring SBpath)
 {
-
 	Texture3D texture = Texture3D();
 	std::string pos[6]{"_right.","_left.","_top.","_bottom.","_front.","_back."};
 	unsigned char* data;
@@ -102,7 +106,7 @@ Texture3D ImageLoader::createImage3D(cstring SBpath)
 			std::wstring path = b.path();
 			std::string tmp;
 			for(auto& c : path)
-				tmp += (char)c;
+				tmp += (char)tolower(c);
 			if(strstr(tmp.c_str(), pos[a].c_str()))
 			{
 

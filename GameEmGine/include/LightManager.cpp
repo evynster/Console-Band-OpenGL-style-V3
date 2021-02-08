@@ -126,7 +126,6 @@ std::vector<FrameBuffer*> LightManager::shadowBuffers(unsigned w, unsigned h, st
 
 void LightManager::update()
 {
-	m_shader->enable();
 	
 
 	if(m_framebuffer)
@@ -135,6 +134,7 @@ void LightManager::update()
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, m_framebuffer->getColorHandle(0));
 	}
+	m_shader->enable();
 
 	for(unsigned a = 0; a < m_lights.size(); a++)
 	{
@@ -194,6 +194,10 @@ void LightManager::update()
 
 		m_shader->sendUniform("Attenuation_Quadratic", m_lights[a]->attenuationQuadratic);
 
+		m_shader->sendUniform("toonActiveSpec", m_lights[a]->rampActiveDiff);
+		m_shader->sendUniform("toonActiveDiff", m_lights[a]->rampActiveSpec);
+
+
 		FrameBuffer::drawFullScreenQuad();
 	}
 	m_shader->sendUniform("LightEnable", false);
@@ -233,6 +237,12 @@ void Light::setSpecular(ColourRGBA spec)
 {
 	(ColourRGBA)specular = spec;
 }
+
+void Light::setRamp(Texture2D* ramp)
+{
+	m_ramp = ramp;
+}
+
 
 void Light::setSpecularExponent(float specEx)
 {

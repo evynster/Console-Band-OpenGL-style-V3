@@ -407,7 +407,7 @@ private:
 	bool m_invert;
 };
 
-class Mesh
+class Mesh:public Component
 {
 public:
 	Mesh();
@@ -426,8 +426,8 @@ public:
 
 	void replaceTexture(int index, GLuint tex);
 
-	Coord3D<> top, bottom, left, right, front, back;
-	std::string meshName;
+	Coord3D<> top = {}, bottom = {}, left = {}, right = {}, front = {}, back = {};
+	std::string meshName="";
 	std::vector<std::string> matNames;
 
 	std::vector<Vertex3D>& getUnpackedData() { return m_unpackedData; }
@@ -440,11 +440,11 @@ private:
 
 	std::vector<GLuint> m_replaceTex;
 
-	bool ani;
+	bool ani=false;
 
-	GLuint m_vaoID;
-	std::pair<GLuint, GLuint> m_vboID;
-	GLuint m_elemID;
+	GLuint m_vaoID=0;
+	std::pair<GLuint, GLuint> m_vboID = {0,0};
+	GLuint m_elemID=0;
 
 	std::vector<Vertex3D> m_unpackedData;
 	std::vector<unsigned> m_indicieData;

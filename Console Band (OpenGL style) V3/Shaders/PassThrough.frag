@@ -35,7 +35,8 @@ uniform sampler2D uScene;
 uniform sampler2D uRamp;
 uniform vec4 uViewPos;
 
-uniform bool toonActive;
+uniform bool toonActiveDiff;
+uniform bool toonActiveSpec;
 
 in vec2 texcoord;
 
@@ -63,11 +64,13 @@ vec3 blinnPhong(vec3 lightDir, vec3 viewDir )
   //Blinn-Phong Lighting here:
   
   //Diffuse   
-  diffuse = max(dot(norm, lightDir),0.0) * LightDiffuse * int(DiffuseEnable);
+  diffuse = max(dot(norm, lightDir),0.0)  * LightDiffuse * int(DiffuseEnable);
+  diffuse *= ( toonActiveDiff ? texture(uRamp,vec2(max(dot(norm, lightDir),0.0))).rgb : vec3(1)) ;
 
   //Specular  
-  specular = pow(max(dot(norm, halfDir),0.0), LightSpecularExponent) *  LightSpecular * int(SpecularEnable);
-
+  specular = pow(max(dot(norm, halfDir),0.0), LightSpecularExponent) *
+    LightSpecular * int(SpecularEnable);
+  specular *=  (toonActiveSpec ? texture(uRamp,vec2(pow(max(dot(norm, halfDir),0.0), LightSpecularExponent))).rgb : vec3(1)) ;
  
   return (diffuse + specular) * int(LightEnable);
 }
@@ -90,7 +93,6 @@ vec3 calculatePointLight(){
 
 void pointLight() {   
  outColor.rgb += calculatePointLight();
-
  }
 
 vec3 calculateDirectionalLight() {

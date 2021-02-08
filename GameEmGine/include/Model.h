@@ -25,6 +25,11 @@ public:
 	Model(cstring path, cstring tag = "");
 	virtual ~Model();
 
+
+	void create(Model& model, cstring tag = "");
+	void create(primitiveMesh* mesh, cstring tag = "");
+	void create(cstring path, cstring tag = "");
+
 	bool collision2D(Model* k, Coord3D<float> ignore);
 
 	bool collision3D(Model* k);

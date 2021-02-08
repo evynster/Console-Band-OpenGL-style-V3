@@ -31,6 +31,8 @@ struct Light:public Transformer
 
 	void setSpecular(ColourRGBA spec);
 
+	void setRamp(Texture2D*);
+
 	void setSpecularExponent(float specEx);
 
 	void setAttenuationConstant(float attenConst);
@@ -60,6 +62,10 @@ struct Light:public Transformer
 	bool ambiantEnable = true;
 	bool diffuseEnable = true;
 	bool specularEnable = true;
+	bool rampActiveDiff = false;
+	bool rampActiveSpec = false;
+private:
+	Texture2D* m_ramp;
 };
 
 class LightManager

@@ -3,25 +3,14 @@
 //#include <filesystem>
 //namespace fs = std::filesystem;
 
-Mesh::Mesh()
+Mesh::Mesh():Component("MESH")
 {
-	
+
 }
 
-Mesh::Mesh(Mesh& mesh):
-	m_vaoID(mesh.m_vaoID),
-	m_vboID(mesh.m_vboID),
-	m_textures(mesh.m_textures),
-	m_replaceTex(mesh.m_replaceTex),
-	top(mesh.top),
-	bottom(mesh.bottom),
-	left(mesh.left),
-	right(mesh.right),
-	front(mesh.front),
-	back(mesh.back)
+Mesh::Mesh(Mesh& mesh) : Component("MESH")
 {
-
-
+	*this = mesh;
 }
 
 Mesh::~Mesh()
@@ -32,9 +21,6 @@ Mesh::~Mesh()
 
 	if(!ani)
 		unload();
-
-	m_textures.clear();
-	m_replaceTex.clear();
 }
 
 bool Mesh::loadPrimitive(primitiveMesh* mesh)
@@ -84,7 +70,7 @@ void Mesh::render(Shader& shader)
 				textured = true;
 				glBindTexture(GL_TEXTURE_2D, m_replaceTex[c] ? m_replaceTex[c] : d.id);
 				shader.sendUniform("uTex", e++);
-				
+
 			}
 		c++;
 	}

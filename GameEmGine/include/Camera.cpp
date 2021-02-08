@@ -12,6 +12,11 @@ Camera::Camera(ProjectionPeramiters* peram, Coord3D<> size)
 	init(size, CAM_TYPE::NONE, peram);
 }
 
+Camera::~Camera()
+{
+	delete m_projData;
+}
+
 void Camera::init(Coord3D<> size, CAM_TYPE type, ProjectionPeramiters* peram)
 {
 	Component::m_type = "CAMERA";
@@ -23,6 +28,12 @@ void Camera::init(Coord3D<> size, CAM_TYPE type, ProjectionPeramiters* peram)
 
 void Camera::setType(CAM_TYPE type, ProjectionPeramiters* peram)
 {
+	if(peram)
+	{
+		if(m_projData)
+			delete m_projData;
+		m_projData = new ProjectionPeramiters(*peram);
+	}
 	OrthoPeramiters* peram1 = reclass(OrthoPeramiters*, peram);
 	FrustumPeramiters* peram2 = reclass(FrustumPeramiters*, peram);
 	switch(m_type = type)
@@ -38,7 +49,7 @@ void Camera::setType(CAM_TYPE type, ProjectionPeramiters* peram)
 		if(!peram)
 			m_projMat = glm::perspective(glm::radians(45.f), m_size.width / m_size.height, .001f, m_size.depth);
 		else
-			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect, peram2->zNear, peram2->zFar);
+			m_projMat = glm::perspective(glm::radians(peram2->angle), peram2->aspect ? peram2->aspect : m_size.width / m_size.height, peram2->zNear, peram2->zFar);
 		break;
 	default:
 		m_projMat = glm::mat4(1);
@@ -74,6 +85,11 @@ void Camera::setType(ProjectionPeramiters* peram)
 Camera::CAM_TYPE Camera::getType()
 {
 	return m_type;
+}
+
+ProjectionPeramiters* Camera::getProjectionData()
+{
+	return m_projData;
 }
 
 bool Camera::update()
@@ -228,7 +244,7 @@ void Camera::render(Shader* shader, std::map<void*, Model*>& models, bool trans)
 {
 	Shader* shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh");
 	for(auto& a : models)
-		if(a.second->getType() == "TEXT")
+		if(a.second->getCompType() == "TEXT")
 		{
 			Text* tmp = reclass(Text*, a.second);
 			if(trans == tmp->isTransparent())

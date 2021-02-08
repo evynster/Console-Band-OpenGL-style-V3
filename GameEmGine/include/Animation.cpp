@@ -10,7 +10,8 @@ Animation::~Animation()
 {
 	for(auto& a : m_frames)
 		if(a)
-			delete a;
+			delete a,
+			a = nullptr;
 
 	m_frames.clear();
 }
@@ -33,8 +34,9 @@ void Animation::addDir(cstring dir)
 	std::string path(dir);
 	//path += fileName;
 	auto filePathData = fs::directory_iterator(path);
-
-	m_frames.clear();
+	//for(auto& a : m_frames)
+	//	delete a;
+	//m_frames.clear();
 	for(auto& a : filePathData)
 	{
 		std::wstring tmpPath = a.path();
@@ -70,7 +72,8 @@ void Animation::update(Shader* shader, Model* mesh)
 				if(m_repeat)
 				{
 					mesh->editVerts(m_frames[m_frame = int(time / m_speed) % m_frames.size()], m_frames[m_frameNext = (m_frame + 1) % m_frames.size()]);
-				} else
+				}
+				else
 				{
 					m_frame = int(time / m_speed);
 					m_frame = m_frame >= m_frames.size() - 1 ? unsigned((m_frames.size() - 2) % m_frames.size()) : m_frame;
@@ -82,7 +85,8 @@ void Animation::update(Shader* shader, Model* mesh)
 				}
 
 			}
-	} else
+	}
+	else
 	{
 		if(mesh)
 			if((time = (time - m_lastTime)) >= m_speed)
@@ -91,7 +95,8 @@ void Animation::update(Shader* shader, Model* mesh)
 				{
 					mesh->editVerts(m_frames[m_frame], m_frames[m_frame]);
 					m_lastTime = time;
-				} else
+				}
+				else
 					if(m_stop)
 					{
 						mesh->editVerts(m_frames[0], m_frames[0]);

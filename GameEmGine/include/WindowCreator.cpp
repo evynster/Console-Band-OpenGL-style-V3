@@ -2,6 +2,9 @@
 
 WindowInfo* m_info = new WindowInfo;
 void(*WindowCreator::m_onWindowResizeCallback)(GLFWwindow*, int, int);
+GLFWwindow* m_window;
+GLFWmonitor* m_monitor;
+bool m_full;
 
 WindowCreator::WindowCreator()
 {
@@ -19,6 +22,12 @@ WindowCreator::~WindowCreator()
 
 int WindowCreator::createWindow(std::string name, Coord2D<int> size, Coord2D<int> position, int monitor, bool fullScreeen, bool visable)
 {
+	if(m_window)
+	{
+		glfwDestroyWindow(m_window);
+		m_window = nullptr;
+	}
+
 	int monCount;
 	GLFWmonitor** mons = glfwGetMonitors(&monCount);
 
@@ -38,6 +47,7 @@ int WindowCreator::createWindow(std::string name, Coord2D<int> size, Coord2D<int
 
 
 	m_window = glfwCreateWindow(m_info->size.width, m_info->size.height, (m_info->title = name).c_str(), nullptr, nullptr);
+	
 	glfwMakeContextCurrent(m_window); //gives opengl the window it renders to
 
 	setFullScreen(fullScreeen);
@@ -127,6 +137,7 @@ int WindowCreator::getScreenHeight()
 
 void WindowCreator::onWindowResize(GLFWwindow* glfw, int w, int h)
 {
+	//createWindow(m_info->title, {w,h}, m_info->position, m_info->monitor, m_full, true);
 	m_info->size = {w,h};
 	if(m_onWindowResizeCallback)
 		m_onWindowResizeCallback(glfw,w,h);

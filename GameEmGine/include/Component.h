@@ -17,7 +17,7 @@ protected:
 	COMP_TYPE m_type;
 
 public:
-	COMP_TYPE getType()
+virtual	COMP_TYPE getCompType()
 	{
 		return m_type;
 	}

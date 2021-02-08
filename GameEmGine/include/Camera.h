@@ -26,7 +26,7 @@ public:
 
 	Camera(CAM_TYPE = FRUSTUM, Coord3D<> = {1,1,1});
 	Camera(ProjectionPeramiters* peram, Coord3D<> = {1,1,1});
-	~Camera()=default;
+	~Camera() ;
 
 	void init(Coord3D<> = {}, CAM_TYPE = FRUSTUM, ProjectionPeramiters* peram = nullptr);
 	void setType(CAM_TYPE type, ProjectionPeramiters* peram = nullptr);
@@ -82,6 +82,7 @@ public:
 	glm::mat4& getCameraMatrix();
 
 	CAM_TYPE getType();
+	ProjectionPeramiters* getProjectionData();
 
 protected:
 
@@ -112,6 +113,7 @@ protected:
 		m_camWorldRotate,
 		m_camWorldScale;
 
+	ProjectionPeramiters* m_projData;
 private:
 	/*REMOVED FROM TRANSFORMER*/
 
@@ -135,7 +137,7 @@ struct ProjectionPeramiters
 	float zNear, zFar;
 	ProjectionPeramiters(Camera::CAM_TYPE a_type = Camera::CAM_TYPE::NONE):type(a_type) {}
 	ProjectionPeramiters(float znear, float zfar, Camera::CAM_TYPE a_type = Camera::CAM_TYPE::NONE):zNear(znear), zFar(zfar), type(a_type) {}
-	~ProjectionPeramiters() = default;
+	~ProjectionPeramiters()=default;
 
 	void setNear(float znear) { zNear = znear; }
 	void setFar(float zfar) { zFar = zfar; }
@@ -170,7 +172,7 @@ struct FrustumPeramiters:public ProjectionPeramiters
 
 	void setAngle(float a_angle) { angle = a_angle; }
 	void setAspect(float a_aspect) { aspect = a_aspect; }
-	float angle, aspect;
+	float angle=45, aspect=0;
 };
 #pragma endregion
 

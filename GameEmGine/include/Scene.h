@@ -14,11 +14,19 @@ public:
 	////shader initialization
 	//virtual void shaderInit() = 0;
 
+	virtual void init() = 0;
+
 	//updates within game loop
 	virtual void update(double dt) = 0;
 
-	virtual void init() = 0;
+	//the post buffer will be blitted at the end of the function call to the main buffer
+	std::function<void(FrameBuffer* gbuff, FrameBuffer* postBuff)>  customPostEffect;
 
+	void setParent(const Scene* parent) { m_parent =(Scene*) parent; };
+	const Scene* getParent() { return m_parent; }
+	const SkyBox& getSkyBox() { return m_skybox; }
+	bool skyBoxEnabled = false;
+	
 	std::function<void(void)>render;
 
 	std::function<void(int state, int button, int mod)>
@@ -41,16 +49,12 @@ public:
 	std::function<void(int button, int mod)>
 		mouseReleased;
 
+protected:
 	void enableSkyBox(bool enable) { skyBoxEnabled = enable; }
 	
 	void setSkyBox(cstring path) { m_skybox.setCubeMap(path); }
-	const SkyBox& getSkyBox() { return m_skybox; }
 	
-	void setParent(const Scene* parent) { m_parent =(Scene*) parent; };
-	const Scene* getParent() { return m_parent; }
-	
-	bool skyBoxEnabled = false;
-protected:
+
 	SkyBox m_skybox;
 	Scene* m_parent = nullptr;
 

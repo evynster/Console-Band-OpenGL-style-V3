@@ -128,11 +128,11 @@ public:
 
 	static XinputDevice* getController(int m_index);
 
-
-
+	
 	static Texture2D* m_LUT;
 
-	static bool lutActive, toonActive;
+	static bool lutActive;
+	static Texture3D tmpLUT;
 
 private:
 	static void shaderInit();
@@ -145,13 +145,14 @@ private:
 	static void OpenGLDebugCallback (GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * msg, const void * data);
 	*/
 
+	/*Custom effects*/
+	static void customRenderCallback(std::function<void(FrameBuffer* gbuff, FrameBuffer* post)>);
 	static void update();
 	static void changeViewport(GLFWwindow* win, int w, int h);
 
 
 
-	static Shader* m_modelShader, * m_postProcess, * m_forwardRender, * m_grayScalePost, * m_bloomHighPass, * m_blurHorizontal, * m_blurVertical, * m_blurrComposite, * m_sobel, * m_shadows;
-	
+	static Shader* m_modelShader, * m_postProcess, * m_forwardRender, * m_shadows;
 
 	//static GLuint colorCustom;
 	//static int LUTsize;

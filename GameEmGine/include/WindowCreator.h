@@ -33,11 +33,11 @@ public:
 	WindowCreator(std::string name, Coord2D<int>, Coord2D<int> = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
 	~WindowCreator();
 
-	int	createWindow(std::string name, Coord2D<int>, Coord2D<int> = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
+	static int	createWindow(std::string name, Coord2D<int>, Coord2D<int> = {}, int monitor = 0, bool fullScreeen = false, bool visable = true);
 
-	void setVisable(bool);
+	static void setVisable(bool);
 
-	void setFullScreen(bool);
+	static void setFullScreen(bool);
 
 	GLFWwindow* getWindow();
 
@@ -50,10 +50,8 @@ public:
 private:
 	static void onWindowResize(GLFWwindow* glfw, int w, int h);
 	
-	GLFWwindow * m_window;
-	GLFWmonitor* m_monitor;
 	
-	bool m_full;		
+		
 
 };
 

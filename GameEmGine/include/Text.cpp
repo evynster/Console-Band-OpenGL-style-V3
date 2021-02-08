@@ -178,9 +178,9 @@ void Text::render(Shader& s, Camera* cam, bool texture)
 	//render child meshes
 	if(!texture)
 		for(auto& a : getChildren())
-			if(a->getType() == "MODEL")
+			if(a->getCompType() == "MODEL")
 				reclass(Model*, a)->render(s, cam);
-			else if(a->getType() == "TEXT")
+			else if(a->getCompType() == "TEXT")
 				reclass(Text*, a)->render(s, cam);
 
 }

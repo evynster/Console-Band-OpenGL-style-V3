@@ -2,24 +2,52 @@
 #include <ctime>
 
 Model::Model(Model& model, cstring tag):
-	Transformer(model, "MODEL")
+	Transformer(model, "MODEL"),
+	m_tag(tag)
 {
-	*this = model;
-	m_tag = tag;
-	m_copy = true;
-	//boundingBoxInit();
-	boundingBoxUpdate();
+	create(model, tag);
 
 }
 
-Model::Model(primitiveMesh* model, cstring tag):
+Model::Model(primitiveMesh* mesh, cstring tag):
 	Transformer("MODEL"),
 	m_tag(tag)
 {
+	create(mesh, tag);
+}
 
+Model::Model(cstring path, cstring tag):
+	Transformer("MODEL"),
+	m_tag(tag)
+{
+	create(path, tag);
+}
+
+Model::~Model()
+{
+#if _DEBUG
+	printf("Deleted Model\n");
+#endif // _DEBUG
+	if(!m_copy)
+		meshCleanUp();
+}
+
+void Model::create(Model& model, cstring tag)
+{
+	*this = model;
+	if(strlen(tag))
+		m_tag = tag;
+	m_copy = true;
+	//boundingBoxInit();
+	boundingBoxUpdate();
+}
+
+void Model::create(primitiveMesh* mesh, cstring tag)
+{
 	m_meshes.push_back(new Mesh());
-
-	if(m_meshes[0]->loadPrimitive(model))
+	if(strlen(tag))
+		m_tag = tag;
+	if(m_meshes[0]->loadPrimitive(mesh))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
 
@@ -46,10 +74,10 @@ Model::Model(primitiveMesh* model, cstring tag):
 	}
 }
 
-Model::Model(cstring path, cstring tag):
-	Transformer("MODEL"),
-	m_tag(tag)
+void Model::create(cstring path, cstring tag)
 {
+	if(strlen(tag))
+		m_tag = tag;
 	if(loadModel(path))
 	{
 		m_shaderBB = ResourceManager::getShader("Shaders/BoundingBox.vtsh", "Shaders/BoundingBox.fmsh");
@@ -85,12 +113,6 @@ Model::Model(cstring path, cstring tag):
 		boundingBoxInit();
 		boundingBoxUpdate();
 	}
-}
-
-Model::~Model()
-{
-	if(!m_copy)
-		meshCleanUp();
 }
 
 
@@ -232,7 +254,6 @@ void Model::render(Shader& shader, Camera* cam)
 	float colour[4]{(float)m_colour.r / 255,(float)m_colour.g / 255,(float)m_colour.b / 255,(float)m_colour.a / 255};
 	m_camera = cam;
 	m_shader = &shader;
-	//glm::mat4 transformationMat(1);
 	shader.enable();
 
 	shader.sendUniform("uLocalModel", getLocalTransformation());
@@ -262,9 +283,9 @@ void Model::render(Shader& shader, Camera* cam)
 		static Shader* shader2;
 		//render child meshes
 		for(auto& a : getChildren())
-			if(a->getType() == "MODEL")
+			if(a->getCompType() == "MODEL")
 				reclass(Model*, a)->render(shader, cam);
-			else if(a->getType() == "TEXT")
+			else if(a->getCompType() == "TEXT")
 				shader2 = ResourceManager::getShader("shaders/freetype.vtsh", "shaders/freetype.fmsh"),
 				reclass(Text*, a)->render(*shader2, cam);
 
@@ -311,6 +332,9 @@ ColourRGBA Model::getColour()
 
 bool Model::loadModel(cstring path)
 {
+	for(auto& a : m_meshes)
+		delete a;
+	m_meshes.clear();
 	m_meshes = MeshLoader::loadMesh(path);
 	return !!m_meshes.size();
 }

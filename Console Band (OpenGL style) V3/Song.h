@@ -99,7 +99,7 @@ class Song:public Scene
 
 		AudioPlayer::setMasterVolume(.1f);
 		if(AudioPlayer::size())
-			incriment = AudioPlayer::getPosition(0);
+			incriment = (float)AudioPlayer::getPosition(0);
 		start = true;
 	}
 

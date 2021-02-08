@@ -16,7 +16,7 @@ public:
 		//title.rotate({180,0,0});
 		GameEmGine::addText(&title);
 
-		OrthoPeramiters ortho{0,(float)Game::getWindowWidth(),(float)Game::getWindowHeight(),0,0.001,500};
+		OrthoPeramiters ortho{0,(float)Game::getWindowWidth(),(float)Game::getWindowHeight(),0,0.001f,500};
 		GameEmGine::setCameraType(&ortho);
 	}
 
